@@ -99,6 +99,394 @@
 		<div class="markdown-body home-categories">
 		
 			<div class="article">
+                <a class="clearlink" href="14999557738274.html">
+                
+                  <h1>Group Replication</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<ul>
+<li>
+<a href="#toc_0">关于 Group Greplication</a>
+<ul>
+<li>
+<a href="#toc_1">单独的通信机制</a>
+<ul>
+<li>
+<a href="#toc_2">Binlog Event 多线程执行</a>
+<ul>
+<li>
+<a href="#toc_3">基于主键的并行执行</a>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_4">Paxos 协议优点</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_5">服务模式</a>
+<ul>
+<li>
+<a href="#toc_6">单主模式</a>
+<ul>
+<li>
+<a href="#toc_7">自动选举 &amp;&amp; Failover</a>
+</li>
+<li>
+<a href="#toc_8">读写自动切换</a>
+</li>
+<li>
+<a href="#toc_9">优点 &amp; 缺点</a>
+<ul>
+<li>
+<a href="#toc_10">优点</a>
+</li>
+<li>
+<a href="#toc_11">缺点</a>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_12">多主模式</a>
+<ul>
+<li>
+<a href="#toc_13">自增字段</a>
+</li>
+<li>
+<a href="#toc_14">优点 &amp;&amp; 缺点</a>
+<ul>
+<li>
+<a href="#toc_15">优点</a>
+</li>
+<li>
+<a href="#toc_16">缺点</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_17">多主模式思考</a>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_18">配置 Group Replication</a>
+<ul>
+<li>
+<a href="#toc_19">前期准备</a>
+<ul>
+<li>
+<a href="#toc_20">必要配置</a>
+</li>
+<li>
+<a href="#toc_21">加载 Group Replication 插件</a>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+
+<h2 id="toc_0">关于 Group Greplication</h2>
+
+<ul>
+<li>异步复制</li>
+<li>半同步复制</li>
+<li>Group Greplication</li>
+</ul>
+
+<h3 id="toc_1">单独的通信机制</h3>
+
+<p>GR 使用 Slave 的通道，只是使用通过执行线程(Applier Thread)来执行 Binlog Event，并没有使用通道传输 Binlog Event。</p>
+
+<p>没有使用异步复制的 Binlog Event，也没有使用 MySQL 服务端口通信，而是创建一个独立 TCP 端口通信，各个 MySQL 服务器睥 Group Replication 插件通过这个端口连接在一起，两两通信</p>
+
+<h4 id="toc_2">Binlog Event 多线程执行</h4>
+
+<p>GR 插件自动创建一个通道 group_replication_applier (channel) 来执行接收到的 Binlog Event，当加入组时，GR 插件自动启动 group_replication_applier 通道的执行线程(Applier Thread)</p>
+
+<pre><code class="language-sql">-- 手工调整这个通道执行线程
+START SLAVE SQL_THREAD FOR CHANNEL &#39;group_replication_applier&#39;;
+STOP SLAVE SQL_THREAD FOR CHANNEL &#39;group_replication_applier&#39;;
+</code></pre>
+
+<h5 id="toc_3">基于主键的并行执行</h5>
+
+<pre><code class="language-sql">SET GLOBAL slave_parallel_type = &#39;LOGICAL_CLOCK&#39;;
+SET GLOBAL slave_parallel_workers = N;
+SET GLOBAL slave_preserve_commit_order = ON;
+</code></pre>
+
+<blockquote>
+<p>GR 的 LOGCAL_CLOCK 与异步复制的算法不同，GR 并发策略的逻辑时间是基于主键计算出来的，比异步复制基于锁计算出来的逻辑时间的并发性要好很多</p>
+</blockquote>
+
+<p>基于主键并行复制特点</p>
+
+<ul>
+<li>若两个事务更新同一行，则要按顺序执行，否则就可以并发</li>
+<li>DDL 不能和任务事务并发，必须等待它前面所有事务执行完才能开始执行，后面的事务也要必须等等 DDL 执行完才能执行</li>
+</ul>
+
+<p>为什么配置 slave_preserve_commit_order</p>
+
+<blockquote>
+<p>并发执行时，不管两个事务 Binlog Event 是不是同一 session 产生，只要满足上面的特点就会并发，因此同一 session 里的事务可能被安排并发执行，会导致后执行的事务先被提交的懒，为了保证同一个 session 的事务按照顺序提交，必须配置此参数，保证 Applier 上执行事务的提交顺序和 源 MySQL 一致</p>
+</blockquote>
+
+<h3 id="toc_4">Paxos 协议优点</h3>
+
+<ul>
+<li>不会脑裂 [有疑问，原主从环境有脑裂 P363]</li>
+<li>冗余好，保证 Binlog 至少被复制超过一半成员，只要同时宕机成员不超过一半不会导致数据丢失</li>
+<li>保证只要 Binlog Event 没有被传输到半数以上成员，本地成员不会将事务的 Binlog Event 写入 Binlog 文件和提交事务，从而保证宕机的服务器不会有组内在线不存在的数据，宕机的服务器重启后，不再需要特殊处理就可以加入组</li>
+</ul>
+
+<h2 id="toc_5">服务模式</h2>
+
+<ul>
+<li>单主模式 (默认模式)</li>
+<li>多主模式</li>
+</ul>
+
+<pre><code>-- 设置多主模式
+SET GLOBAL group_replication_single_primary_mode = OFF;
+</code></pre>
+
+<blockquote>
+<p>如果使用多主模式，需要加入组之前将此变量置为 OFF，服务模式不能在线切换，必须组内所有成员退出组，然后重新初始化要使用的模式，再把其他成员加进来</p>
+</blockquote>
+
+<h3 id="toc_6">单主模式</h3>
+
+<ul>
+<li>Primary Member</li>
+<li>Secondary Member</li>
+</ul>
+
+<h4 id="toc_7">自动选举 &amp;&amp; Failover</h4>
+
+<ul>
+<li><p>初始化的成员自动选举为 Primary Member</p></li>
+<li><p>Failover：对所有在线成员的 UUID 排序，选最小的为 Primary Member,复制正常进行，但要注意，客户端获取 Primary Memory 的 UUID，然后连接新的 Primary Memory</p></li>
+</ul>
+
+<pre><code class="language-sql"># 任何成员查询 Primary Member 的 UUID
+show global status like &#39;group_replication_primary_member&#39;;
+
+or
+
+SELECT * FROM performance_shchema.global_status WHERE variable_name = &#39;group_replication_primary_member&#39;;
+</code></pre>
+
+<h4 id="toc_8">读写自动切换</h4>
+
+<p>成员加入默认为 &quot;只读&quot; 模式，只有选取为 Primary Member 才会是 &quot;写&quot; 模式</p>
+
+<pre><code>SET GLOBAL super_read_only = 1;
+SET GLOBAL super_read_only = 0;
+</code></pre>
+
+<h4 id="toc_9">优点 &amp; 缺点</h4>
+
+<h5 id="toc_10">优点</h5>
+
+<h5 id="toc_11">缺点</h5>
+
+<ul>
+<li>Failover 后，客户端根据 UUID 判断是不是 Primary Member</li>
+</ul>
+
+<h3 id="toc_12">多主模式</h3>
+
+<h4 id="toc_13">自增字段</h4>
+
+<pre><code class="language-sql">-- 原 MySQL 自增变量
+SET GLOBAL auto_increment_offset = N;
+SET GLOBAL auto_increment_increment = N;
+
+# Group Replicaion 组复制自增步长，默认为 7，最大节点为 9
+SET GLOBAL group_replication_auto_increment_increment = N; 
+</code></pre>
+
+<blockquote>
+<p>注意：<br/>
+a. 如果 server-id 为 1、2、3 配置，就不需要额外配置，但不为 1、2、3 则需要配置<br/>
+若没有配置 auto_increment_increment、auto_increment_offset，则自动将 group_replication_auto_increment_increment 和 server-id 设置到 auto_increment_increment、auto_increment_offset上</p>
+
+<p>b.  auto_increment_increment 尽量设置大于或等于成员数，最好大于，因为方便以后增加节点，扩展时再改变自增比较麻烦</p>
+</blockquote>
+
+<h4 id="toc_14">优点 &amp;&amp; 缺点</h4>
+
+<h5 id="toc_15">优点</h5>
+
+<ul>
+<li>当一个成员故障，只有一部分连接失效，应用影响小</li>
+<li>当关闭一个 MySQL 节点时，可以先将连接平滑转移到其他机器上再关闭这个节点，不会瞬断</li>
+<li>性能好　[有待评估]</li>
+</ul>
+
+<h5 id="toc_16">缺点</h5>
+
+<ul>
+<li>自增步长要大于成员数，防止以后扩展麻烦</li>
+<li>不支持串行(SERIALIZABLE) 隔离等级，单节点通过锁实现</li>
+<li>不支持外键级联操作</li>
+</ul>
+
+<pre><code># 当为 True，当发现上面 2 个不支持就会报错
+group_replication_enforce_update_everywhere_checks = TRUE
+</code></pre>
+
+<ul>
+<li>DDL 语句并发执行的问题</li>
+</ul>
+
+<blockquote>
+<p>多主复制，通过冲突检测来辨别冲突事务，再回滚，5.7 的 DDL 不是原子操作无法回滚，因此 GR 没到 DDL 做冲突检测，如果 DDL 和有冲突的语句发生在不同成员，可能导致数据不一致.</p>
+
+<p><u>所以必须执行 DDL 前必须将有冲突的事务迁移到一台机器上执行</u></p>
+</blockquote>
+
+<h4 id="toc_17">多主模式思考</h4>
+
+<ul>
+<li>写请求可以分发多个成员上</li>
+<li><p>控制 DDL，当有 DDL 执行时，所有写请求转移到同一台 MySQL 机器 [这个实现有点复杂]</p></li>
+<li><p>折中方案，多主模式当单主模式使用</p>
+
+<ul>
+<li>与单主模式比较，去掉 Failover 主从切换</li>
+<li>解决 DDL 冲突问题，防止脑裂</li>
+<li>一套 GR 为多应用提供服务，多应用不同的数据，没有冲突</li>
+</ul></li>
+</ul>
+
+<pre><code class="language-sql">-- Session 1: A Member
+BEGIN
+INSERT INTO t1 VALUES(1);
+
+-- Session 2: B Member
+TRUNCATE t1;
+
+-- Session 1:
+COMMIT;
+
+----&gt; 2 个 session 事务执行顺序不同
+
+-- SESSION 1：
+INSERT INTO t1 VALUES(1);
+TRUNCATE t1;
+
+-- SESSION 2:
+TRUNCATE t1;
+INSERT INTO t1 VALUES(1);
+</code></pre>
+
+<h2 id="toc_18">配置 Group Replication</h2>
+
+<h3 id="toc_19">前期准备</h3>
+
+<h4 id="toc_20">必要配置</h4>
+
+<p>my.cnf 配置</p>
+
+<pre><code>```my.cnf
+server_id                   = 1
+log_bin                     = binlog
+log_slave_update            = ON
+relay_log                   = relay-log
+gtid_mode                   = ON
+enforce_gtid_consistency    = ON
+binlog_format               = ROW
+binlog_checksum             = NONE
+master_info_repository      = TABLE
+relay_log_info_repository   = TABLE
+slave_parallel_type         = LOGIAL_CLOCK
+slave_parallel_workers      = 8
+slave_preserve_commit_order = ON
+
+# Group Replication
+plugin-load                        = group_replication.so
+transaction_write_set_extraction   = XXHASH64
+loose-group_replication_group_name = 93f19c6c-6447-11e7-9323-cb37b2d517f3
+loose-group_replication_start_on_boot = OFF
+loose-group_replication_local_address = &#39;db1:3306&#39;
+loose-group_replication_group_seeds   = &#39;db2:3306,db3:3306&#39;
+loose-group_replication_bootstrap_group = OFF
+loose-group_replication_single_primary_mode = OFF # Trun off Single primary
+
+
+```
+</code></pre>
+
+<p>配置说明：</p>
+
+<ul>
+<li>开启 Binlog、Relaylog</li>
+<li>开启 GTID 功能</li>
+<li>设置 ROW 格式的 Binlog</li>
+<li>禁用 binlog_checksum (MySQL 5.7.17 不支持带 checksum Binlog Event)</li>
+<li>要使用多源复制，必须使用将 Slave 通道(Channel) 的状态信息存储到系统表</li>
+<li>开启并行复制</li>
+<li><p>开启主键信息采集</p>
+
+<blockquote>
+<p>GR 需要 Server 层采集更新数据的主键信息，被 HASH 存储起来，支持两种 HASH 算法：XXHASH64、MURMUR32，默认 transaction_write_set_extraction = OFF，所以要使用 Group Replication 每张表都要有主键，否则更新数据时会失败</p>
+
+<p>一个组内的所有成员必须配置相同的 HASH 算法</p>
+</blockquote></li>
+</ul>
+
+<h4 id="toc_21">加载 Group Replication 插件</h4>
+
+<pre><code># 加载插件
+INSTALL PLUGIN group_replication SONAME &#39;group_replication.so&#39;;
+
+# 启用插件
+START GROUP_REPLICATION;
+    &gt; 将 MySQL 加入一个存在的 Group Replication 组或将它初始化为组内第一个成员 
+     
+# 停用插件
+STOP GROUP_REPLICATION;
+    &gt; 将 MySQL 从一个 Group Replication 组内移除
+
+</code></pre>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2017/7/13</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='MySQL.html'>MySQL</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
                 <a class="clearlink" href="14999530972668.html">
                 
                   <h1>Percona XtraDB Cluster vs Galera Cluster vs MySQL Group Replication</h1>
@@ -106,7 +494,122 @@
                       
                       <div class="a-content-text">
                         
-                        	<h2 id="toc_0">Overview</h2>
+                        	<ul>
+<li>
+<a href="#toc_0">Overview</a>
+<ul>
+<li>
+<a href="#toc_1">Galera Cluster</a>
+</li>
+<li>
+<a href="#toc_2">Percona XtraDB Cluster</a>
+</li>
+<li>
+<a href="#toc_3">MySQL Group Replication</a>
+</li>
+<li>
+<a href="#toc_4">MySQL InnoDB Cluster</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_5">Similarities</a>
+<ul>
+<li>
+<a href="#toc_6">Similar - Use Cases</a>
+</li>
+<li>
+<a href="#toc_7">Similar Limitation</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_8">Differences GR &amp; Galera</a>
+<ul>
+<li>
+<a href="#toc_9">Group Communication System 组通信系统</a>
+</li>
+<li>
+<a href="#toc_10">Binlogs &amp; Gcache</a>
+</li>
+<li>
+<a href="#toc_11">Node Provisioning 节点配置</a>
+</li>
+<li>
+<a href="#toc_12">GTID vs. Seqno</a>
+</li>
+<li>
+<a href="#toc_13">Partition Handling</a>
+</li>
+<li>
+<a href="#toc_14">Full Solution or Plugin</a>
+</li>
+<li>
+<a href="#toc_15">Flow Control 流控制</a>
+</li>
+<li>
+<a href="#toc_16">WAN Support</a>
+</li>
+<li>
+<a href="#toc_17">OS Support</a>
+</li>
+<li>
+<a href="#toc_18">Schema Changes - DDL</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_19">Differences PXC &amp; Galera</a>
+<ul>
+<li>
+<a href="#toc_20">PXC Strict Mode</a>
+</li>
+<li>
+<a href="#toc_21">ProxySQL 集成</a>
+</li>
+<li>
+<a href="#toc_22">性能提升</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_23">Limitations</a>
+</li>
+<li>
+<a href="#toc_24">Known Issues</a>
+<ul>
+<li>
+<a href="#toc_25">Galera Cluster/PXC Issues</a>
+</li>
+<li>
+<a href="#toc_26">Group Replication Issues</a>
+<ul>
+<li>
+<a href="#toc_27">分区容忍问题，不能防止脑裂</a>
+</li>
+<li>
+<a href="#toc_28">减少冲突</a>
+</li>
+<li>
+<a href="#toc_29">稳定性</a>
+</li>
+<li>
+<a href="#toc_30">可用性</a>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_31">Q &amp; A</a>
+</li>
+<li>
+<a href="#toc_32">Performance Tests</a>
+</li>
+</ul>
+
+
+<h2 id="toc_0">Overview</h2>
 
 <h3 id="toc_1">Galera Cluster</h3>
 
@@ -147,429 +650,6 @@
 
 <p><img src="http://osdzwfz5z.bkt.clouddn.com/14994853997910.jpg" alt="" style="width:610px;"/></p>
 
-<h2 id="toc_5">Similarities</h2>
-
-<ul>
-<li>MySQL/MariaDB</li>
-<li>复制方法</li>
-<li>所有节点都有全部的数据 - 读仅发生在当前本地节点</li>
-<li>都需要 InnoDB/XtraDB 引擎</li>
-<li>都支持 多主的拓扑 (Active-active multi-master Topology)
-
-<ul>
-<li>写多主节点</li>
-<li>不需要复杂的 Failover 操作</li>
-</ul></li>
-<li>节点管理，加入和离开都是完全自动处理的</li>
-<li>执行和写都是按全局的顺序进行的</li>
-<li>数据一致性</li>
-<li>乐观锁 / 最早提交的先赢</li>
-<li>Quorum - 防止脑裂</li>
-</ul>
-
-<h3 id="toc_6">Similar - Use Cases</h3>
-
-<ul>
-<li>严格的持久化环境</li>
-<li>同时定入多个节点，保证数据一致性</li>
-<li>减少故障转移时间 (Reduce failover time)</li>
-</ul>
-
-<h3 id="toc_7">Similar Limitation</h3>
-
-<ul>
-<li>大事务或长事务
-
-<ul>
-<li>很大的可能失败</li>
-<li>大事务导致在有效事务</li>
-</ul></li>
-<li>热点，多个节点更新同一行数据</li>
-<li>只有一个节点写，是最好的解决方案</li>
-</ul>
-
-<h2 id="toc_8">Differences GR &amp; Galera</h2>
-
-<ul>
-<li>Group Communication System 组通信系统</li>
-<li>Binlogs &amp; Gcache</li>
-<li>Node Provisioning 节点配置</li>
-<li>GTID vs Seqno</li>
-<li>Partition Handling 分区控制</li>
-<li>Full Solution or Plugin</li>
-<li>Flow Control 流控制</li>
-<li>WAN Support</li>
-<li>OS Support</li>
-<li>Schema Changes DDL</li>
-</ul>
-
-<h3 id="toc_9">Group Communication System 组通信系统</h3>
-
-<ul>
-<li><p>Galera</p>
-
-<ul>
-<li>标志的单环顺序 Totem Single-ring Ordering</li>
-<li>所有节点都必须有 ACK 消息</li>
-</ul></li>
-<li><p>MySQL Group Replication</p>
-
-<ul>
-<li>基于 Paxos</li>
-<li>Paxos 只要求大多数 ACK 消息</li>
-</ul></li>
-</ul>
-
-<h3 id="toc_10">Binlogs &amp; Gcache</h3>
-
-<ul>
-<li><p>Galera Cluster/PXC</p>
-
-<ul>
-<li>uses binlog row events</li>
-<li>but does not require binary logging</li>
-<li>writes events to Gcache (con gurable size)</li>
-</ul></li>
-<li><p>MySQL Group Replication</p>
-
-<ul>
-<li>requires binary logging</li>
-</ul></li>
-</ul>
-
-<h3 id="toc_11">Node Provisioning 节点配置</h3>
-
-<ul>
-<li><p>Galera Cluster/PXC</p>
-
-<ul>
-<li>has State Snapshot Transfer (SST) 全量同步
-
-<ul>
-<li>Percona XtraBackup (Recommended)</li>
-<li>rsync</li>
-<li>mysqldump</li>
-</ul></li>
-<li>incremental State Transfer (IST) using GCache 增量同步</li>
-</ul></li>
-<li><p>MySQL Group Replication</p>
-
-<ul>
-<li>没有自动全量同步，除非保留所有 Binlog</li>
-<li>用于同步的异步复制通道</li>
-</ul></li>
-</ul>
-
-<h3 id="toc_12">GTID vs. Seqno</h3>
-
-<ul>
-<li><p>Galera Cluster/PXC</p>
-
-<ul>
-<li>has a seqno which is a incrementing number</li>
-</ul></li>
-<li><p>MySQL Group Replication</p>
-
-<ul>
-<li>依赖 MySQL GTID</li>
-<li>writes to a cluster create GTID events on the GR Cluster UUID</li>
-</ul></li>
-</ul>
-
-<h3 id="toc_13">Partition Handling</h3>
-
-<ul>
-<li><p>Galera Cluster/PXC</p>
-
-<ul>
-<li>A partitioned node will refuse reads/writes (con gurable)</li>
-<li>A partitioned node will automatically recover and rejoin </li>
-</ul></li>
-<li><p>MySQL Group Replication</p>
-
-<ul>
-<li>A partitioned node will accept reads</li>
-<li>A partitioned node will accept write requests, but will hang forever</li>
-<li>A partitioned node needs to be manually rejoined to the cluster</li>
-</ul></li>
-</ul>
-
-<h3 id="toc_14">Full Solution or Plugin</h3>
-
-<ul>
-<li>Plugin
-
-<ul>
-<li>Group Replication is a &#39;Replication Plugin&#39;</li>
-<li>several split brain bugs in current code ( fixes pending!)</li>
-</ul></li>
-<li><p>Solution</p>
-
-<ul>
-<li>Galera Cluster 不处理应用连接</li>
-<li>与 GR 相比有更强的防止脑裂</li>
-<li>MySQL InnoDB Cluster (w. MySQLRouter)</li>
-</ul></li>
-<li><p>Full Solution </p>
-
-<ul>
-<li>Percona XtraDB Cluster (w. ProxySQL)</li>
-<li>集成 ProxySQL</li>
-<li>严格的 mode，防止使用限制 </li>
-</ul></li>
-</ul>
-
-<h3 id="toc_15">Flow Control 流控制</h3>
-
-<p>防止太慢的节点，被落下太远</p>
-
-<ul>
-<li><p>Galera Cluster/PXC</p>
-
-<ul>
-<li>当一个节点慢到一个限制，阻止所有节点写</li>
-<li>Flow Control 的消息已经发送</li>
-<li>low defaults; Galera: 16(*), PXC: 100</li>
-<li>Tell others to stop writes</li>
-</ul></li>
-<li><p>MySQL Group Replication</p>
-
-<ul>
-<li>每个节点都有每个成员的统计信息</li>
-<li>每个独立的节点决定写的阈值</li>
-<li>high default: 25000</li>
-<li>如果有节点太慢，其他节点放慢写速度</li>
-</ul></li>
-</ul>
-
-<h3 id="toc_16">WAN Support</h3>
-
-<ul>
-<li><p>Galera Cluster/PXC</p>
-
-<ul>
-<li>投票权重</li>
-<li>调节网络通信设置</li>
-<li>减少分段网络流量</li>
-<li>仲裁人</li>
-</ul></li>
-<li><p>MySQL Group Replication</p>
-
-<ul>
-<li>不建议在  WAN 上使用</li>
-</ul></li>
-</ul>
-
-<h3 id="toc_17">OS Support</h3>
-
-<ul>
-<li><p>Galera</p>
-
-<ul>
-<li>FreeBSD &amp; Linux</li>
-</ul></li>
-<li><p>Galera Cluster/PXC</p>
-
-<ul>
-<li>Linux</li>
-</ul></li>
-<li><p>MySQL Group Replication</p>
-
-<ul>
-<li>Linux, Windows, Solaris, OSX, FreeBSD</li>
-</ul></li>
-</ul>
-
-<h3 id="toc_18">Schema Changes - DDL</h3>
-
-<ul>
-<li><p>Galera Cluster/PXC</p>
-
-<ul>
-<li>Total Order Isolation</li>
-<li>All writes will be blocked during Writes on other nodes will be terminated</li>
-<li>Workarounds 变通办法
-
-<ul>
-<li>pt-online-schema-change</li>
-<li>wsrep_osu_method=RSU
-
-<ul>
-<li>更多的操作工作</li>
-<li>并不是所有 DDL 可行</li>
-</ul></li>
-</ul></li>
-</ul></li>
-<li><p>MySQL Group Replication</p>
-
-<ul>
-<li>DDL 并不会阻塞写，像平常使用一样</li>
-<li>仅建议在单主模式下使用 (因为 DDL 并没有冲突检测)</li>
-</ul></li>
-</ul>
-
-<h2 id="toc_19">Differences PXC &amp; Galera</h2>
-
-<ul>
-<li>扩展 PFS 支持</li>
-<li>SST/XtraBackup 方式的改变</li>
-<li>Bug-Fixes</li>
-<li>PXC Strict Mode - PXC 严格的 Mode</li>
-<li>ProxySQL 集成</li>
-<li>性能提升</li>
-</ul>
-
-<h3 id="toc_20">PXC Strict Mode</h3>
-
-<p>预防实验性或不支持的特性</p>
-
-<ul>
-<li>仅支持 InnoDB 的操作</li>
-<li>预防修改 binlog_format!=ROW</li>
-<li>需要 Table 有主键</li>
-<li>禁用不支持的特性
-
-<ul>
-<li>GET_LOCK,LOCK TABLES,CTAS</li>
-<li>FLUSH TABLES <tables> WITH READ LOCK</li>
-<li>tx_isolation=SERIALIZABLE</li>
-</ul></li>
-</ul>
-
-<h3 id="toc_21">ProxySQL 集成</h3>
-
-<p>ProxySQL 在 PXC 当负载均衡的角色</p>
-
-<ul>
-<li>proxysql-admin 配置工具</li>
-<li><p>ProxySQL schedulers</p>
-
-<ul>
-<li>健康检查</li>
-<li>重新配置节点</li>
-</ul></li>
-<li><p>PXC 维护模式</p>
-
-<ul>
-<li>tell load balancer to rebalance load</li>
-</ul></li>
-</ul>
-
-<h3 id="toc_22">性能提升</h3>
-
-<ul>
-<li>可伸缩性 fixs PXC 5.7.17</li>
-<li><p>新的默认值</p>
-
-<ul>
-<li> gcs.fc_limit=100</li>
-<li> evs.send_window=10</li>
-<li> evs.user_send_window=4</li>
-</ul></li>
-</ul>
-
-<p><img src="http://osdzwfz5z.bkt.clouddn.com/14994914047051.jpg" alt=""/></p>
-
-<h2 id="toc_23">Limitations</h2>
-
-<ul>
-<li><p>Galera Cluster/PXC</p>
-
-<ul>
-<li>InnoDB/XtraDB Only</li>
-<li>tx_isolation=SERIALIZABLE</li>
-<li>GET_LOCK()</li>
-<li>LOCK TABLES</li>
-<li>SELECT ... FOR UPDATE</li>
-<li>Careful with ALTER TABLE ... IMPORT/EXPORT</li>
-<li>Capped maximum transaction size 最大事务</li>
-<li>XA transactions</li>
-</ul></li>
-<li><p>Group Replication</p>
-
-<ul>
-<li>InnoDB/XtraDB Only</li>
-<li>tx_isolation=SERIALIZABLE</li>
-<li>GET_LOCK()</li>
-<li>LOCK TABLES</li>
-<li>SELECT ... FOR UPDATE</li>
-<li>CarefulwithALTER TABLE ... IMPORT/EXPORT.</li>
-<li>Careful with large transactions</li>
-<li>no support for tables with multi-level foreign key dependencies, can create inconsistencies</li>
-</ul></li>
-</ul>
-
-<h2 id="toc_24">Known Issues</h2>
-
-<h3 id="toc_25">Galera Cluster/PXC Issues</h3>
-
-<ul>
-<li><p>Crashes due to background thread handling trx<br/>
-processing</p>
-
-<ul>
-<li>mysql-wsrep#306: stored procedure aborts</li>
-<li>mysql-wsrep#305: event scheduler</li>
-<li>mysql-wsrep#304: local scope functions such as CURRENT_USER()</li>
-</ul></li>
-<li><p>Various crashes related to DDL</p>
-
-<ul>
-<li>mysql-wsrep#301:runningSHOW CREATE TABLE in multiple nodes with DDL can cause crash.</li>
-<li>mysql-wsrep#275: Aborting trx leaves behind open tables in cache can cause crash</li>
-</ul></li>
-<li><p>Concurrent DDLs using wsrep_OSU_method=RSU crash/inconsistency issues</p>
-
-<ul>
-<li>mysql-wsrep#283 &amp; mysql-wsrep#282</li>
-</ul></li>
-<li><p>Shutdown issues</p>
-
-<ul>
-<li>mysql-wsrep#303: cleanup during shutdown fails to clear the EXPLICT MDL locks (FTWRL)</li>
-<li>mysql-wsrep#273: Not getting clean shutting down message if we start the server with unknown variable</li>
-<li>mysql-wsrep#279: Trying to access stale binlog handler leads to crash </li>
-</ul></li>
-</ul>
-
-<h3 id="toc_26">Group Replication Issues</h3>
-
-<h4 id="toc_27">分区容忍问题，不能防止脑裂</h4>
-
-<pre><code>* #84727: partitioned nodes still accept writes: queries hang (~Fixed in 5.7.20)
-* #84728: GR failure at start still starts MySQL (~Fixed in 8.0.2)
-* #84729: block reads on partitioned nodes
-* #84733: not possible to start with super_read_only=1 (Fixed in 8.0.2)
-* #84784: Nodes Do Not Reconnect
-* #84795: STOP GROUP_REPLICATION sets super_read_only=off
-</code></pre>
-
-<h4 id="toc_28">减少冲突</h4>
-
-<pre><code>* #84731: mysql client connections get stuck during GR start
-</code></pre>
-
-<h4 id="toc_29">稳定性</h4>
-
-<pre><code>* #84785: Prevent Large Transactions in Group Replication (~Fixed in 5.7.19)
-* #84792: Member using 100% CPU in idle cluster (*)
-* #84796: GR Member status is wrong
-</code></pre>
-
-<h4 id="toc_30">可用性</h4>
-
-<pre><code>* #84674: unresolved hostnames block GR from starting (~Fixed in 5.7.18)
-* #84794: cannot kill query that is stuck inside GR
-* #84798: Group Replication can use some verbosity in the error log
-</code></pre>
-
-<h2 id="toc_31">Q &amp; A</h2>
-
-<p>这个看原 PDF 吧。</p>
-
-<h2 id="toc_32">Performance Tests</h2>
-
-<p><img src="http://osdzwfz5z.bkt.clouddn.com/14994921791637.jpg" alt=""/></p>
 
                         
                       </div>
@@ -577,7 +657,7 @@ processing</p>
                 </a>
                 <div class="read-more clearfix">
                   <div class="more-left left">
-                  
+                   <a href="14999530972668.html">Read more</a>&nbsp;&nbsp; 
                     <span class="date">2017/7/13</span>
                     <span>posted in&nbsp;</span> 
           				  
@@ -661,6 +741,12 @@ processing</p>
                 <div class="side-content">
                 <ul class="posts-list">
 	      
+		      
+			      <li class="post">
+			        <a href="14999557738274.html">Group Replication</a>
+			      </li>
+		     
+		  
 		      
 			      <li class="post">
 			        <a href="14999530972668.html">Percona XtraDB Cluster vs Galera Cluster vs MySQL Group Replication</a>
