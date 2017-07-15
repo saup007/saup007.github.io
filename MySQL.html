@@ -8,17 +8,23 @@
   MySQL - DBA Plus
   
   </title>
- <meta name="description" content="">
- <link href="atom.xml" rel="alternate" title="DBA Plus" type="application/atom+xml">
+  
+  
+  <link href="atom.xml" rel="alternate" title="DBA Plus" type="application/atom+xml">
     <link rel="stylesheet" href="asset/css/foundation.min.css" />
     <link rel="stylesheet" href="asset/css/docs.css" />
-
     <script src="asset/js/vendor/modernizr.js"></script>
     <script src="asset/js/vendor/jquery.js"></script>
-    <script src="asset/highlightjs/highlight.pack.js"></script>
-    <link href="asset/highlightjs/styles/github.css" media="screen, projection" rel="stylesheet" type="text/css">
-    <script>hljs.initHighlightingOnLoad();</script>
-    
+  <script src="asset/highlightjs/highlight.pack.js"></script>
+  <link href="asset/highlightjs/styles/github.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script>hljs.initHighlightingOnLoad();</script>
+<script type="text/javascript">
+  function before_search(){
+    var searchVal = 'site: ' + document.getElementById('search_input').value;
+    document.getElementById('search_q').value = searchVal;
+    return true;
+  }
+</script>
   </head>
   <body class="antialiased hide-extras">
     
@@ -28,11 +34,32 @@
 
 <nav class="top-bar docs-bar hide-for-small" data-topbar>
 
-<div id="header">
-    <h1><a href="index.html">DBA Plus</a></h1>
-</div>
+
+  <section class="top-bar-section">
+  <div class="row">
+      <div style="position: relative;width:100%;"><div style="position: absolute; width:100%;">
+        <ul id="main-menu" class="left">
+        
+        <li id=""><a target="self" href="index.html">Home</a></li>
+        
+        <li id=""><a target="_self" href="archives.html">Archives</a></li>
+        
+        </ul>
+
+        <ul class="right" id="search-wrap">
+          <li>
+<form target="_blank" onsubmit="return before_search();" action="http://google.com/search" method="get">
+    <input type="hidden" id="search_q" name="q" value="" />
+    <input tabindex="1" type="search" id="search_input"  placeholder="Search"/>
+</form>
+</li>
+          </ul>
+      </div></div>
+  </div>
+  </section>
 
 </nav>
+
         <nav class="tab-bar show-for-small">
   <a href="javascript:void(0)" class="left-off-canvas-toggle menu-icon">
     <span> &nbsp; DBA Plus</span>
@@ -41,82 +68,48 @@
 
 <aside class="left-off-canvas-menu">
       <ul class="off-canvas-list">
-      <li><a href="index.html">Home</a></li>
-      
-        <li class="divider"></li>
-        <li><label>Redis</label></li>
+        
+        <li><a target="self" href="index.html">Home</a></li>
+        
+        <li><a target="_self" href="archives.html">Archives</a></li>
+        
 
-          
-            <li><a title="Redis Install 3.2.9" href="14999625908463.html">Redis Install 3.2.9</a></li>
-          
-            <li><a title="Why Redis" href="14999625750663.html">Why Redis</a></li>
-          
-            <li><a title="Redis 命令" href="14999625646195.html">Redis 命令</a></li>
-          
-            <li><a title="Redis 内部编码" href="14999625423902.html">Redis 内部编码</a></li>
-          
+    <li><label>Categories</label></li>
 
-      
-        <li class="divider"></li>
-        <li><label>MySQL</label></li>
+        
+            <li><a href="Redis.html">Redis</a></li>
+        
+            <li><a href="MySQL.html">MySQL</a></li>
+         
 
-          
-            <li><a title="Group Replication" href="15000823671749.html">Group Replication</a></li>
-          
-            <li><a title="Percona XtraDB Cluster vs Galera Cluster vs MySQL Group Replication" href="14999530972668.html">Percona XtraDB Cluster vs Galera Cluster vs MySQL Group Replication</a></li>
-          
-
-      
       </ul>
     </aside>
 
 <a class="exit-off-canvas" href="#"></a>
 
+
         <section id="main-content" role="main" class="scroll-container">
+        
+       
 
-          <div class="row">
-            <div class="large-3 medium-3 columns">
-              <div class="hide-for-small">
-                <div class="sidebar">
-                <nav>
-                  <ul id="side-nav" class="side-nav">
-
-                    
-                      <li class="side-title"><span>Redis</span></li>
+ <script type="text/javascript">
+	$(function(){
+		$('#menu_item_index').addClass('is_active');
+	});
+</script>
+<div class="row">
+	<div class="large-8 medium-8 columns">
+		<div class="markdown-body home-categories">
+		
+			<div class="article">
+                <a class="clearlink" href="15000823671749.html">
+                
+                  <h1>Group Replication</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
                         
-                          <li><a title="Redis Install 3.2.9" href="14999625908463.html">Redis Install 3.2.9</a></li>
-                        
-                          <li><a title="Why Redis" href="14999625750663.html">Why Redis</a></li>
-                        
-                          <li><a title="Redis 命令" href="14999625646195.html">Redis 命令</a></li>
-                        
-                          <li><a title="Redis 内部编码" href="14999625423902.html">Redis 内部编码</a></li>
-                        
-
-                    
-                      <li class="side-title"><span>MySQL</span></li>
-                        
-                          <li><a title="Group Replication" href="15000823671749.html">Group Replication</a></li>
-                        
-                          <li><a title="Percona XtraDB Cluster vs Galera Cluster vs MySQL Group Replication" href="14999530972668.html">Percona XtraDB Cluster vs Galera Cluster vs MySQL Group Replication</a></li>
-                        
-
-                    
-                  </ul>
-                </nav>
-                </div>
-              </div>
-            </div>
-            <div class="large-9 medium-9 columns">
-
- 
-
-
-	
-		<div class="markdown-body">
-		<h1>Group Replication</h1>
-
-		<ul>
+                        	<ul>
 <li>
 <a href="#toc_0">关于 Group Greplication</a>
 <ul>
@@ -220,476 +213,348 @@
 </ul>
 
 
-<h2 id="toc_0">关于 Group Greplication</h2>
 
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="15000823671749.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2017/7/15</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='MySQL.html'>MySQL</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+                        <a href="15000823671749.html#disqus_thread">comments</a>
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14999530972668.html">
+                
+                  <h1>Percona XtraDB Cluster vs Galera Cluster vs MySQL Group Replication</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<ul>
+<li>
+<a href="#toc_0">Overview</a>
 <ul>
-<li>异步复制</li>
-<li>半同步复制</li>
-<li>Group Replication</li>
+<li>
+<a href="#toc_1">Galera Cluster</a>
+</li>
+<li>
+<a href="#toc_2">Percona XtraDB Cluster</a>
+</li>
+<li>
+<a href="#toc_3">MySQL Group Replication</a>
+</li>
+<li>
+<a href="#toc_4">MySQL InnoDB Cluster</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_5">Similarities</a>
+<ul>
+<li>
+<a href="#toc_6">Similar - Use Cases</a>
+</li>
+<li>
+<a href="#toc_7">Similar Limitation</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_8">Differences GR &amp; Galera</a>
+<ul>
+<li>
+<a href="#toc_9">Group Communication System 组通信系统</a>
+</li>
+<li>
+<a href="#toc_10">Binlogs &amp; Gcache</a>
+</li>
+<li>
+<a href="#toc_11">Node Provisioning 节点配置</a>
+</li>
+<li>
+<a href="#toc_12">GTID vs. Seqno</a>
+</li>
+<li>
+<a href="#toc_13">Partition Handling</a>
+</li>
+<li>
+<a href="#toc_14">Full Solution or Plugin</a>
+</li>
+<li>
+<a href="#toc_15">Flow Control 流控制</a>
+</li>
+<li>
+<a href="#toc_16">WAN Support</a>
+</li>
+<li>
+<a href="#toc_17">OS Support</a>
+</li>
+<li>
+<a href="#toc_18">Schema Changes - DDL</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_19">Differences PXC &amp; Galera</a>
+<ul>
+<li>
+<a href="#toc_20">PXC Strict Mode</a>
+</li>
+<li>
+<a href="#toc_21">ProxySQL 集成</a>
+</li>
+<li>
+<a href="#toc_22">性能提升</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_23">Limitations</a>
+</li>
+<li>
+<a href="#toc_24">Known Issues</a>
+<ul>
+<li>
+<a href="#toc_25">Galera Cluster/PXC Issues</a>
+</li>
+<li>
+<a href="#toc_26">Group Replication Issues</a>
+<ul>
+<li>
+<a href="#toc_27">分区容忍问题，不能防止脑裂</a>
+</li>
+<li>
+<a href="#toc_28">减少冲突</a>
+</li>
+<li>
+<a href="#toc_29">稳定性</a>
+</li>
+<li>
+<a href="#toc_30">可用性</a>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_31">Q &amp; A</a>
+</li>
+<li>
+<a href="#toc_32">Performance Tests</a>
+</li>
 </ul>
 
-<p>Group Replication 是组复制，不是同步复制，但最终是同步的，更确切地说，事务以相同顺序传递给所有组成员，但它们执行并不同步，接受事务被提交之后，每个成员以自己的速度提交。</p>
 
-<h3 id="toc_1">单独的通信机制</h3>
 
-<p>GR 使用 Slave 的通道，只是使用通过执行线程(Applier Thread)来执行 Binlog Event，并没有使用通道传输 Binlog Event。</p>
-
-<p>没有使用异步复制的 Binlog Event，也没有使用 MySQL 服务端口通信，而是创建一个独立 TCP 端口通信，各个 MySQL 服务器睥 Group Replication 插件通过这个端口连接在一起，两两通信</p>
-
-<h4 id="toc_2">Binlog Event 多线程执行</h4>
-
-<p>GR 插件自动创建一个通道 group_replication_applier (channel) 来执行接收到的 Binlog Event，当加入组时，GR 插件自动启动 group_replication_applier 通道的执行线程(Applier Thread)</p>
-
-<pre><code class="language-sql">-- 手工调整这个通道执行线程
-START SLAVE SQL_THREAD FOR CHANNEL &#39;group_replication_applier&#39;;
-STOP SLAVE SQL_THREAD FOR CHANNEL &#39;group_replication_applier&#39;;
-</code></pre>
-
-<h5 id="toc_3">基于主键的并行执行</h5>
-
-<pre><code class="language-sql">SET GLOBAL slave_parallel_type = &#39;LOGICAL_CLOCK&#39;;
-SET GLOBAL slave_parallel_workers = N;
-SET GLOBAL slave_preserve_commit_order = ON;
-</code></pre>
-
-<blockquote>
-<p>GR 的 LOGCAL_CLOCK 与异步复制的算法不同，GR 并发策略的逻辑时间是基于主键计算出来的，比异步复制基于锁计算出来的逻辑时间的并发性要好很多</p>
-</blockquote>
-
-<p>基于主键并行复制特点</p>
-
-<ul>
-<li>若两个事务更新同一行，则要按顺序执行，否则就可以并发</li>
-<li>DDL 不能和任务事务并发，必须等待它前面所有事务执行完才能开始执行，后面的事务也要必须等等 DDL 执行完才能执行</li>
-</ul>
-
-<p>为什么配置 slave_preserve_commit_order</p>
-
-<blockquote>
-<p>并发执行时，不管两个事务 Binlog Event 是不是同一 session 产生，只要满足上面的特点就会并发，因此同一 session 里的事务可能被安排并发执行，会导致后执行的事务先被提交的懒，为了保证同一个 session 的事务按照顺序提交，必须配置此参数，保证 Applier 上执行事务的提交顺序和 源 MySQL 一致</p>
-</blockquote>
-
-<h3 id="toc_4">Paxos 协议优点</h3>
-
-<ul>
-<li>不会脑裂 [有疑问，原主从环境有脑裂 P363]</li>
-<li>冗余好，保证 Binlog 至少被复制超过一半成员，只要同时宕机成员不超过一半不会导致数据丢失</li>
-<li>保证只要 Binlog Event 没有被传输到半数以上成员，本地成员不会将事务的 Binlog Event 写入 Binlog 文件和提交事务，从而保证宕机的服务器不会有组内在线不存在的数据，宕机的服务器重启后，不再需要特殊处理就可以加入组</li>
-</ul>
-
-<h2 id="toc_5">服务模式</h2>
-
-<ul>
-<li>单主模式 (默认模式)</li>
-<li>多主模式</li>
-</ul>
-
-<pre><code>-- 设置多主模式
-SET GLOBAL group_replication_single_primary_mode = OFF;
-</code></pre>
-
-<blockquote>
-<p>如果使用多主模式，需要加入组之前将此变量置为 OFF，服务模式不能在线切换，必须组内所有成员退出组，然后重新初始化要使用的模式，再把其他成员加进来</p>
-</blockquote>
-
-<h3 id="toc_6">单主模式</h3>
-
-<ul>
-<li>Primary Member</li>
-<li>Secondary Member</li>
-</ul>
-
-<h4 id="toc_7">自动选举 &amp;&amp; Failover</h4>
-
-<ul>
-<li><p>初始化的成员自动选举为 Primary Member</p></li>
-<li><p>Failover：对所有在线成员的 UUID 排序，选最小的为 Primary Member,复制正常进行，但要注意，客户端获取 Primary Memory 的 UUID，然后连接新的 Primary Memory</p></li>
-</ul>
-
-<pre><code class="language-sql"># 任何成员查询 Primary Member 的 UUID
-show global status like &#39;group_replication_primary_member&#39;;
-
-or
-
-SELECT * FROM performance_shchema.global_status WHERE variable_name = &#39;group_replication_primary_member&#39;;
-</code></pre>
-
-<h4 id="toc_8">读写自动切换</h4>
-
-<p>成员加入默认为 &quot;只读&quot; 模式，只有选取为 Primary Member 才会是 &quot;写&quot; 模式</p>
-
-<pre><code>SET GLOBAL super_read_only = 1;
-SET GLOBAL super_read_only = 0;
-</code></pre>
-
-<h4 id="toc_9">优点 &amp; 缺点</h4>
-
-<h5 id="toc_10">优点</h5>
-
-<h5 id="toc_11">缺点</h5>
-
-<ul>
-<li>Failover 后，客户端根据 UUID 判断是不是 Primary Member</li>
-</ul>
-
-<h3 id="toc_12">多主模式</h3>
-
-<h4 id="toc_13">自增字段</h4>
-
-<pre><code class="language-sql">-- 原 MySQL 自增变量
-SET GLOBAL auto_increment_offset = N;
-SET GLOBAL auto_increment_increment = N;
-
-# Group Replicaion 组复制自增步长，默认为 7，最大节点为 9
-SET GLOBAL group_replication_auto_increment_increment = N; 
-</code></pre>
-
-<blockquote>
-<p>注意：<br/>
-a. 如果 server-id 为 1、2、3 配置，就不需要额外配置，但不为 1、2、3 则需要配置<br/>
-若没有配置 auto_increment_increment、auto_increment_offset，则自动将 group_replication_auto_increment_increment 和 server-id 设置到 auto_increment_increment、auto_increment_offset上</p>
-
-<p>b.  auto_increment_increment 尽量设置大于或等于成员数，最好大于，因为方便以后增加节点，扩展时再改变自增比较麻烦</p>
-</blockquote>
-
-<h4 id="toc_14">优点 &amp;&amp; 缺点</h4>
-
-<h5 id="toc_15">优点</h5>
-
-<ul>
-<li>当一个成员故障，只有一部分连接失效，应用影响小</li>
-<li>当关闭一个 MySQL 节点时，可以先将连接平滑转移到其他机器上再关闭这个节点，不会瞬断</li>
-<li>性能好　[有待评估]</li>
-</ul>
-
-<h5 id="toc_16">缺点</h5>
-
-<ul>
-<li>自增步长要大于成员数，防止以后扩展麻烦</li>
-<li>不支持串行(SERIALIZABLE) 隔离等级，单节点通过锁实现</li>
-<li>不支持外键级联操作</li>
-</ul>
-
-<pre><code># 当为 True，当发现上面 2 个不支持就会报错，单主模式下为必须为 OFF
-group_replication_enforce_update_everywhere_checks = TRUE
-</code></pre>
-
-<ul>
-<li>DDL 语句并发执行的问题</li>
-</ul>
-
-<blockquote>
-<p>多主复制，通过冲突检测来辨别冲突事务，再回滚，5.7 的 DDL 不是原子操作无法回滚，因此 GR 没到 DDL 做冲突检测，如果 DDL 和有冲突的语句发生在不同成员，可能导致数据不一致.</p>
-
-<p><u>所以必须执行 DDL 前必须将有冲突的事务迁移到一台机器上执行</u></p>
-</blockquote>
-
-<h4 id="toc_17">多主模式思考</h4>
-
-<ul>
-<li>写请求可以分发多个成员上</li>
-<li><p>控制 DDL，当有 DDL 执行时，所有写请求转移到同一台 MySQL 机器 [这个实现有点复杂]</p></li>
-<li><p>折中方案，多主模式当单主模式使用</p>
-
-<ul>
-<li>与单主模式比较，去掉 Failover 主从切换</li>
-<li>解决 DDL 冲突问题，防止脑裂</li>
-<li>一套 GR 为多应用提供服务，多应用不同的数据，没有冲突</li>
-</ul></li>
-</ul>
-
-<pre><code class="language-sql">-- Session 1: A Member
-BEGIN
-INSERT INTO t1 VALUES(1);
-
--- Session 2: B Member
-TRUNCATE t1;
-
--- Session 1:
-COMMIT;
-
-----&gt; 2 个 session 事务执行顺序不同
-
--- SESSION 1：
-INSERT INTO t1 VALUES(1);
-TRUNCATE t1;
-
--- SESSION 2:
-TRUNCATE t1;
-INSERT INTO t1 VALUES(1);
-</code></pre>
-
-<h2 id="toc_18">配置 Group Replication</h2>
-
-<h3 id="toc_19">前期准备</h3>
-
-<h4 id="toc_20">必要配置</h4>
-
-<p>my.cnf 配置</p>
-
-<pre><code>​```my.cnf
-server_id                   = 1
-log_bin                     = binlog
-relay_log                   = relay-log
-gtid_mode                   = ON
-enforce_gtid_consistency    = ON
-binlog_format               = ROW
-binlog_checksum             = NONE
-master_info_repository      = TABLE
-relay_log_info_repository   = TABLE
-log_slave_update            = ON
-slave_parallel_type         = LOGIAL_CLOCK
-slave_parallel_workers      = 8
-slave_preserve_commit_order = ON
-
-# Group Replication
-plugin-load                        = group_replication.so
-transaction_write_set_extraction   = XXHASH64
-loose-group_replication_group_name = 93f19c6c-6447-11e7-9323-cb37b2d517f3
-loose-group_replication_start_on_boot = OFF
-loose-group_replication_local_address = &#39;db1:3306&#39;
-loose-group_replication_group_seeds   = &#39;db2:3306,db3:3306&#39;
-loose-group_replication_bootstrap_group = OFF
-loose-group_replication_single_primary_mode = OFF # Trun off Single primary
-</code></pre>
-
-<p>配置说明：</p>
-
-<ul>
-<li><p>开启 Binlog、Relaylog</p></li>
-<li><p>开启 GTID 功能</p></li>
-<li><p>设置 ROW 格式的 Binlog</p></li>
-<li><p>禁用 binlog_checksum (MySQL 5.7.17 不支持带 checksum Binlog Event)</p></li>
-<li><p>要使用多源复制，必须使用将 Slave 通道(Channel) 的状态信息存储到系统表</p></li>
-<li><p>开启并行复制</p></li>
-<li><p>开启主键信息采集</p>
-
-<blockquote>
-<p>GR 需要 Server 层采集更新数据的主键信息，被 HASH 存储起来，支持两种 HASH 算法：XXHASH64、MURMUR32，默认 transaction_write_set_extraction = OFF，所以要使用 Group Replication 每张表都要有主键，否则更新数据时会失败</p>
-
-<p><u><strong>一个组内的所有成员必须配置相同的 HASH 算法</strong></u></p>
-</blockquote></li>
-<li><p>plugin-load = &#39;group_replication.so&#39; 相当执行 INSTALL PLUGIN group_replication SONAME &quot;group_replication.so&quot;;</p></li>
-<li><p>group_replication_group_name = <uuid> 设置 Group Replication Name，可以通过 select uuid(); 获得</p></li>
-<li><p>group_replication_start_on_boot = OFF MySQL 启动时，不自动启动 Group Replication</p></li>
-<li><p>group_replication_local_address = <a href="ip:port">ip:port</a> 配置 Group Replication 本地成员监听端口，成员之间通过这个端口通信，如果所有成员不在一台机器上，不要配置 127.0.0.1，要配置成员内网IP和端口</p></li>
-<li><p>group_replication_group_seeds = <a href="ip:port,ip:port...">ip:port,ip:port...</a> 配置种子成员，新成员加入组时，需要与组内成员通信，请求配组重新配置允许它加入组，不写组成所有成员也可以</p></li>
-</ul>
-
-<blockquote>
-<p>当多个 Server 同时加入组时，确保使用已经存在组的成员，不要使用正在申请加入组的成员，不支持创建组的时候同时加入多个成员</p>
-</blockquote>
-
-<ul>
-<li>group_replication_bootstrap_group = OFF 如果为 ON 告诉 Group Replication 插件，它是组内第一个成员，要做初始化，初始化后改为 OFF</li>
-</ul>
-
-<blockquote>
-<p>只在 Group Replication 初始化时或整个组崩溃后恢复的情况下使用，当多个 Server 配置此参数，可能人为造成脑裂</p>
-</blockquote>
-
-<ul>
-<li>group_replication 变量加上 &quot;loose&quot; ，则可写入 my.cnf 配置文件中</li>
-</ul>
-
-<h4 id="toc_21">加载 Group Replication 插件</h4>
-
-<pre><code># 加载插件
-INSTALL PLUGIN group_replication SONAME &#39;group_replication.so&#39;;
-
-# 启用插件
-START GROUP_REPLICATION;
-    &gt; 将 MySQL 加入一个存在的 Group Replication 组或将它初始化为组内第一个成员 
-     
-# 停用插件
-STOP GROUP_REPLICATION;
-    &gt; 将 MySQL 从一个 Group Replication 组内移除
-
-</code></pre>
-
-<h2 id="toc_22">问题处理</h2>
-
-<h3 id="toc_23">1. 网络中断/分区处理</h3>
-
-<p>可以参考 <a href="https://www.percona.com/blog/2017/02/24/battle-for-synchronous-replication-in-mysql-galera-vs-group-replication/">Quest for Better Replication in MySQL: Galera vs. Group Replication</a></p>
-
-<p>当一个成员因为为网络问题被清除 Group Replication，需要手工处理，当网络恢复不能自动加入，PXC是可以的</p>
-
-<p>error log 日志显示如下</p>
-
-<pre><code>2017-07-14T11:58:57.208677+08:00 0 [Note] Plugin group_replication reported: &#39;[GCS] Removing members that have failed while processing new view.&#39;
-2017-07-14T11:58:57.273764+08:00 0 [Note] Plugin group_replication reported: &#39;getstart group_id 6c6c3761&#39;
-2017-07-14T11:58:57.274693+08:00 0 [Note] Plugin group_replication reported: &#39;getstart group_id 6c6c3761&#39;
-2017-07-14T11:59:00.531055+08:00 0 [Note] Plugin group_replication reported: &#39;state 4330 action xa_terminate&#39;
-2017-07-14T11:59:00.531314+08:00 0 [Note] Plugin group_replication reported: &#39;new state x_start&#39;
-2017-07-14T11:59:00.531338+08:00 0 [Note] Plugin group_replication reported: &#39;state 4257 action xa_exit&#39;
-2017-07-14T11:59:00.531365+08:00 0 [Note] Plugin group_replication reported: &#39;Exiting xcom thread&#39;
-2017-07-14T11:59:00.531365+08:00 0 [Note] Plugin group_replication reported: &#39;Exiting xcom thread&#39;
-2017-07-14T11:59:00.531401+08:00 0 [Note] Plugin group_replication reported: &#39;new state x_start&#39;
-</code></pre>
-
-<p>当前节点状态</p>
-
-<pre><code class="language-sql">SELECT * FROM performance_schema.replication_group_members;
-
-+---------------------------+--------------------------------------+--------------+-------------+--------------+
-| CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST  | MEMBER_PORT | MEMBER_STATE |
-+---------------------------+--------------------------------------+--------------+-------------+--------------+
-| group_replication_applier | 817b0415-661a-11e7-842a-782bcb479deb | 10.55.28.64  |        6666 | ERROR       |
-+---------------------------+--------------------------------------+--------------+-------------+--------------+
-1 row in set (0.00 sec)
-
-</code></pre>
-
-<p>处理步骤：</p>
-
-<pre><code>localhost.(none)&gt;start group_replication; 
-ERROR 3093 (HY000): The START GROUP_REPLICATION command failed since the group is already running.
-
-localhost.(none)&gt;stop group_replication;
-Query OK, 0 rows affected (11.35 sec)
-
-localhost.(none)&gt;start group_replication; 
-Query OK, 0 rows affected (5.53 sec)
-
-localhost.(none)&gt;SELECT * FROM performance_schema.replication_group_members;
-+---------------------------+--------------------------------------+--------------+-------------+--------------+
-| CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST  | MEMBER_PORT | MEMBER_STATE |
-+---------------------------+--------------------------------------+--------------+-------------+--------------+
-| group_replication_applier | 817b0415-661a-11e7-842a-782bcb479deb | 10.55.28.64  |        6666 | ONLINE       |
-| group_replication_applier | c745233b-6614-11e7-a738-40f2e91dc960 | 10.13.2.29   |        6666 | ONLINE       |
-| group_replication_applier | e99a9946-6619-11e7-9b07-70e28406ebea | 10.77.16.197 |        6666 | ONLINE       |
-+---------------------------+--------------------------------------+--------------+-------------+--------------+
-3 rows in set (0.00 sec)
-
-</code></pre>
-
-<h3 id="toc_24">2. 事务不一致不能加入到组</h3>
-
-<p>被隔离成员，有不是 Group Replication 组内的事务，默认是不能加入到 Group，<u><strong>若人为可知是一致性，可强制加入，谨慎使用</strong></u></p>
-
-<pre><code>
-localhost.(none)&gt;stop group_replication;
-
-localhost.(none)&gt;SELECT * FROM performance_schema.replication_group_members;
-+---------------------------+--------------------------------------+-------------+-------------+--------------+
-| CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST | MEMBER_PORT | MEMBER_STATE |
-+---------------------------+--------------------------------------+-------------+-------------+--------------+
-| group_replication_applier | c745233b-6614-11e7-a738-40f2e91dc960 | 10.13.2.29  |        6666 | OFFLINE      |
-+---------------------------+--------------------------------------+-------------+-------------+--------------+
-1 row in set (0.00 sec)
-
-localhost.test&gt;create table t2 (id int primary key ,name varchar(10));
-Query OK, 0 rows affected (0.01 sec)
-
-localhost.test&gt;show variables like &#39;%read_only%&#39;;
-+------------------+-------+
-| Variable_name    | Value |
-+------------------+-------+
-| innodb_read_only | OFF   |
-| read_only        | OFF   |
-| super_read_only  | OFF   |
-| tx_read_only     | OFF   |
-+------------------+-------+
-4 rows in set (0.00 sec)
-
-localhost.test&gt;start group_replication;
-ERROR 3092 (HY000): The server is not configured properly to be an active member of the group. Please see more details on error log.
-</code></pre>
-
-<p>error 日志</p>
-
-<pre><code>2017-07-14T15:00:14.966294+08:00 0 [Note] Plugin group_replication reported: &#39;A new primary was elected, enabled conflict detection until the new primary applies all relay logs&#39;
-2017-07-14T15:00:14.966366+08:00 0 [ERROR] Plugin group_replication reported: &#39;This member has more executed transactions than those present in the group. Local transactions: 5860d02e-4b55-11e7-8721-40f2e91dc960:1-788,
-93f19c6c-6447-11e7-9323-cb37b2d517f3:1-16,
-c745233b-6614-11e7-a738-40f2e91dc960:1 &gt; Group transactions: 5860d02e-4b55-11e7-8721-40f2e91dc960:1-788,
-93f19c6c-6447-11e7-9323-cb37b2d517f3:1-16&#39;
-2017-07-14T15:00:14.966383+08:00 0 [ERROR] Plugin group_replication reported: &#39;The member contains transactions not present in the group. The member will now exit the group.&#39;
-2017-07-14T15:00:14.966366+08:00 0 [ERROR] Plugin group_replication reported: &#39;This member has more executed transactions than those present in the group. Local transactions: 5860d02e-4b55-11e7-8721-40f2e91dc960:1-788,
-93f19c6c-6447-11e7-9323-cb37b2d517f3:1-16,
-c745233b-6614-11e7-a738-40f2e91dc960:1 &gt; Group transactions: 5860d02e-4b55-11e7-8721-40f2e91dc960:1-788,
-93f19c6c-6447-11e7-9323-cb37b2d517f3:1-16&#39;
-2017-07-14T15:00:14.966383+08:00 0 [ERROR] Plugin group_replication reported: &#39;The member contains transactions not present in the group. The member will now exit the group.&#39;
-2017-07-14T15:00:14.966392+08:00 0 [Note] Plugin group_replication reported: &#39;To force this member into the group you can use the group_replication_allow_local_disjoint_gtids_join option&#39;
-2017-07-14T15:00:14.966473+08:00 88181 [Note] Plugin group_replication reported: &#39;Going to wait for view modification&#39;
-2017-07-14T15:00:14.968087+08:00 0 [Note] Plugin group_replication reported: &#39;getstart group_id 6c6c3761&#39;
-2017-07-14T15:00:18.464227+08:00 0 [Note] Plugin group_replication reported: &#39;state 4330 action xa_terminate&#39;
-2017-07-14T15:00:18.464840+08:00 0 [Note] Plugin group_replication reported: &#39;new state x_start&#39;
-2017-07-14T15:00:18.464875+08:00 0 [Note] Plugin group_replication reported: &#39;state 4257 action xa_exit&#39;
-2017-07-14T15:00:18.465367+08:00 0 [Note] Plugin group_replication reported: &#39;Exiting xcom thread&#39;
-2017-07-14T15:00:18.465382+08:00 0 [Note] Plugin group_replication reported: &#39;new state x_start&#39;
-2017-07-14T15:00:23.486593+08:00 88181 [Note] Plugin group_replication reported: &#39;auto_increment_increment is reset to 1&#39;
-2017-07-14T15:00:23.486642+08:00 88181 [Note] Plugin group_replication reported: &#39;auto_increment_offset is reset to 1&#39;
-2017-07-14T15:00:23.486838+08:00 88211 [Note] Error reading relay log event for channel &#39;group_replication_applier&#39;: slave SQL thread was killed
-2017-07-14T15:00:23.487244+08:00 88208 [Note] Plugin group_replication reported: &#39;The group replication applier thread was killed&#39;
-</code></pre>
-
-<p>强制加入，一定要确定不会导致数据不一致，谨慎操作</p>
-
-<pre><code>localhost.test&gt;SET GLOBAL group_replication_allow_local_disjoint_gtids_join = ON ;
-Query OK, 0 rows affected (0.00 sec)
-
-localhost.test&gt;start group_replication;
-Query OK, 0 rows affected (2.26 sec)
-
-localhost.test&gt;SET GLOBAL group_replication_allow_local_disjoint_gtids_join = OFF ;
-Query OK, 0 rows affected (0.00 sec)
-
-localhost.test&gt;show variables like &#39;%read_only%&#39;;
-+------------------+-------+
-| Variable_name    | Value |
-+------------------+-------+
-| innodb_read_only | OFF   |
-| read_only        | ON    |
-| super_read_only  | ON    |
-| tx_read_only     | OFF   |
-+------------------+-------+
-4 rows in set (0.00 sec)
-
-</code></pre>
-
-<h3 id="toc_25">3.</h3>
-
-
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="14999530972668.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2017/7/13</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='MySQL.html'>MySQL</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+                        <a href="14999530972668.html#disqus_thread">comments</a>
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+              
+
+
+			<div class="row">
+			  <div class="large-6 columns">
+			  <p class="text-left" style="padding-top:25px;">
+			   
+			  </p>
+			  </div>
+			  <div class="large-6 columns">
+			<p class="text-right" style="padding-top:25px;">
+			
+			</p>
+			  </div>
+			</div>
 		</div>
-	
+	</div><!-- large 8 -->
 
- 
-	
+ <div class="large-4 medium-4 columns">
+  <div class="hide-for-small">
+    <div id="sidebar" class="sidebar">
+          <div id="site-info" class="site-info">
+            
+                <div class="site-a-logo"><img src="images/blog_icon.jpg" /></div>
+            
+                <h1>DBA Plus</h1>
+                <div class="site-des"></div>
+                <div class="social">
 
-  
-  
-</div></div>
 
 
-<div class="page-bottom">
+
+
+
+
+<a target="_blank" class="weibo" href="http://www.weibo.com/saup007" title="weibo">Weibo</a>
+
+<a target="_blank" class="github" target="_blank" href="https://github.com/saup007" title="GitHub">GitHub</a>
+
+  <a target="_blank" class="rss" href="atom.xml" title="RSS">RSS</a>
+                
+              	 </div>
+          	</div>
+
+             
+
+              <div id="site-categories" class="side-item ">
+                <div class="side-header">
+                  <h2>Categories</h2>
+                </div>
+                <div class="side-content">
+
+      	<p class="cat-list">
+        
+            <a href="Redis.html"><strong>Redis</strong></a>
+        
+            <a href="MySQL.html"><strong>MySQL</strong></a>
+         
+        </p>
+
+
+                </div>
+              </div>
+
+              <div id="site-categories" class="side-item">
+                <div class="side-header">
+                  <h2>Recent Posts</h2>
+                </div>
+                <div class="side-content">
+                <ul class="posts-list">
+	      
+		      
+			      <li class="post">
+			        <a href="15000823671749.html">Group Replication</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14999625908463.html">Redis Install 3.2.9</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14999625750663.html">Why Redis</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14999625646195.html">Redis 命令</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14999625423902.html">Redis 内部编码</a>
+			      </li>
+		     
+		  
+		      
+		   
+		  		</ul>
+                </div>
+              </div>
+        </div><!-- sidebar -->
+      </div><!-- hide for small -->
+</div><!-- large 4 -->
+
+</div><!-- row -->
+
+ <div class="page-bottom clearfix">
   <div class="row">
-  <hr />
-  <div class="small-9 columns">
-  <p class="copyright">Copyright &copy; 2015
+   <p class="copyright">Copyright &copy; 2015
 Powered by <a target="_blank" href="http://www.mweb.im">MWeb</a>,&nbsp; 
 Theme used <a target="_blank" href="http://github.com">GitHub CSS</a>.</p>
-  </div>
-  <div class="small-3 columns">
-  <p class="copyright text-right"><a href="#header">TOP</a></p>
-  </div>
-   
   </div>
 </div>
 
         </section>
       </div>
     </div>
+
+
+<script type="text/javascript">
+    var disqus_shortname = 'saup007'; 
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+
+<script type="text/javascript">
+var disqus_shortname = 'saup007'; 
+
+(function () {
+var s = document.createElement('script'); s.async = true;
+s.type = 'text/javascript';
+s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+(document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+}());
+</script>
+  
     
-    
+
     <script src="asset/js/foundation.min.js"></script>
-    <script src="asset/js/foundation/foundation.offcanvas.js"></script>
     <script>
       $(document).foundation();
-
+      function fixSidebarHeight(){
+        var w1 = $('.markdown-body').height();
+          var w2 = $('#sidebar').height();
+          if (w1 > w2) { $('#sidebar').height(w1); };
+      }
+      $(function(){
+        fixSidebarHeight();
+      })
+      $(window).load(function(){
+          fixSidebarHeight();
+      });
      
     </script>
+
     
+
 
 
   </body>

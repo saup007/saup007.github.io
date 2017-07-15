@@ -8,17 +8,23 @@
   Redis - DBA Plus
   
   </title>
- <meta name="description" content="">
- <link href="atom.xml" rel="alternate" title="DBA Plus" type="application/atom+xml">
+  
+  
+  <link href="atom.xml" rel="alternate" title="DBA Plus" type="application/atom+xml">
     <link rel="stylesheet" href="asset/css/foundation.min.css" />
     <link rel="stylesheet" href="asset/css/docs.css" />
-
     <script src="asset/js/vendor/modernizr.js"></script>
     <script src="asset/js/vendor/jquery.js"></script>
-    <script src="asset/highlightjs/highlight.pack.js"></script>
-    <link href="asset/highlightjs/styles/github.css" media="screen, projection" rel="stylesheet" type="text/css">
-    <script>hljs.initHighlightingOnLoad();</script>
-    
+  <script src="asset/highlightjs/highlight.pack.js"></script>
+  <link href="asset/highlightjs/styles/github.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script>hljs.initHighlightingOnLoad();</script>
+<script type="text/javascript">
+  function before_search(){
+    var searchVal = 'site: ' + document.getElementById('search_input').value;
+    document.getElementById('search_q').value = searchVal;
+    return true;
+  }
+</script>
   </head>
   <body class="antialiased hide-extras">
     
@@ -28,11 +34,32 @@
 
 <nav class="top-bar docs-bar hide-for-small" data-topbar>
 
-<div id="header">
-    <h1><a href="index.html">DBA Plus</a></h1>
-</div>
+
+  <section class="top-bar-section">
+  <div class="row">
+      <div style="position: relative;width:100%;"><div style="position: absolute; width:100%;">
+        <ul id="main-menu" class="left">
+        
+        <li id=""><a target="self" href="index.html">Home</a></li>
+        
+        <li id=""><a target="_self" href="archives.html">Archives</a></li>
+        
+        </ul>
+
+        <ul class="right" id="search-wrap">
+          <li>
+<form target="_blank" onsubmit="return before_search();" action="http://google.com/search" method="get">
+    <input type="hidden" id="search_q" name="q" value="" />
+    <input tabindex="1" type="search" id="search_input"  placeholder="Search"/>
+</form>
+</li>
+          </ul>
+      </div></div>
+  </div>
+  </section>
 
 </nav>
+
         <nav class="tab-bar show-for-small">
   <a href="javascript:void(0)" class="left-off-canvas-toggle menu-icon">
     <span> &nbsp; DBA Plus</span>
@@ -41,82 +68,48 @@
 
 <aside class="left-off-canvas-menu">
       <ul class="off-canvas-list">
-      <li><a href="index.html">Home</a></li>
-      
-        <li class="divider"></li>
-        <li><label>Redis</label></li>
+        
+        <li><a target="self" href="index.html">Home</a></li>
+        
+        <li><a target="_self" href="archives.html">Archives</a></li>
+        
 
-          
-            <li><a title="Redis Install 3.2.9" href="14999625908463.html">Redis Install 3.2.9</a></li>
-          
-            <li><a title="Why Redis" href="14999625750663.html">Why Redis</a></li>
-          
-            <li><a title="Redis 命令" href="14999625646195.html">Redis 命令</a></li>
-          
-            <li><a title="Redis 内部编码" href="14999625423902.html">Redis 内部编码</a></li>
-          
+    <li><label>Categories</label></li>
 
-      
-        <li class="divider"></li>
-        <li><label>MySQL</label></li>
+        
+            <li><a href="Redis.html">Redis</a></li>
+        
+            <li><a href="MySQL.html">MySQL</a></li>
+         
 
-          
-            <li><a title="Group Replication" href="15000823671749.html">Group Replication</a></li>
-          
-            <li><a title="Percona XtraDB Cluster vs Galera Cluster vs MySQL Group Replication" href="14999530972668.html">Percona XtraDB Cluster vs Galera Cluster vs MySQL Group Replication</a></li>
-          
-
-      
       </ul>
     </aside>
 
 <a class="exit-off-canvas" href="#"></a>
 
+
         <section id="main-content" role="main" class="scroll-container">
+        
+       
 
-          <div class="row">
-            <div class="large-3 medium-3 columns">
-              <div class="hide-for-small">
-                <div class="sidebar">
-                <nav>
-                  <ul id="side-nav" class="side-nav">
-
-                    
-                      <li class="side-title"><span>Redis</span></li>
+ <script type="text/javascript">
+	$(function(){
+		$('#menu_item_index').addClass('is_active');
+	});
+</script>
+<div class="row">
+	<div class="large-8 medium-8 columns">
+		<div class="markdown-body home-categories">
+		
+			<div class="article">
+                <a class="clearlink" href="14999625908463.html">
+                
+                  <h1>Redis Install 3.2.9</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
                         
-                          <li><a title="Redis Install 3.2.9" href="14999625908463.html">Redis Install 3.2.9</a></li>
-                        
-                          <li><a title="Why Redis" href="14999625750663.html">Why Redis</a></li>
-                        
-                          <li><a title="Redis 命令" href="14999625646195.html">Redis 命令</a></li>
-                        
-                          <li><a title="Redis 内部编码" href="14999625423902.html">Redis 内部编码</a></li>
-                        
-
-                    
-                      <li class="side-title"><span>MySQL</span></li>
-                        
-                          <li><a title="Group Replication" href="15000823671749.html">Group Replication</a></li>
-                        
-                          <li><a title="Percona XtraDB Cluster vs Galera Cluster vs MySQL Group Replication" href="14999530972668.html">Percona XtraDB Cluster vs Galera Cluster vs MySQL Group Replication</a></li>
-                        
-
-                    
-                  </ul>
-                </nav>
-                </div>
-              </div>
-            </div>
-            <div class="large-9 medium-9 columns">
-
- 
-
-
-	
-		<div class="markdown-body">
-		<h1>Redis Install 3.2.9</h1>
-
-		<ul>
+                        	<ul>
 <li>
 <a href="#toc_0">编译步骤</a>
 </li>
@@ -140,226 +133,403 @@
 </ul>
 
 
-<span id="more"></span><!-- more -->
 
-<p>Redis 单线程架构 + I/O 多路复用来实现高性能内存数据库服务</p>
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="14999625908463.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2017/7/14</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='Redis.html'>Redis</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+                        <a href="14999625908463.html#disqus_thread">comments</a>
+                      
 
-<pre><code>本次编译环境 CentOS 6.5
-
-依赖 gcc、tcl
-</code></pre>
-
-<h2 id="toc_0">编译步骤</h2>
-
-<pre><code class="language-command">yum install tcl
-tar xf redis-3.2.9.tar
-cd redis-2.2.9
-make
-make test
-cd src
-make test
-make install
-</code></pre>
-
-<h2 id="toc_1">配置文件</h2>
-
-<p>默认配置</p>
-
-<pre><code class="language-redis.conf">bind 127.0.0.1
-protected-mode yes
-port 6379
-tcp-backlog 511
-timeout 0
-tcp-keepalive 300
-daemonize no
-supervised no
-pidfile /var/run/redis_6379.pid
-loglevel notice
-logfile &quot;&quot;
-databases 16
-save 900 1
-save 300 10
-save 60 10000
-stop-writes-on-bgsave-error yes
-rdbcompression yes
-rdbchecksum yes
-dbfilename dump.rdb
-dir ./
-slave-serve-stale-data yes
-slave-read-only yes
-repl-diskless-sync no
-repl-diskless-sync-delay 5
-repl-disable-tcp-nodelay no
-slave-priority 100
-appendonly no
-appendfilename &quot;appendonly.aof&quot;
-appendfsync everysec
-no-appendfsync-on-rewrite no
-auto-aof-rewrite-percentage 100
-auto-aof-rewrite-min-size 64mb
-aof-load-truncated yes
-lua-time-limit 5000
-slowlog-log-slower-than 10000
-slowlog-max-len 128
-latency-monitor-threshold 0
-notify-keyspace-events &quot;&quot;
-hash-max-ziplist-entries 512
-hash-max-ziplist-value 64
-list-max-ziplist-size -2
-list-compress-depth 0
-set-max-intset-entries 512
-zset-max-ziplist-entries 128
-zset-max-ziplist-value 64
-hll-sparse-max-bytes 3000
-activerehashing yes
-client-output-buffer-limit normal 0 0 0
-client-output-buffer-limit slave 256mb 64mb 60
-client-output-buffer-limit pubsub 32mb 8mb 60
-hz 10
-aof-rewrite-incremental-fsync yes
-</code></pre>
-
-<pre><code class="language-redis.cnf">port
-logfile
-dir
-daemonize
-</code></pre>
-
-<h2 id="toc_2">Key 类型</h2>
-
-<p>五种数据结构</p>
-
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14999625750663.html">
+                
+                  <h1>Why Redis</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<ul>
+<li>
+<a href="#toc_0">为什么选择使用 Redis</a>
+</li>
+<li>
+<a href="#toc_1">为什么单线程还能这么快</a>
+</li>
+<li>
+<a href="#toc_2">使用场景</a>
 <ul>
-<li>string 字符串 (Bitmaps 位图、HyperLogLog)</li>
-<li>hash   哈希</li>
-<li>list   列表</li>
-<li>set    集合</li>
-<li>zset   有序合集</li>
-<li>GEO 地理信息定位 Redis 3.2</li>
+<li>
+<a href="#toc_3">String 使用场景</a>
+</li>
+<li>
+<a href="#toc_4">Hash 使用场景</a>
+</li>
+<li>
+<a href="#toc_5">List 使用场景</a>
+</li>
+</ul>
+</li>
 </ul>
 
-<pre><code>sting 最大值不能超过 512M
-</code></pre>
 
-<p>Redis 数据结构和内部编码</p>
 
-<p><img src="http://osdzwfz5z.bkt.clouddn.com/Redis%20data%20encoding.jpg" alt="Redis data encoding"/></p>
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="14999625750663.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2017/7/14</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='Redis.html'>Redis</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+                        <a href="14999625750663.html#disqus_thread">comments</a>
+                      
 
-<p>一种数据结构对应多个内部编码优点</p>
-
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14999625646195.html">
+                
+                  <h1>Redis 命令</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<ul>
+<li>
+<a href="#toc_0">通用命令</a>
+</li>
+<li>
+<a href="#toc_1">Key 管理</a>
 <ul>
-<li><p>当有更优秀内部编码可替换，对外结构和命令没有影响<br/>
-exp: list 提供 quicklist，结合 ziplist、linkedlist两者优势</p></li>
-<li><p>多种内部编码实现不同场景下发挥各自的优势 <br/>
-exp: ziplist 比较省内存,但列表元素多时性能下降,会根据配置将 list 内部实现转换为 linkedlist</p></li>
+<li>
+<a href="#toc_2">单个 Key 管理</a>
+</li>
+<li>
+<a href="#toc_3">遍历 Key</a>
+</li>
+<li>
+<a href="#toc_4">数据库管理</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_5">字符串命令</a>
+<ul>
+<li>
+<a href="#toc_6">String 命令时间复杂度</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_7">Hash 命令</a>
+<ul>
+<li>
+<a href="#toc_8">Hash 命令时间复杂度</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_9">List 命令</a>
+<ul>
+<li>
+<a href="#toc_10">添加操作</a>
+</li>
+<li>
+<a href="#toc_11">查找</a>
+</li>
+<li>
+<a href="#toc_12">删除</a>
+</li>
+<li>
+<a href="#toc_13">修改</a>
+</li>
+<li>
+<a href="#toc_14">阻塞操作</a>
+<ul>
+<li>
+<a href="#toc_15">brpop 注意事项</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_16">List 时间复杂度</a>
+</li>
+</ul>
+</li>
 </ul>
 
-<h2 id="toc_3">编译失败排错</h2>
-
-<h3 id="toc_4">1. make test 失败 -- 缺少 tcl</h3>
-
-<pre><code class="language-err">[root@dbaone redis-3.2.9]# make install
-cd src &amp;&amp; make install
-make[1]: Entering directory `/data/redis-3.2.9/src&#39;
-
-Hint: It&#39;s a good idea to run &#39;make test&#39; ;)
-
-    INSTALL install
-    INSTALL install
-    INSTALL install
-    INSTALL install
-    INSTALL install
-make[1]: Leaving directory `/data/redis-3.2.9/src&#39;
-[root@dbaone redis-3.2.9]#
-[root@dbaone redis-3.2.9]# make test
-cd src &amp;&amp; make test
-make[1]: Entering directory `/data/redis-3.2.9/src&#39;
-You need tcl 8.5 or newer in order to run the Redis test
-make[1]: *** [test] Error 1
-make[1]: Leaving directory `/data/redis-3.2.9/src&#39;
-make: *** [test] Error 2
-</code></pre>
-
-<p>解决：tcl 8.5 以上版本</p>
-
-<pre><code>yum install tcl -y
-</code></pre>
-
-<h3 id="toc_5">2. make test 失败 -- 内存少bug</h3>
-
-<pre><code class="language-err">!!! WARNING The following tests failed:
-
-*** [err]: Slave should be able to synchronize with the master in tests/integration/replication-psync.tcl
-Replication not started.
-*** [err]: Test replication partial resync: ok after delay (diskless: yes, reconnect: 1) in tests/integration/replication-psync.tcl
-Expected &#39;623331211feaf78c74df41dc934bfc8af5a89a69&#39; to be equal to &#39;0000000000000000000000000000000000000000&#39;
-Cleanup: may take some time... OK
-make[1]: *** [test] Error 1
-make[1]: Leaving directory `/data/redis-3.2.9/src&#39;
-make: *** [test] Error 2
-
-</code></pre>
-
-<p>解决：<a href="Two%20tests%20failing%20in%20unstable%20#2715">#2715</a> -- <a href="https://github.com/antirez/redis/commit/6a33952b8af18c4c0e778d93a69d97bc2adbc52e">fixbug 2715</a> -- <a href="http://36006798.blog.51cto.com/988282/1858935">blog 参考</a></p>
-
-<pre><code>vim tests/integration/replication-psync.tcl
-113     #test_psync {ok psync} 6 100000000 3600 0 {
-114     test_psync {ok psync} 6 10000000000 3600 0 {
-
-make test
-
-或
-
-# 增加编译机器内存 1G -&gt; 2G
-
-</code></pre>
 
 
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="14999625646195.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2017/7/14</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='Redis.html'>Redis</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+                        <a href="14999625646195.html#disqus_thread">comments</a>
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+			<div class="article">
+                <a class="clearlink" href="14999625423902.html">
+                
+                  <h1>Redis 内部编码</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<ul>
+<li>
+<a href="#toc_0">String 内部编码</a>
+</li>
+<li>
+<a href="#toc_1">Hash 内部编码</a>
+</li>
+<li>
+<a href="#toc_2">List 内部编码</a>
+</li>
+</ul>
+
+
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                   <a href="14999625423902.html">Read more</a>&nbsp;&nbsp; 
+                    <span class="date">2017/7/14</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='Redis.html'>Redis</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+                        <a href="14999625423902.html#disqus_thread">comments</a>
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
+              
+
+
+			<div class="row">
+			  <div class="large-6 columns">
+			  <p class="text-left" style="padding-top:25px;">
+			   
+			  </p>
+			  </div>
+			  <div class="large-6 columns">
+			<p class="text-right" style="padding-top:25px;">
+			
+			</p>
+			  </div>
+			</div>
 		</div>
-	
+	</div><!-- large 8 -->
 
- 
-	
-
- 
-	
-
- 
-	
-
-  
-  
-</div></div>
+ <div class="large-4 medium-4 columns">
+  <div class="hide-for-small">
+    <div id="sidebar" class="sidebar">
+          <div id="site-info" class="site-info">
+            
+                <div class="site-a-logo"><img src="images/blog_icon.jpg" /></div>
+            
+                <h1>DBA Plus</h1>
+                <div class="site-des"></div>
+                <div class="social">
 
 
-<div class="page-bottom">
+
+
+
+
+
+<a target="_blank" class="weibo" href="http://www.weibo.com/saup007" title="weibo">Weibo</a>
+
+<a target="_blank" class="github" target="_blank" href="https://github.com/saup007" title="GitHub">GitHub</a>
+
+  <a target="_blank" class="rss" href="atom.xml" title="RSS">RSS</a>
+                
+              	 </div>
+          	</div>
+
+             
+
+              <div id="site-categories" class="side-item ">
+                <div class="side-header">
+                  <h2>Categories</h2>
+                </div>
+                <div class="side-content">
+
+      	<p class="cat-list">
+        
+            <a href="Redis.html"><strong>Redis</strong></a>
+        
+            <a href="MySQL.html"><strong>MySQL</strong></a>
+         
+        </p>
+
+
+                </div>
+              </div>
+
+              <div id="site-categories" class="side-item">
+                <div class="side-header">
+                  <h2>Recent Posts</h2>
+                </div>
+                <div class="side-content">
+                <ul class="posts-list">
+	      
+		      
+			      <li class="post">
+			        <a href="15000823671749.html">Group Replication</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14999625908463.html">Redis Install 3.2.9</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14999625750663.html">Why Redis</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14999625646195.html">Redis 命令</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14999625423902.html">Redis 内部编码</a>
+			      </li>
+		     
+		  
+		      
+		   
+		  		</ul>
+                </div>
+              </div>
+        </div><!-- sidebar -->
+      </div><!-- hide for small -->
+</div><!-- large 4 -->
+
+</div><!-- row -->
+
+ <div class="page-bottom clearfix">
   <div class="row">
-  <hr />
-  <div class="small-9 columns">
-  <p class="copyright">Copyright &copy; 2015
+   <p class="copyright">Copyright &copy; 2015
 Powered by <a target="_blank" href="http://www.mweb.im">MWeb</a>,&nbsp; 
 Theme used <a target="_blank" href="http://github.com">GitHub CSS</a>.</p>
-  </div>
-  <div class="small-3 columns">
-  <p class="copyright text-right"><a href="#header">TOP</a></p>
-  </div>
-   
   </div>
 </div>
 
         </section>
       </div>
     </div>
+
+
+<script type="text/javascript">
+    var disqus_shortname = 'saup007'; 
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+
+<script type="text/javascript">
+var disqus_shortname = 'saup007'; 
+
+(function () {
+var s = document.createElement('script'); s.async = true;
+s.type = 'text/javascript';
+s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+(document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+}());
+</script>
+  
     
-    
+
     <script src="asset/js/foundation.min.js"></script>
-    <script src="asset/js/foundation/foundation.offcanvas.js"></script>
     <script>
       $(document).foundation();
-
+      function fixSidebarHeight(){
+        var w1 = $('.markdown-body').height();
+          var w2 = $('#sidebar').height();
+          if (w1 > w2) { $('#sidebar').height(w1); };
+      }
+      $(function(){
+        fixSidebarHeight();
+      })
+      $(window).load(function(){
+          fixSidebarHeight();
+      });
      
     </script>
+
     
+
 
 
   </body>
