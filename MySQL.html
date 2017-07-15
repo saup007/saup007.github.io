@@ -61,7 +61,7 @@
         <li><label>MySQL</label></li>
 
           
-            <li><a title="Group Replication" href="14999557738274.html">Group Replication</a></li>
+            <li><a title="Group Replication" href="15000823671749.html">Group Replication</a></li>
           
             <li><a title="Percona XtraDB Cluster vs Galera Cluster vs MySQL Group Replication" href="14999530972668.html">Percona XtraDB Cluster vs Galera Cluster vs MySQL Group Replication</a></li>
           
@@ -96,7 +96,7 @@
                     
                       <li class="side-title"><span>MySQL</span></li>
                         
-                          <li><a title="Group Replication" href="14999557738274.html">Group Replication</a></li>
+                          <li><a title="Group Replication" href="15000823671749.html">Group Replication</a></li>
                         
                           <li><a title="Percona XtraDB Cluster vs Galera Cluster vs MySQL Group Replication" href="14999530972668.html">Percona XtraDB Cluster vs Galera Cluster vs MySQL Group Replication</a></li>
                         
@@ -203,18 +203,32 @@
 </li>
 </ul>
 </li>
+<li>
+<a href="#toc_22">问题处理</a>
+<ul>
+<li>
+<a href="#toc_23">1. 网络中断/分区处理</a>
+</li>
+<li>
+<a href="#toc_24">2. 事务不一致不能加入到组</a>
+</li>
+<li>
+<a href="#toc_25">3.</a>
+</li>
+</ul>
+</li>
 </ul>
 
-
-<span id="more"></span><!-- more -->
 
 <h2 id="toc_0">关于 Group Greplication</h2>
 
 <ul>
 <li>异步复制</li>
 <li>半同步复制</li>
-<li>Group Greplication</li>
+<li>Group Replication</li>
 </ul>
+
+<p>Group Replication 是组复制，不是同步复制，但最终是同步的，更确切地说，事务以相同顺序传递给所有组成员，但它们执行并不同步，接受事务被提交之后，每个成员以自己的速度提交。</p>
 
 <h3 id="toc_1">单独的通信机制</h3>
 
@@ -356,7 +370,7 @@ a. 如果 server-id 为 1、2、3 配置，就不需要额外配置，但不为 
 <li>不支持外键级联操作</li>
 </ul>
 
-<pre><code># 当为 True，当发现上面 2 个不支持就会报错
+<pre><code># 当为 True，当发现上面 2 个不支持就会报错，单主模式下为必须为 OFF
 group_replication_enforce_update_everywhere_checks = TRUE
 </code></pre>
 
@@ -413,10 +427,9 @@ INSERT INTO t1 VALUES(1);
 
 <p>my.cnf 配置</p>
 
-<pre><code>```my.cnf
+<pre><code>​```my.cnf
 server_id                   = 1
 log_bin                     = binlog
-log_slave_update            = ON
 relay_log                   = relay-log
 gtid_mode                   = ON
 enforce_gtid_consistency    = ON
@@ -424,6 +437,7 @@ binlog_format               = ROW
 binlog_checksum             = NONE
 master_info_repository      = TABLE
 relay_log_info_repository   = TABLE
+log_slave_update            = ON
 slave_parallel_type         = LOGIAL_CLOCK
 slave_parallel_workers      = 8
 slave_preserve_commit_order = ON
@@ -437,27 +451,45 @@ loose-group_replication_local_address = &#39;db1:3306&#39;
 loose-group_replication_group_seeds   = &#39;db2:3306,db3:3306&#39;
 loose-group_replication_bootstrap_group = OFF
 loose-group_replication_single_primary_mode = OFF # Trun off Single primary
-
-
-```
 </code></pre>
 
 <p>配置说明：</p>
 
 <ul>
-<li>开启 Binlog、Relaylog</li>
-<li>开启 GTID 功能</li>
-<li>设置 ROW 格式的 Binlog</li>
-<li>禁用 binlog_checksum (MySQL 5.7.17 不支持带 checksum Binlog Event)</li>
-<li>要使用多源复制，必须使用将 Slave 通道(Channel) 的状态信息存储到系统表</li>
-<li>开启并行复制</li>
+<li><p>开启 Binlog、Relaylog</p></li>
+<li><p>开启 GTID 功能</p></li>
+<li><p>设置 ROW 格式的 Binlog</p></li>
+<li><p>禁用 binlog_checksum (MySQL 5.7.17 不支持带 checksum Binlog Event)</p></li>
+<li><p>要使用多源复制，必须使用将 Slave 通道(Channel) 的状态信息存储到系统表</p></li>
+<li><p>开启并行复制</p></li>
 <li><p>开启主键信息采集</p>
 
 <blockquote>
 <p>GR 需要 Server 层采集更新数据的主键信息，被 HASH 存储起来，支持两种 HASH 算法：XXHASH64、MURMUR32，默认 transaction_write_set_extraction = OFF，所以要使用 Group Replication 每张表都要有主键，否则更新数据时会失败</p>
 
-<p>一个组内的所有成员必须配置相同的 HASH 算法</p>
+<p><u><strong>一个组内的所有成员必须配置相同的 HASH 算法</strong></u></p>
 </blockquote></li>
+<li><p>plugin-load = &#39;group_replication.so&#39; 相当执行 INSTALL PLUGIN group_replication SONAME &quot;group_replication.so&quot;;</p></li>
+<li><p>group_replication_group_name = <uuid> 设置 Group Replication Name，可以通过 select uuid(); 获得</p></li>
+<li><p>group_replication_start_on_boot = OFF MySQL 启动时，不自动启动 Group Replication</p></li>
+<li><p>group_replication_local_address = <a href="ip:port">ip:port</a> 配置 Group Replication 本地成员监听端口，成员之间通过这个端口通信，如果所有成员不在一台机器上，不要配置 127.0.0.1，要配置成员内网IP和端口</p></li>
+<li><p>group_replication_group_seeds = <a href="ip:port,ip:port...">ip:port,ip:port...</a> 配置种子成员，新成员加入组时，需要与组内成员通信，请求配组重新配置允许它加入组，不写组成所有成员也可以</p></li>
+</ul>
+
+<blockquote>
+<p>当多个 Server 同时加入组时，确保使用已经存在组的成员，不要使用正在申请加入组的成员，不支持创建组的时候同时加入多个成员</p>
+</blockquote>
+
+<ul>
+<li>group_replication_bootstrap_group = OFF 如果为 ON 告诉 Group Replication 插件，它是组内第一个成员，要做初始化，初始化后改为 OFF</li>
+</ul>
+
+<blockquote>
+<p>只在 Group Replication 初始化时或整个组崩溃后恢复的情况下使用，当多个 Server 配置此参数，可能人为造成脑裂</p>
+</blockquote>
+
+<ul>
+<li>group_replication 变量加上 &quot;loose&quot; ，则可写入 my.cnf 配置文件中</li>
 </ul>
 
 <h4 id="toc_21">加载 Group Replication 插件</h4>
@@ -474,6 +506,149 @@ STOP GROUP_REPLICATION;
     &gt; 将 MySQL 从一个 Group Replication 组内移除
 
 </code></pre>
+
+<h2 id="toc_22">问题处理</h2>
+
+<h3 id="toc_23">1. 网络中断/分区处理</h3>
+
+<p>可以参考 <a href="https://www.percona.com/blog/2017/02/24/battle-for-synchronous-replication-in-mysql-galera-vs-group-replication/">Quest for Better Replication in MySQL: Galera vs. Group Replication</a></p>
+
+<p>当一个成员因为为网络问题被清除 Group Replication，需要手工处理，当网络恢复不能自动加入，PXC是可以的</p>
+
+<p>error log 日志显示如下</p>
+
+<pre><code>2017-07-14T11:58:57.208677+08:00 0 [Note] Plugin group_replication reported: &#39;[GCS] Removing members that have failed while processing new view.&#39;
+2017-07-14T11:58:57.273764+08:00 0 [Note] Plugin group_replication reported: &#39;getstart group_id 6c6c3761&#39;
+2017-07-14T11:58:57.274693+08:00 0 [Note] Plugin group_replication reported: &#39;getstart group_id 6c6c3761&#39;
+2017-07-14T11:59:00.531055+08:00 0 [Note] Plugin group_replication reported: &#39;state 4330 action xa_terminate&#39;
+2017-07-14T11:59:00.531314+08:00 0 [Note] Plugin group_replication reported: &#39;new state x_start&#39;
+2017-07-14T11:59:00.531338+08:00 0 [Note] Plugin group_replication reported: &#39;state 4257 action xa_exit&#39;
+2017-07-14T11:59:00.531365+08:00 0 [Note] Plugin group_replication reported: &#39;Exiting xcom thread&#39;
+2017-07-14T11:59:00.531365+08:00 0 [Note] Plugin group_replication reported: &#39;Exiting xcom thread&#39;
+2017-07-14T11:59:00.531401+08:00 0 [Note] Plugin group_replication reported: &#39;new state x_start&#39;
+</code></pre>
+
+<p>当前节点状态</p>
+
+<pre><code class="language-sql">SELECT * FROM performance_schema.replication_group_members;
+
++---------------------------+--------------------------------------+--------------+-------------+--------------+
+| CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST  | MEMBER_PORT | MEMBER_STATE |
++---------------------------+--------------------------------------+--------------+-------------+--------------+
+| group_replication_applier | 817b0415-661a-11e7-842a-782bcb479deb | 10.55.28.64  |        6666 | ERROR       |
++---------------------------+--------------------------------------+--------------+-------------+--------------+
+1 row in set (0.00 sec)
+
+</code></pre>
+
+<p>处理步骤：</p>
+
+<pre><code>localhost.(none)&gt;start group_replication; 
+ERROR 3093 (HY000): The START GROUP_REPLICATION command failed since the group is already running.
+
+localhost.(none)&gt;stop group_replication;
+Query OK, 0 rows affected (11.35 sec)
+
+localhost.(none)&gt;start group_replication; 
+Query OK, 0 rows affected (5.53 sec)
+
+localhost.(none)&gt;SELECT * FROM performance_schema.replication_group_members;
++---------------------------+--------------------------------------+--------------+-------------+--------------+
+| CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST  | MEMBER_PORT | MEMBER_STATE |
++---------------------------+--------------------------------------+--------------+-------------+--------------+
+| group_replication_applier | 817b0415-661a-11e7-842a-782bcb479deb | 10.55.28.64  |        6666 | ONLINE       |
+| group_replication_applier | c745233b-6614-11e7-a738-40f2e91dc960 | 10.13.2.29   |        6666 | ONLINE       |
+| group_replication_applier | e99a9946-6619-11e7-9b07-70e28406ebea | 10.77.16.197 |        6666 | ONLINE       |
++---------------------------+--------------------------------------+--------------+-------------+--------------+
+3 rows in set (0.00 sec)
+
+</code></pre>
+
+<h3 id="toc_24">2. 事务不一致不能加入到组</h3>
+
+<p>被隔离成员，有不是 Group Replication 组内的事务，默认是不能加入到 Group，<u><strong>若人为可知是一致性，可强制加入，谨慎使用</strong></u></p>
+
+<pre><code>
+localhost.(none)&gt;stop group_replication;
+
+localhost.(none)&gt;SELECT * FROM performance_schema.replication_group_members;
++---------------------------+--------------------------------------+-------------+-------------+--------------+
+| CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST | MEMBER_PORT | MEMBER_STATE |
++---------------------------+--------------------------------------+-------------+-------------+--------------+
+| group_replication_applier | c745233b-6614-11e7-a738-40f2e91dc960 | 10.13.2.29  |        6666 | OFFLINE      |
++---------------------------+--------------------------------------+-------------+-------------+--------------+
+1 row in set (0.00 sec)
+
+localhost.test&gt;create table t2 (id int primary key ,name varchar(10));
+Query OK, 0 rows affected (0.01 sec)
+
+localhost.test&gt;show variables like &#39;%read_only%&#39;;
++------------------+-------+
+| Variable_name    | Value |
++------------------+-------+
+| innodb_read_only | OFF   |
+| read_only        | OFF   |
+| super_read_only  | OFF   |
+| tx_read_only     | OFF   |
++------------------+-------+
+4 rows in set (0.00 sec)
+
+localhost.test&gt;start group_replication;
+ERROR 3092 (HY000): The server is not configured properly to be an active member of the group. Please see more details on error log.
+</code></pre>
+
+<p>error 日志</p>
+
+<pre><code>2017-07-14T15:00:14.966294+08:00 0 [Note] Plugin group_replication reported: &#39;A new primary was elected, enabled conflict detection until the new primary applies all relay logs&#39;
+2017-07-14T15:00:14.966366+08:00 0 [ERROR] Plugin group_replication reported: &#39;This member has more executed transactions than those present in the group. Local transactions: 5860d02e-4b55-11e7-8721-40f2e91dc960:1-788,
+93f19c6c-6447-11e7-9323-cb37b2d517f3:1-16,
+c745233b-6614-11e7-a738-40f2e91dc960:1 &gt; Group transactions: 5860d02e-4b55-11e7-8721-40f2e91dc960:1-788,
+93f19c6c-6447-11e7-9323-cb37b2d517f3:1-16&#39;
+2017-07-14T15:00:14.966383+08:00 0 [ERROR] Plugin group_replication reported: &#39;The member contains transactions not present in the group. The member will now exit the group.&#39;
+2017-07-14T15:00:14.966366+08:00 0 [ERROR] Plugin group_replication reported: &#39;This member has more executed transactions than those present in the group. Local transactions: 5860d02e-4b55-11e7-8721-40f2e91dc960:1-788,
+93f19c6c-6447-11e7-9323-cb37b2d517f3:1-16,
+c745233b-6614-11e7-a738-40f2e91dc960:1 &gt; Group transactions: 5860d02e-4b55-11e7-8721-40f2e91dc960:1-788,
+93f19c6c-6447-11e7-9323-cb37b2d517f3:1-16&#39;
+2017-07-14T15:00:14.966383+08:00 0 [ERROR] Plugin group_replication reported: &#39;The member contains transactions not present in the group. The member will now exit the group.&#39;
+2017-07-14T15:00:14.966392+08:00 0 [Note] Plugin group_replication reported: &#39;To force this member into the group you can use the group_replication_allow_local_disjoint_gtids_join option&#39;
+2017-07-14T15:00:14.966473+08:00 88181 [Note] Plugin group_replication reported: &#39;Going to wait for view modification&#39;
+2017-07-14T15:00:14.968087+08:00 0 [Note] Plugin group_replication reported: &#39;getstart group_id 6c6c3761&#39;
+2017-07-14T15:00:18.464227+08:00 0 [Note] Plugin group_replication reported: &#39;state 4330 action xa_terminate&#39;
+2017-07-14T15:00:18.464840+08:00 0 [Note] Plugin group_replication reported: &#39;new state x_start&#39;
+2017-07-14T15:00:18.464875+08:00 0 [Note] Plugin group_replication reported: &#39;state 4257 action xa_exit&#39;
+2017-07-14T15:00:18.465367+08:00 0 [Note] Plugin group_replication reported: &#39;Exiting xcom thread&#39;
+2017-07-14T15:00:18.465382+08:00 0 [Note] Plugin group_replication reported: &#39;new state x_start&#39;
+2017-07-14T15:00:23.486593+08:00 88181 [Note] Plugin group_replication reported: &#39;auto_increment_increment is reset to 1&#39;
+2017-07-14T15:00:23.486642+08:00 88181 [Note] Plugin group_replication reported: &#39;auto_increment_offset is reset to 1&#39;
+2017-07-14T15:00:23.486838+08:00 88211 [Note] Error reading relay log event for channel &#39;group_replication_applier&#39;: slave SQL thread was killed
+2017-07-14T15:00:23.487244+08:00 88208 [Note] Plugin group_replication reported: &#39;The group replication applier thread was killed&#39;
+</code></pre>
+
+<p>强制加入，一定要确定不会导致数据不一致，谨慎操作</p>
+
+<pre><code>localhost.test&gt;SET GLOBAL group_replication_allow_local_disjoint_gtids_join = ON ;
+Query OK, 0 rows affected (0.00 sec)
+
+localhost.test&gt;start group_replication;
+Query OK, 0 rows affected (2.26 sec)
+
+localhost.test&gt;SET GLOBAL group_replication_allow_local_disjoint_gtids_join = OFF ;
+Query OK, 0 rows affected (0.00 sec)
+
+localhost.test&gt;show variables like &#39;%read_only%&#39;;
++------------------+-------+
+| Variable_name    | Value |
++------------------+-------+
+| innodb_read_only | OFF   |
+| read_only        | ON    |
+| super_read_only  | ON    |
+| tx_read_only     | OFF   |
++------------------+-------+
+4 rows in set (0.00 sec)
+
+</code></pre>
+
+<h3 id="toc_25">3.</h3>
 
 
 		</div>
