@@ -4,7 +4,7 @@
   <title><![CDATA[DBA Plus]]></title>
   <link href="http://saup007.github.io/atom.xml" rel="self"/>
   <link href="http://saup007.github.io/"/>
-  <updated>2017-07-16T14:09:31+08:00</updated>
+  <updated>2017-07-16T14:12:17+08:00</updated>
   <id>http://saup007.github.io/</id>
   <author>
     <name><![CDATA[]]></name>
@@ -13,7 +13,7 @@
   <generator uri="http://www.mweb.im/">MWeb</generator>
   
   <entry>
-    <title type="html"><![CDATA[安装Performance Monitor]]></title>
+    <title type="html"><![CDATA[安装 Performance Monitor]]></title>
     <link href="http://saup007.github.io/15001793154180.html"/>
     <updated>2017-07-16T12:28:35+08:00</updated>
     <id>http://saup007.github.io/15001793154180.html</id>
@@ -431,7 +431,7 @@ def GET(self):
   </entry>
   
   <entry>
-    <title type="html"><![CDATA[Greenplum安装篇]]></title>
+    <title type="html"><![CDATA[Greenplum 安装篇]]></title>
     <link href="http://saup007.github.io/15001790106489.html"/>
     <updated>2017-07-16T12:23:30+08:00</updated>
     <id>http://saup007.github.io/15001790106489.html</id>
