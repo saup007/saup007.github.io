@@ -1,39 +1,3937 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
-  <title><![CDATA[DBA 's life]]></title>
-  
-  <link href="/atom.xml" rel="self"/>
-  <link href="http://yoursite.com/"/>
-  <updated>2015-10-23T02:58:43.711Z</updated>
-  <id>http://yoursite.com/</id>
-  
+
+  <title><![CDATA[DBA Plus]]></title>
+  <link href="http://saup007.github.io/atom.xml" rel="self"/>
+  <link href="http://saup007.github.io/"/>
+  <updated>2017-07-16T12:42:47+08:00</updated>
+  <id>http://saup007.github.io/</id>
   <author>
-    <name><![CDATA[saup007]]></name>
+    <name><![CDATA[]]></name>
     
   </author>
-  
-  <generator uri="http://hexo.io/">Hexo</generator>
+  <generator uri="http://www.mweb.im/">MWeb</generator>
   
   <entry>
-    <title><![CDATA[Hello World]]></title>
-    <link href="http://yoursite.com/2015/10/23/hello-world/"/>
-    <id>http://yoursite.com/2015/10/23/hello-world/</id>
-    <published>2015-10-23T02:58:43.711Z</published>
-    <updated>2015-10-23T02:58:43.711Z</updated>
-    <content type="html"><![CDATA[<p>Welcome to <a href="http://hexo.io/" target="_blank" rel="external">Hexo</a>! This is your very first post. Check <a href="http://hexo.io/docs/" target="_blank" rel="external">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="http://hexo.io/docs/troubleshooting.html" target="_blank" rel="external">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="external">GitHub</a>.</p>
-<h2 id="Quick_Start">Quick Start</h2><h3 id="Create_a_new_post">Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure>
-<p>More info: <a href="http://hexo.io/docs/writing.html" target="_blank" rel="external">Writing</a></p>
-<h3 id="Run_server">Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="http://hexo.io/docs/server.html" target="_blank" rel="external">Server</a></p>
-<h3 id="Generate_static_files">Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="http://hexo.io/docs/generating.html" target="_blank" rel="external">Generating</a></p>
-<h3 id="Deploy_to_remote_sites">Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="http://hexo.io/docs/deployment.html" target="_blank" rel="external">Deployment</a></p>
+    <title type="html"><![CDATA[安装Performance Monitor]]></title>
+    <link href="http://saup007.github.io/15001793154180.html"/>
+    <updated>2017-07-16T12:28:35+08:00</updated>
+    <id>http://saup007.github.io/15001793154180.html</id>
+    <content type="html"><![CDATA[
+<ul>
+<li>
+<a href="#toc_0">前期准备：</a>
+<ul>
+<li>
+<a href="#toc_1">安装依赖</a>
+</li>
+<li>
+<a href="#toc_2">安装gpperfmon</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_3">安装 greenplum cc web</a>
+<ul>
+<li>
+<a href="#toc_4">更改权限 &amp; 环境变量</a>
+</li>
+<li>
+<a href="#toc_5">创建 Command Center 实例</a>
+</li>
+<li>
+<a href="#toc_6">启动服务</a>
+</li>
+</ul>
+</li>
+</ul>
+
+
+<span id="more"></span><!-- more -->
+
+<p>参考：</p>
+
+<p><a href="http://www.greenplumdba.com/setting-up-greenplum-command-center">Installing and enabling Greenplum Command Center</a></p>
+
+<p><a href="http://www.zhongweicheng.com/?p=858">Installation GreenPlum Performance Monitor</a></p>
+
+<p><a href="http://blog.csdn.net/jameswangcnbj/article/details/50740383">GreenPlum安装性能监控工具GPCCC（Greenplum Command Center Console）</a></p>
+
+<h2 id="toc_0">前期准备：</h2>
+
+<pre><code>a. 创建greenplum监控用数据库(gpperfmon)
+
+b. 创建greenplum监控用数据库角色(gpmon)
+
+c. 配置greenplum数据库接受来自perfmon监控的链接文件(pg_hba.conf和.pgpass)
+
+d. 设置postgresql.conf文件，增加启用监控的参数。（这些参数默认会添加在文件的末尾）
+
+gp_enable_gpperfmon=on
+gpperfmon_port=8888
+gp_external_enable_exec=on
+gpperfmon_log_alert_level=warning
+
+e. 设置pg_hba.conf文件，增加如下信息：
+
+      local    gpperfmon         gpmon         md5
+      host     all               gpmon         127.0.0.1/28    md5
+</code></pre>
+
+<h3 id="toc_1">安装依赖</h3>
+
+<p>yum install vixie-cron -y   # 若 gpcc要安装 workload manaager，需要安装这个</p>
+
+<h3 id="toc_2">安装gpperfmon</h3>
+
+<p>[gpadmin@dbaone ~]$ gpperfmon_install --enable --password 123456 --port 5432</p>
+
+<blockquote>
+<p>20160412:16:10:01:019577 gpperfmon_install:dbaone:gpadmin-[INFO]:-PGPORT=5432 psql -f /opt/greenplum/greenplum-db/./lib/gpperfmon/gpperfmon3.sql template1 &gt;&amp; /dev/null<br/>
+20160412:16:10:11:019577 gpperfmon_install:dbaone:gpadmin-[INFO]:-PGPORT=5432 psql -f /opt/greenplum/greenplum-db/./lib/gpperfmon/gpperfmon4.sql gpperfmon &gt;&amp; /dev/null<br/>
+20160412:16:10:12:019577 gpperfmon_install:dbaone:gpadmin-[INFO]:-PGPORT=5432 psql -f /opt/greenplum/greenplum-db/./lib/gpperfmon/gpperfmon41.sql gpperfmon &gt;&amp; /dev/null<br/>
+20160412:16:10:14:019577 gpperfmon_install:dbaone:gpadmin-[INFO]:-PGPORT=5432 psql -f /opt/greenplum/greenplum-db/./lib/gpperfmon/gpperfmon42.sql gpperfmon &gt;&amp; /dev/null<br/>
+20160412:16:10:17:019577 gpperfmon_install:dbaone:gpadmin-[INFO]:-PGPORT=5432 psql -f /opt/greenplum/greenplum-db/./lib/gpperfmon/gpperfmonC.sql template1 &gt;&amp; /dev/null<br/>
+20160412:16:10:17:019577 gpperfmon_install:dbaone:gpadmin-[INFO]:-PGPORT=5432 psql template1 -c &quot;DROP ROLE IF EXISTS gpmon&quot;  &gt;&amp; /dev/null<br/>
+20160412:16:10:17:019577 gpperfmon_install:dbaone:gpadmin-[INFO]:-PGPORT=5432 psql template1 -c &quot;CREATE ROLE gpmon WITH SUPERUSER CREATEDB LOGIN ENCRYPTED PASSWORD &#39;123456&#39;&quot;  &gt;&amp; /dev/null<br/>
+20160412:16:10:17:019577 gpperfmon_install:dbaone:gpadmin-[INFO]:-echo &quot;local    gpperfmon         gpmon         md5&quot; &gt;&gt; /opt/greenplum/greenplum-db/gpdata/gpmaster/gpseg-1/pg_hba.conf<br/>
+20160412:16:10:17:019577 gpperfmon_install:dbaone:gpadmin-[INFO]:-echo &quot;host     all         gpmon         127.0.0.1/28    md5&quot; &gt;&gt; /opt/greenplum/greenplum-db/gpdata/gpmaster/gpseg-1/pg_hba.conf<br/>
+20160412:16:10:17:019577 gpperfmon_install:dbaone:gpadmin-[INFO]:-touch /home/gpadmin/.pgpass &gt;&amp; /dev/null<br/>
+20160412:16:10:17:019577 gpperfmon_install:dbaone:gpadmin-[INFO]:-mv -f /home/gpadmin/.pgpass /home/gpadmin/.pgpass.1460448601 &gt;&amp; /dev/null<br/>
+20160412:16:10:17:019577 gpperfmon_install:dbaone:gpadmin-[INFO]:-echo &quot;*:5432:gpperfmon:gpmon:123456&quot; &gt;&gt; /home/gpadmin/.pgpass<br/>
+20160412:16:10:17:019577 gpperfmon_install:dbaone:gpadmin-[INFO]:-cat /home/gpadmin/.pgpass.1460448601 &gt;&gt; /home/gpadmin/.pgpass<br/>
+20160412:16:10:17:019577 gpperfmon_install:dbaone:gpadmin-[INFO]:-chmod 0600 /home/gpadmin/.pgpass &gt;&amp; /dev/null<br/>
+20160412:16:10:17:019577 gpperfmon_install:dbaone:gpadmin-[INFO]:-PGPORT=5432 gpconfig -c gp_enable_gpperfmon -v on &gt;&amp; /dev/null<br/>
+20160412:16:10:23:019577 gpperfmon_install:dbaone:gpadmin-[INFO]:-PGPORT=5432 gpconfig -c gpperfmon_port -v 8888 &gt;&amp; /dev/null<br/>
+20160412:16:10:29:019577 gpperfmon_install:dbaone:gpadmin-[INFO]:-PGPORT=5432 gpconfig -c gp_external_enable_exec -v on --masteronly &gt;&amp; /dev/null<br/>
+20160412:16:10:35:019577 gpperfmon_install:dbaone:gpadmin-[INFO]:-PGPORT=5432 gpconfig -c gpperfmon_log_alert_level -v warning &gt;&amp; /dev/null<br/>
+20160412:16:10:40:019577 gpperfmon_install:dbaone:gpadmin-[INFO]:-gpperfmon will be enabled after a full restart of GPDB</p>
+</blockquote>
+
+<pre><code> # 跑一些脚本，创建表和视图
+</code></pre>
+
+<p>[gpadmin@dbaone ~]\( ll \)GPHOME/lib/gpperfmon/<br/>
+total 56<br/>
+-rwxr-xr-x 1 gpadmin gpadmin 18339 Nov 13 15:44 gpperfmon3.sql<br/>
+-rwxr-xr-x 1 gpadmin gpadmin  9051 Nov 13 15:44 gpperfmon41.sql<br/>
+-rwxr-xr-x 1 gpadmin gpadmin 14407 Nov 13 15:44 gpperfmon42.sql<br/>
+-rwxr-xr-x 1 gpadmin gpadmin  3277 Nov 13 15:44 gpperfmon4.sql<br/>
+-rwxr-xr-x 1 gpadmin gpadmin   250 Nov 13 15:44 gpperfmonC.sql</p>
+
+<pre><code> # 重启gp生效
+</code></pre>
+
+<p>[gpadmin@dbaone ~]$ gpstop -afr</p>
+
+<blockquote>
+<p>20160412:16:40:14:020911 gpstop:dbaone:gpadmin-[INFO]:-Starting gpstop with args: -afr<br/>
+20160412:16:40:14:020911 gpstop:dbaone:gpadmin-[INFO]:-Gathering information and validating the environment...<br/>
+20160412:16:40:14:020911 gpstop:dbaone:gpadmin-[INFO]:-Obtaining Greenplum Master catalog information<br/>
+20160412:16:40:14:020911 gpstop:dbaone:gpadmin-[INFO]:-Obtaining Segment details from master...<br/>
+20160412:16:40:15:020911 gpstop:dbaone:gpadmin-[INFO]:-Greenplum Version: &#39;postgres (Greenplum Database) 4.3.6.2 build 1&#39;<br/>
+20160412:16:40:15:020911 gpstop:dbaone:gpadmin-[INFO]:-There are 0 connections to the database<br/>
+20160412:16:40:15:020911 gpstop:dbaone:gpadmin-[INFO]:-Commencing Master instance shutdown with mode=&#39;fast&#39;<br/>
+20160412:16:40:15:020911 gpstop:dbaone:gpadmin-[INFO]:-Master host=dbaone<br/>
+20160412:16:40:15:020911 gpstop:dbaone:gpadmin-[INFO]:-Detected 0 connections to database<br/>
+20160412:16:40:15:020911 gpstop:dbaone:gpadmin-[INFO]:-Using standard WAIT mode of 120 seconds<br/>
+20160412:16:40:15:020911 gpstop:dbaone:gpadmin-[INFO]:-Commencing Master instance shutdown with mode=fast<br/>
+20160412:16:40:15:020911 gpstop:dbaone:gpadmin-[INFO]:-Master segment instance directory=/opt/greenplum/greenplum-db/gpdata/gpmaster/gpseg-1<br/>
+20160412:16:40:16:020911 gpstop:dbaone:gpadmin-[INFO]:-Attempting forceful termination of any leftover master process<br/>
+20160412:16:40:16:020911 gpstop:dbaone:gpadmin-[INFO]:-Terminating processes for segment /opt/greenplum/greenplum-db/gpdata/gpmaster/gpseg-1<br/>
+20160412:16:40:16:020911 gpstop:dbaone:gpadmin-[INFO]:-Stopping master standby host dbafour mode=fast<br/>
+20160412:16:40:17:020911 gpstop:dbaone:gpadmin-[INFO]:-Successfully shutdown standby process on dbafour<br/>
+20160412:16:40:17:020911 gpstop:dbaone:gpadmin-[INFO]:-Commencing parallel primary segment instance shutdown, please wait...<br/>
+20160412:16:40:17:020911 gpstop:dbaone:gpadmin-[INFO]:-0.00% of jobs completed<br/>
+20160412:16:40:27:020911 gpstop:dbaone:gpadmin-[INFO]:-100.00% of jobs completed<br/>
+20160412:16:40:27:020911 gpstop:dbaone:gpadmin-[INFO]:-Commencing parallel mirror segment instance shutdown, please wait...<br/>
+20160412:16:40:27:020911 gpstop:dbaone:gpadmin-[INFO]:-0.00% of jobs completed<br/>
+20160412:16:40:37:020911 gpstop:dbaone:gpadmin-[INFO]:-100.00% of jobs completed<br/>
+20160412:16:40:37:020911 gpstop:dbaone:gpadmin-[INFO]:-----------------------------------------------------<br/>
+20160412:16:40:37:020911 gpstop:dbaone:gpadmin-[INFO]:-   Segments stopped successfully      = 12<br/>
+20160412:16:40:37:020911 gpstop:dbaone:gpadmin-[INFO]:-   Segments with errors during stop   = 0<br/>
+20160412:16:40:37:020911 gpstop:dbaone:gpadmin-[INFO]:-----------------------------------------------------<br/>
+20160412:16:40:37:020911 gpstop:dbaone:gpadmin-[INFO]:-Successfully shutdown 12 of 12 segment instances<br/>
+20160412:16:40:37:020911 gpstop:dbaone:gpadmin-[INFO]:-Database successfully shutdown with no errors reported<br/>
+20160412:16:40:37:020911 gpstop:dbaone:gpadmin-[INFO]:-Cleaning up leftover gpmmon process<br/>
+20160412:16:40:37:020911 gpstop:dbaone:gpadmin-[INFO]:-No leftover gpmmon process found<br/>
+20160412:16:40:37:020911 gpstop:dbaone:gpadmin-[INFO]:-Cleaning up leftover gpsmon processes<br/>
+20160412:16:40:37:020911 gpstop:dbaone:gpadmin-[INFO]:-No leftover gpsmon processes on some hosts. not attempting forceful termination on these hosts<br/>
+20160412:16:40:37:020911 gpstop:dbaone:gpadmin-[INFO]:-Cleaning up leftover shared memory<br/>
+20160412:16:40:42:020911 gpstop:dbaone:gpadmin-[INFO]:-Restarting System...</p>
+</blockquote>
+
+<p>[gpadmin@dbaone ~]\( ps -ef | grep gpmmon | grep -v grep<br/>
+gpadmin  21113 21104  0 16:40 ?        00:00:00 /opt/greenplum/greenplum-db-4.3.6.2/bin/gpmmon -D /opt/greenplum/greenplum-db/gpdata/gpmaster/gpseg-1/gpperfmon/conf/gpperfmon.conf -p 5432<br/>
+[gpadmin@dbaone ~]\)<br/>
+[gpadmin@dbaone ~]$ ps -ef | grep greenplum | grep -v grep<br/>
+gpadmin  21104     1  0 16:40 ?        00:00:00 /opt/greenplum/greenplum-db-4.3.6.2/bin/postgres -D /opt/greenplum/greenplum-db/gpdata/gpmaster/gpseg-1 -p 5432 -b 1 -z 6 --silent-mode=true -i -M master -C -1 -x 14 -E<br/>
+gpadmin  21113 21104  0 16:40 ?        00:00:00 /opt/greenplum/greenplum-db-4.3.6.2/bin/gpmmon -D /opt/greenplum/greenplum-db/gpdata/gpmaster/gpseg-1/gpperfmon/conf/gpperfmon.conf -p 5432<br/>
+gpadmin  21393     1  0 16:40 ?        00:00:00 /opt/greenplum/greenplum-db/./bin/gpsmon -m 0 -i -t 150 -l /opt/greenplum/greenplum-db/gpdata/gpmaster/gpseg-1/gpperfmon/logs -v 0 8888</p>
+
+<p>[gpadmin@dbaone ~]$ psql<br/>
+psql (8.2.15)<br/>
+Type &quot;help&quot; for help.</p>
+
+<p>testdb=# \l<br/>
+                  List of databases<br/>
+   Name    |  Owner  | Encoding |  Access privileges<br/>
+-----------+---------+----------+---------------------<br/>
+ gpperfmon | gpadmin | UTF8     | gpadmin=CTc/gpadmin<br/>
+                                : =c/gpadmin<br/>
+ postgres  | gpadmin | UTF8     |<br/>
+ template0 | gpadmin | UTF8     | =c/gpadmin<br/>
+                                : gpadmin=CTc/gpadmin<br/>
+ template1 | gpadmin | UTF8     | =c/gpadmin<br/>
+                                : gpadmin=CTc/gpadmin<br/>
+ testdb    | gpadmin | UTF8     |<br/>
+(5 rows)</p>
+
+<p>testdb=# select * from pg_user;<br/>
+ usename | usesysid | usecreatedb | usesuper | usecatupd |  passwd  | valuntil | useconfig<br/>
+---------+----------+-------------+----------+-----------+----------+----------+-----------<br/>
+ gpadmin |       10 | t           | t        | t         | ******** |          |<br/>
+ gpmon   |    19414 | t           | t        | t         | ******** |          |<br/>
+(2 rows)</p>
+
+<p>testdb=# \du<br/>
+                       List of roles<br/>
+ Role name |            Attributes             | Member of<br/>
+-----------+-----------------------------------+-----------<br/>
+ gpadmin   | Superuser, Create role, Create DB |<br/>
+ gpmon     | Superuser, Create DB              |</p>
+
+<pre><code> # 确认Performance Monitor数据库写入数据是否正常，检查是否有记录写入 「若第1次没有结果，等几秒再试一次」
+</code></pre>
+
+<p>[gpadmin@dbaone ~]$ psql gpperfmon -c &#39;SELECT * FROM system_now;&#39;<br/>
+        ctime        | hostname | mem_total  |  mem_used  | mem_actual_used | mem_actual_free | swap_total | swap_used | swap_page_in | swap_page_out | cpu_user | cpu_sys | cpu_idle | load0 | load1 | load2 | quantum | disk_ro_rate | disk_wo_rate | disk_rb_rate | disk_wb<br/>
+<u>rate | net</u>rp_rate | net_wp_rate | net_rb_rate | net_wb_rate<br/>
+---------------------+----------+------------+------------+-----------------+-----------------+------------+-----------+--------------+---------------+----------+---------+----------+-------+-------+-------+---------+--------------+--------------+--------------+--------<br/>
+------+-------------+-------------+-------------+-------------<br/>
+ 2016-04-12 16:47:45 | dbatwo   | 8254828544 | 8112623616 |      1895161856 |      6359666688 |  536866816 |         0 |            0 |             0 |     0.05 |    0.05 |     99.9 |     0 |  0.01 |     0 |      15 |            0 |            0 |            0 |<br/>
+    0 |          16 |           9 |       21129 |       20901<br/>
+ 2016-04-12 16:47:45 | dbafour  | 8254828544 | 7996710912 |      1393299456 |      6861529088 |  536866816 |    253952 |            0 |             0 |     0.07 |    0.07 |    99.83 |  0.06 |  0.06 |  0.02 |      15 |            0 |            1 |            0 |<br/>
+14229 |          17 |          11 |       21225 |       41669<br/>
+ 2016-04-12 16:47:45 | dbaone   | 8254828544 | 8084590592 |      3054915584 |      5199912960 |  536866816 |         0 |            0 |             0 |     0.35 |     0.2 |    99.45 |     0 |     0 |     0 |      15 |            0 |            2 |            0 |<br/>
+ 8715 |          22 |          17 |        2977 |        1907<br/>
+ 2016-04-12 16:47:45 | dbathree | 8254828544 | 8094613504 |      1864966144 |      6389862400 |  536866816 |   1363968 |            0 |             0 |     0.03 |    0.05 |    99.92 |  0.04 |  0.03 |     0 |      15 |            0 |            1 |            0 |<br/>
+10893 |          17 |          11 |       41906 |       20978<br/>
+(4 rows)</p>
+
+<blockquote>
+<p>将必要的 .pgpass 、pg_hba.conf 传到 standby master上</p>
+</blockquote>
+
+<p>[gpadmin@dbaone ~]$ scp .pgpass dbafour:/home/gpadmin/<br/>
+.pgpass</p>
+
+<p>[gpadmin@dbaone ~]\( scp \)MASTER_DATA_DIRECTORY/pg_hba.conf dbafour:/$MASTER_DATA_DIRECTORY/pg_hba.conf<br/>
+pg_hba.conf</p>
+
+<h2 id="toc_3">安装 greenplum cc web</h2>
+
+<p>[root@dbaone greenplum-cc-web]# ./greenplum-cc-web-2.0.0-build-32-RHEL5-x86_64.bin</p>
+
+<pre><code>********************************************************************************
+Do you accept the Pivotal Greenplum Database end user license
+agreement? [yes | no]
+********************************************************************************
+
+yes
+
+********************************************************************************
+Provide the installation path for Greenplum Command Center or
+press ENTER to accept the default installation path:     
+
+/usr/local/greenplum-cc-web-2.0.0-build-32
+********************************************************************************
+
+/opt/greenplum/greenplum-cc-web-2.0.0-build-32
+
+********************************************************************************
+Install Greenplum Command Center into &lt;/opt/greenplum/greenplum-cc-web-2.0.0-build-32&gt;? [yes | no]
+********************************************************************************
+
+yes
+
+Extracting product to /opt/greenplum/greenplum-cc-web-2.0.0-build-32
+
+********************************************************************************
+Installation complete.
+Greenplum Command Center is installed in /opt/greenplum/greenplum-cc-web-2.0.0-build-32
+
+To complete the environment configuration, please ensure that the
+gpcc_path.sh file is sourced.
+********************************************************************************
+</code></pre>
+
+<h3 id="toc_4">更改权限 &amp; 环境变量</h3>
+
+<p>[root]# chown gpadmin.gpadmin -R /opt/greenplum/greenplum-cc-web</p>
+
+<p>[root]# chown gpadmin.gpadmin -R /opt/greenplum/greenplum-cc-web-2.0.0-build-32/</p>
+
+<blockquote>
+<p>加载环境变量 gpadmin &amp;&amp; root</p>
+</blockquote>
+
+<p>vim .bashrc</p>
+
+<pre><code># For GP web
+source /opt/greenplum/greenplum-cc-web/gpcc_path.sh
+</code></pre>
+
+<p>source ~/.bashrc</p>
+
+<blockquote>
+<p>修改权限</p>
+</blockquote>
+
+<p>vim $MASTER_DATA_DIRECTORY/pg_hba.conf</p>
+
+<pre><code> host    gpperfmon   gpmon           ::1/128    md5
+</code></pre>
+
+<p>$ gpstop -u</p>
+
+<blockquote>
+<p>将 Master安装的，拷贝到 其他节点</p>
+</blockquote>
+
+<p>$ gpccinstall -f  /opt/greenplum/greenplum-db/conf/hostlist</p>
+
+<h3 id="toc_5">创建 Command Center 实例</h3>
+
+<p>[gpadmin@dbaone ~]$ gpcmdr --setup</p>
+
+<pre><code>An instance name is used by the Greenplum Command Center as
+a way to uniquely identify a Greenplum Database that has the monitoring
+components installed and configured.  This name is also used to control
+specific instances of the Greenplum Command Center web UI.  Instance names
+can contain letters, digits and underscores and are not case sensitive.
+
+Please enter a new instance name:
+&gt; Mr_Liu_gp
+The web component of the Greenplum Command Center can connect to a
+monitor database on a remote Greenplum Database.
+
+Is the master host for the Greenplum Database remote? Yy|Nn  (default=N):
+&gt;
+  The display name is shown in the web interface and does not need to be a hostname.
+
+What would you like to use for the display name for this instance:
+&gt; greenplum_test
+What port does the Greenplum Database use? (default=5432):
+&gt;
+Creating instance schema in GPDB.  Please wait ...
+The display name is shown in the web interface and does not need to bea hostname.
+
+Would you like to install workload manager? Yy|Nn (default=N):        ## 若与master不在一台机器上，是不能选择y的。
+&gt;
+Skipping installation of workload manager.
+The Greenplum Command Center runs a small web server for the UI and web API.
+This web server by default runs on port 28080, but you may specify any available port.
+
+What port would you like the web server to use for this instance? (default=28080):
+&gt;
+Users logging in to the Command Center must provide database user
+credentials.  In order to protect user names and passwords, it is recommended 
+that SSL be enabled.
+
+Do you want to enable SSL for the Web API Yy|Nn (default=N):
+&gt;
+
+Do you want to enable ipV6 for the Web API Yy|Nn (default=N):
+&gt;
+
+Do you want to enable Cross Site Request Forgery Protection for the Web API Yy|Nn (default=N):
+&gt;
+
+Do you want to copy the instance to a standby master host Yy|Nn (default=Y):
+&gt;
+What is the hostname of the standby master host? [smdw]: dbafour
+standby is dbafour
+
+Done writing lighttpd configuration to /opt/greenplum/greenplum-cc-web/./instances/mr_liu_gp/conf/lighttpd.conf
+Done writing web UI configuration to /opt/greenplum/greenplum-cc-web/./instances/mr_liu_gp/conf/gpperfmonui.conf
+  Done writing web UI clustrs configuration to /opt/greenplum/greenplum-cc-web/./instances/mr_liu_gp/conf/clusters.conf
+
+Copying instance &#39;mr_liu_gp&#39; to host &#39;dbafour&#39;...
+
+Greenplum Command Center UI configuration is now complete.  If
+at a later date you want to change certain parameters, you can
+either re-run &#39;gpcmdr --setup&#39; or edit the configuration file
+located at /opt/greenplum/greenplum-cc-    web/./instances/mr_liu_gp/conf/gpperfmonui.conf.
+
+The web UI for this instance is available at http://dbaone:28080/
+
+You can now start the web UI for this instance by running: gpcmdr -- start mr_liu_gp
+No instances
+</code></pre>
+
+<p>vim /opt/greenplum/greenplum-cc-web/www/gpmonws.py</p>
+
+<pre><code> # 修改连接 Greenplum database 恒为真
+
+# This service can be called without a login
+# To check if GPDB is up or not
+# this can be used by the GUI to decide weather to display login screen or gpstart screen
+class gpdbup:
+  def GET(self):
+    web.header(&#39;Content-Type&#39;, &#39;text/xml&#39;)
+    web.header(&#39;Cache-Control&#39;, &#39;no-store&#39;)
+
+    cleanKrbFile()
+    database_up = False
+
+    try:
+        database_up = db.is_gpdb_running(gpdb_server_name)
+    except db.GPDBError, errorinfo:
+        return mkerr(error.DATA_ACCESS, errorinfo.__str__())
+
+    #return render.gpdbup(database_up)
+    return render.gpdbup(True)
+</code></pre>
+
+<p>or</p>
+
+<pre><code> # 修改连接 Master的主机名
+
+# This service can be called without a login
+# To check if GPDB is up or not
+# this can be used by the GUI to decide weather to display login screen or gpstart screen
+class gpdbup:
+def GET(self):
+    web.header(&#39;Content-Type&#39;, &#39;text/xml&#39;)
+    web.header(&#39;Cache-Control&#39;, &#39;no-store&#39;)
+
+    cleanKrbFile()
+    database_up = False
+
+    try:
+        #database_up = db.is_gpdb_running(gpdb_server_name)
+        database_up = db.is_gpdb_running(&#39;dbaone&#39;)
+    except db.GPDBError, errorinfo:
+        return mkerr(error.DATA_ACCESS, errorinfo.__str__())
+
+    return render.gpdbup(database_up)
+</code></pre>
+
+<p>若不修改文件，则为下面状况：<br/>
+<img src="http://upload-images.jianshu.io/upload_images/60026-ede1f559e1c975d3.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Image.png"/></p>
+
+<h3 id="toc_6">启动服务</h3>
+
+<p>$ gpcmdr --start mr_liu_gp</p>
+
+<p><a href="http://dbaone:28080/">http://dbaone:28080/</a></p>
+
 ]]></content>
-    <summary type="html">
-    <![CDATA[<p>Welcome to <a href="http://hexo.io/" target="_blank" rel="external">Hexo</a>! This is your very first post. Check <a href="http://hexo.io]]>
-    </summary>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Greenplum安装篇]]></title>
+    <link href="http://saup007.github.io/15001790106489.html"/>
+    <updated>2017-07-16T12:23:30+08:00</updated>
+    <id>http://saup007.github.io/15001790106489.html</id>
+    <content type="html"><![CDATA[
+<blockquote>
+<p>目录：</p>
+</blockquote>
+
+<ul>
+<li>
+<a href="#toc_0">第一部分 - Linux Configuration 「所有节点」</a>
+<ul>
+<li>
+<a href="#toc_1">Add User 「所有节点执行」添加用户</a>
+</li>
+<li>
+<a href="#toc_2">关闭 SELinux 、 iptables</a>
+</li>
+<li>
+<a href="#toc_3">Yum 「防止初始化失败，ed 命令来修改配置文件」</a>
+</li>
+<li>
+<a href="#toc_4">配置主机名 hosts</a>
+</li>
+<li>
+<a href="#toc_5">配置内核参数</a>
+</li>
+<li>
+<a href="#toc_6">配置资源限制</a>
+</li>
+<li>
+<a href="#toc_7">XFS 分区</a>
+</li>
+<li>
+<a href="#toc_8">设置Linux调度器规则，默认为 CFQ ，更改为 deadline</a>
+</li>
+<li>
+<a href="#toc_9">    noop anticipatory [deadline] cfq</a>
+</li>
+<li>
+<a href="#toc_10">禁用 Transparent Huge Pages (THP)</a>
+</li>
+<li>
+<a href="#toc_11">修改磁盘预计参数 「预读扇区数」</a>
+</li>
+<li>
+<a href="#toc_12">NTP 配置</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_13">第二部分 - 安装 Greenplum</a>
+<ul>
+<li>
+<a href="#toc_14">更改权限</a>
+</li>
+<li>
+<a href="#toc_15">配置 gp 机器host</a>
+</li>
+<li>
+<a href="#toc_16">配置免密钥</a>
+</li>
+<li>
+<a href="#toc_17"></a>
+</li>
+<li>
+<a href="#toc_18">Greenplum 配置</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_19">第三部分 - 图形工具 GUI</a>
+</li>
+<li>
+<a href="#toc_20">第四部分 -- Standby Master</a>
+<ul>
+<li>
+<a href="#toc_21">添加 Standby Master</a>
+</li>
+<li>
+<a href="#toc_22">删除 standby master</a>
+</li>
+<li>
+<a href="#toc_23">重新同步 Standby Master「若已有 Standby Master，但这个节点已经不同步了，需要重启同步」</a>
+</li>
+<li>
+<a href="#toc_24">查看 Standby Master 是否同步</a>
+</li>
+<li>
+<a href="#toc_25">添加 Standby Master</a>
+</li>
+<li>
+<a href="#toc_26">启用 Standby Master</a>
+</li>
+</ul>
+</li>
+</ul>
+
+
+<span id="more"></span><!-- more -->
+
+<p>架构：默认Grouped Miior，建议Spread Mirror</p>
+
+<p>          172.24.3.76「Master」<br/>
+     -------------------------<br/>
+     |          |             |</p>
+
+<pre><code>172.24.3.77  172.24.3.78     172.24.3.79
+Primary 1    Primary 3       Primary 5
+Primary 2    Primary 4       Primary 6
+Mirror 5     Mirror 1        Mirror 3
+Mirror 6     Mirror 2        Mirror 4
+
+                             Master Standy
+</code></pre>
+
+<h1 id="toc_0">第一部分 - Linux Configuration 「所有节点」</h1>
+
+<h2 id="toc_1">Add User 「所有节点执行」添加用户</h2>
+
+<p>groupadd -g 530 gpadmin<br/>
+useradd -g 530 -u 530 -m -d /home/gpadmin -s /bin/bash gpadmin<br/>
+chown -R gpadmin.gpadmin /home/gpadmin<br/>
+echo &quot;gpadmin&quot; | passwd --stdin gpadmin</p>
+
+<h2 id="toc_2">关闭 SELinux 、 iptables</h2>
+
+<p>cat /etc/selinux/config  | grep &quot;<sup>SELINUX=&quot;</sup></p>
+
+<pre><code>SELINUX=disabled
+</code></pre>
+
+<p>sestatus  # 查看当前SeLinux配置是 disabled</p>
+
+<p>/etc/init.d/iptables status</p>
+
+<p>chkconfig --list | grep iptables | grep on</p>
+
+<h2 id="toc_3">Yum 「防止初始化失败，ed 命令来修改配置文件」</h2>
+
+<p>yum install ed -y</p>
+
+<h2 id="toc_4">配置主机名 hosts</h2>
+
+<p>vim /etc/hosts</p>
+
+<pre><code>127.0.0.1   localhost localhost.localdomain localhost4  localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6  localhost6.localdomain6
+172.24.3.76  dbaone
+172.24.3.77  dbatwo
+172.24.3.78  dbathree
+172.24.3.79  dbafour
+</code></pre>
+
+<p>scp /etc/hosts dbaone:/etc<br/>
+scp /etc/hosts dbatwo:/etc<br/>
+scp /etc/hosts dbathree:/etc<br/>
+scp /etc/hosts dbafour:/etc</p>
+
+<h2 id="toc_5">配置内核参数</h2>
+
+<p>vim /etc/sysctl.conf</p>
+
+<pre><code>#xfs_mount_options = rw,noatime,inode64,allocsize=16m   # 因为使用不是xfs，所以注释此行kernel.shmmax = 500000000
+kernel.shmmni = 4096
+kernel.shmall = 4000000000
+kernel.sem = 250 512000 100 2048
+kernel.sysrq = 1
+kernel.core_uses_pid = 1
+kernel.msgmnb = 65536
+kernel.msgmax = 65536
+kernel.msgmni = 2048
+net.ipv4.tcp_syncookies = 1
+net.ipv4.ip_forward = 0
+net.ipv4.conf.default.accept_source_route = 0
+net.ipv4.tcp_tw_recycle = 1
+net.ipv4.tcp_max_syn_backlog = 4096
+net.ipv4.conf.all.arp_filter = 1
+net.ipv4.conf.defalut.arp_filter = 1
+# add 20160331 ########
+net.ipv4.ip_local_port_range = 1025 65535
+net.core.netdev_max_backlog = 10000
+net.core.rmem_max = 2097152
+net.core.wmem_max = 2097152
+#vm.overcommit_memory = 2     ### 测试环境要取消这个，否则oracle启不来 ### 值为1
+</code></pre>
+
+<p>sysctl -p</p>
+
+<h2 id="toc_6">配置资源限制</h2>
+
+<p>vim /etc/security/limits.conf</p>
+
+<pre><code>soft nofile 65536* hard nofile 65536
+soft nproc 131072
+hard nproc 131072
+</code></pre>
+
+<p>vim /etc/security/limits.d/90-nproc.conf # 「将1024 修改为131072」</p>
+
+<pre><code>soft nofile 65536
+hard nofile 65536
+soft nproc 131072
+hard nproc 131072
+</code></pre>
+
+<h2 id="toc_7">XFS 分区</h2>
+
+<p>yum install xfsprogs</p>
+
+<p>mkfs.xfs -f /dev/[device]</p>
+
+<p>vim /etc/fstab  # <em>后2位是 1 1 吗？</em></p>
+
+<p>     /dev/[device] /[partition] xfs rw,noatime,inode64,allocsize=16m 0 0</p>
+
+<h2 id="toc_8">设置Linux调度器规则，默认为 CFQ ，更改为 deadline</h2>
+
+<p>cat /sys/block/{devname}/queue/scheduler<br/>
+ </p>
+
+<h2 id="toc_9">    noop anticipatory [deadline] cfq</h2>
+
+<pre><code>echo deadline &gt; /sys/block/**{devname}**/queue/scheduler
+</code></pre>
+
+<blockquote>
+<p>固化配置<br/>
+cat /etc/rc.d/rc.local</p>
+</blockquote>
+
+<p>    echo deadline &gt; /sys/block/<strong>{devname</strong>/queue/scheduler</p>
+
+<p>or </p>
+
+<p>vim /boot/grub/menu.lst   # 配置错误会导致系统启动失败</p>
+
+<pre><code># Note that you do not have to rerun grub after making changes to this file
+# NOTICE:  You have a /boot partition.  This means that
+#          all kernel and initrd paths are relative to /boot/, eg.
+#          root (hd0,0)
+#          kernel /vmlinuz-version ro root=/dev/mapper/VolGroup00-LogVol00
+#          initrd /initrd-[generic-]version.img
+#boot=/dev/vda
+default=0
+timeout=5
+
+title CentOS (2.6.32-573.7.1.el6.x86_64)
+</code></pre>
+
+<p>        root (hd0,0)<br/>
+        kernel /vmlinuz-2.6.32-573.7.1.el6.x86_64 ro root=/dev/mapper/VolGroup00-LogVol00 rd_NO_LUKS  KEYBOARDTYPE=pc KEYTABLE=uk LANG=en_US.UTF-8 rd_NO_MD  crashkernel=auto rd_LVM_LV=VolGroup00/LogVol01 rd_LVM_LV=VolGroup00/LogVol00 SYSFONT=latarcyrheb-sun16 rd_NO_DM  <strong> elevator=deadline</strong><br/>
+        initrd /initramfs-2.6.32-573.7.1.el6.x86_64.img</p>
+
+<h2 id="toc_10">禁用 Transparent Huge Pages (THP)</h2>
+
+<p>cat /sys/kernel/mm/redhat_transparent_hugepage/defrag<br/>
+     [always] madvise never</p>
+
+<p>echo never &gt; /sys/kernel/mm/redhat_transparent_hugepage/defrag</p>
+
+<p>     # 固化配置<br/>
+    vim /etc/rc.d/rc.local<br/>
+ <br/>
+    if test -f /sys/kernel/mm/transparent_hugepage/enabled; then<br/>
+     echo never &gt; /sys/kernel/mm/transparent_hugepage/enabled<br/>
+    fi</p>
+
+<pre><code>if test -f /sys/kernel/mm/transparent_hugepage/defrag; then
+</code></pre>
+
+<p>     echo never &gt; /sys/kernel/mm/transparent_hugepage/defrag<br/>
+    fi</p>
+
+<p>or</p>
+
+<pre><code>vim /boot/grub/menu.lst   # 配置错误会导致系统启动失败
+
+# Note that you do not have to rerun grub after making changes to this file
+# NOTICE:  You have a /boot partition.  This means that
+#          all kernel and initrd paths are relative to /boot/, eg.
+#          root (hd0,0)
+#          kernel /vmlinuz-version ro root=/dev/mapper/VolGroup00-LogVol00
+#          initrd /initrd-[generic-]version.img
+#boot=/dev/vda
+default=0
+timeout=5
+
+title CentOS (2.6.32-573.7.1.el6.x86_64)
+</code></pre>
+
+<p>        root (hd0,0)<br/>
+        kernel /vmlinuz-2.6.32-573.7.1.el6.x86_64 ro root=/dev/mapper/VolGroup00-LogVol00 rd_NO_LUKS  KEYBOARDTYPE=pc KEYTABLE=uk LANG=en_US.UTF-8 rd_NO_MD  crashkernel=auto rd_LVM_LV=VolGroup00/LogVol01 rd_LVM_LV=VolGroup00/LogVol00 SYSFONT=latarcyrheb-sun16 rd_NO_DM  <strong> elevator=deadline transparent_hugepage=never</strong><br/>
+        initrd /initramfs-2.6.32-573.7.1.el6.x86_64.img</p>
+
+<h2 id="toc_11">修改磁盘预计参数 「预读扇区数」</h2>
+
+<p>/sbin/blockdev --getra /dev/[device]<br/>
+     256</p>
+
+<p>/sbin/blockdev --setra 16384 /dev/[device]</p>
+
+<h2 id="toc_12">NTP 配置</h2>
+
+<p>$ date<br/>
+     Mon Apr 11 15:28:05 CST 2016</p>
+
+<p>若显示不是CST，copy覆盖<br/>
+cp /usr/share/zoneinfo/Asia/Chongqing /etc/local</p>
+
+<p>vim /etc/ntp.conf</p>
+
+<pre><code>server 172.24.2.10 prefer
+server 172.24.2.11
+</code></pre>
+
+<p>/etc/init.d/ntpd status<br/>
+     ntpd (pid  1666) is running...</p>
+
+<h1 id="toc_13">第二部分 - 安装 Greenplum</h1>
+
+<p>./greenplum-db-4.3.8.0-build-1-RHEL5-x86_64.bin</p>
+
+<pre><code>********************************************************************************
+Do you accept the Pivotal Database license agreement? [yes|no]
+********************************************************************************
+
+yes
+
+********************************************************************************
+Provide the installation path for Greenplum Database or press ENTER to
+accept the default installation path: /usr/local/greenplum-db-4.3.8.0
+********************************************************************************
+
+/opt/greenplum/greenplum-db-4.3.8.0
+
+********************************************************************************
+Install Greenplum Database into &lt;/opt/greenplum/greenplum-db-4.3.8.0&gt;? [yes|no]
+********************************************************************************
+
+yes
+
+********************************************************************************
+/opt/greenplum/greenplum-db-4.3.8.0 does not exist.
+Create /opt/greenplum/greenplum-db-4.3.8.0 ? [yes|no]
+(Selecting no will exit the installer)
+    ********************************************************************************
+
+yes
+
+Extracting product to /opt/greenplum/greenplum-db-4.3.8.0
+
+********************************************************************************
+Installation complete.
+Greenplum Database is installed in /opt/greenplum/greenplum-db-4.3.8.0
+
+Pivotal Greenplum documentation is available
+for download at http://docs.gopivotal.com/gpdb
+********************************************************************************
+</code></pre>
+
+<h2 id="toc_14">更改权限</h2>
+
+<p>chown -R gpadmin.gpadmin /opt/greenplum/</p>
+
+<p>chown -R gpadmin.gpadmin /opt/greenplum/greenplum-db</p>
+
+<h2 id="toc_15">配置 gp 机器host</h2>
+
+<p>su - gpadmin</p>
+
+<p>mkdir -p /opt/greenplum/greenplum-db/conf</p>
+
+<p>$ cat /opt/greenplum/greenplum-db/conf/hostlist<br/>
+dbaone<br/>
+dbatwo<br/>
+dbathree<br/>
+dbafour</p>
+
+<p>$ cat /opt/greenplum/greenplum-db/conf/seg_hosts<br/>
+dbatwo<br/>
+dbathree<br/>
+dbafour</p>
+
+<h2 id="toc_16">配置免密钥</h2>
+
+<blockquote>
+<p>若ssh端口是22，使用此方法，否则手工配置免密钥</p>
+</blockquote>
+
+<p>$ gpssh-exkeys -f /opt/greenplum/greenplum-db/conf/hostlist</p>
+
+<p>安装免密</p>
+
+<p>[gpadmin@dbaone .ssh]$ gpssh-exkeys -f /opt/greenplum/greenplum-db/conf/hostlist<br/>
+[STEP 1 of 5] create local ID and authorize on local host<br/>
+  ... /home/gpadmin/.ssh/id_rsa file exists ... key generation skipped</p>
+
+<p>[STEP 2 of 5] keyscan all hosts and update known_hosts file</p>
+
+<p>[STEP 3 of 5] authorize current user on remote hosts<br/>
+  ... send to sdw1<br/>
+[ERROR sdw1] [Errno 111] Connection refused<br/>
+[ERROR sdw1] skipping key exchange for sdw1<br/>
+[ERROR sdw1] unable to authorize current user</p>
+
+<p>[gpadmin@dbaone ~]$ gpssh -f /opt/greenplum/greenplum-db/conf/hostlist<br/>
+Note: command history unsupported on this machine ...<br/>
+=&gt;<br/>
+=&gt; pwd<br/>
+[ mdw] /home/gpadmin<br/>
+[sdw1] /home/gpadmin<br/>
+[sdw3] /home/gpadmin<br/>
+[sdw2] /home/gpadmin</p>
+
+<p>cd /opt/greenplum/<br/>
+tar -czf gp.4.3.6.1.tar.gz greenplum-db-4.3.6.1/<br/>
+chown gpadmin.gpadmin gp.4.3.6.1.tar.gz </p>
+
+<p>source /opt/greenplum/greenplum-db/greenplum_path.sh</p>
+
+<p>gpssh -f /opt/greenplum/greenplum-db/conf/seg_hosts -e -v  &quot;mkdir -p /opt/greenplum &amp;&amp; chown gpadmin.gpadmin -R /opt/greenplum&quot;</p>
+
+<p>$ gpscp -f /opt/greenplum/greenplum-db/conf/seg_hosts /opt/greenplum/gp.4.3.6.1.tar.gz  =:/opt/greenplum/</p>
+
+<p>$ gpssh -f /opt/greenplum/greenplum-db/conf/seg_hosts -e -v &quot;cd /opt/greenplum &amp;&amp; tar -zxf gp.4.3.6.1.tar.gz&quot;</p>
+
+<blockquote>
+<p>建立软链接「Master直接安装，自动创建链链接的，其他节点需要手工创建软链接，原Master节点软链接要删除下」</p>
+</blockquote>
+
+<p>$ gpssh -f /opt/greenplum/greenplum-db/conf/seg_hosts -e -v &quot;cd /opt/greenplum &amp;&amp; ln -s greenplum-db-4.3.8.0 greenplum-db&quot;</p>
+
+<p>$ gpssh -f /opt/greenplum/greenplum-db/conf/<strong>hostlist</strong> -e &quot;cd /opt/greenplum &amp;&amp; ll&quot;</p>
+
+<p>[gpadmin@dbaone ~]$ gpssh -f /opt/greenplum/greenplum-db/conf/hostlist -e &quot;cd /opt/greenplum &amp;&amp; ll&quot;<br/>
+[  dbatwo] cd /opt/greenplum &amp;&amp; ll<br/>
+[  dbatwo] total 140364<br/>
+[  dbatwo] -rw-r--r--  1 gpadmin gpadmin 143726939 Apr 11 16:25 gp.4.3.8.0.tar.gz<br/>
+[  dbatwo] lrwxrwxrwx  1 gpadmin gpadmin        20 Apr 11 16:30 greenplum-db -&gt; greenplum-db-4.3.8.0<br/>
+[  dbatwo] drwxr-xr-x 12 gpadmin gpadmin      4096 Apr 11 15:55 greenplum-db-4.3.8.0<br/>
+[ dbafour] cd /opt/greenplum &amp;&amp; ll<br/>
+[ dbafour] total 140364<br/>
+[ dbafour] -rw-r--r--  1 gpadmin gpadmin 143726939 Apr 11 16:25 gp.4.3.8.0.tar.gz<br/>
+[ dbafour] lrwxrwxrwx  1 gpadmin gpadmin        20 Apr 11 16:30 greenplum-db -&gt; greenplum-db-4.3.8.0<br/>
+[ dbafour] drwxr-xr-x 12 gpadmin gpadmin      4096 Apr 11 15:55 greenplum-db-4.3.8.0<br/>
+[dbathree] cd /opt/greenplum &amp;&amp; ll<br/>
+[dbathree] total 140364<br/>
+[dbathree] -rw-r--r--  1 gpadmin gpadmin 143726939 Apr 11 16:25 gp.4.3.8.0.tar.gz<br/>
+[dbathree] lrwxrwxrwx  1 gpadmin gpadmin        20 Apr 11 16:30 greenplum-db -&gt; greenplum-db-4.3.8.0<br/>
+[dbathree] drwxr-xr-x 12 gpadmin gpadmin      4096 Apr 11 15:55 greenplum-db-4.3.8.0<br/>
+[  dbaone] cd /opt/greenplum &amp;&amp; ll<br/>
+[  dbaone] total 140364<br/>
+[  dbaone] -rw-r--r--  1 gpadmin gpadmin 143726939 Apr 11 16:25 gp.4.3.8.0.tar.gz<br/>
+[  dbaone] lrwxrwxrwx  1 gpadmin gpadmin        22 Apr 11 15:49 greenplum-db -&gt; ./greenplum-db-4.3.8.0<br/>
+[  dbaone] drwxr-xr-x 12 gpadmin gpadmin      4096 Apr 11 15:55 greenplum-db-4.3.8.0</p>
+
+<p>   &gt;  创建数据目录「gpmaster保存Master数据，每个机器gpdata1、gpdata2分别对应这个机器的两个主数据节点(Primary)，gpdatam1、gpdatam2对应备数据节点(Mirror)」</p>
+
+<p>gpssh -f /opt/greenplum/greenplum-db/conf/<strong>hostlist</strong> -e -v &quot;mkdir -p /opt/greenplum/greenplum-db/gpdata/{gpmaster,gpdatap1,gpdatap2,gpdatam1,gpdatam2}&quot;</p>
+
+<blockquote>
+<p>配置环境变量</p>
+</blockquote>
+
+<p>$ gpssh -f /opt/greenplum/greenplum-db/conf/hostlist -e -v &quot;cat &gt;&gt; /home/gpadmin/.bash_profile &lt;&lt;EOF</p>
+
+<p>source /opt/greenplum/greenplum-db/greenplum_path.sh<br/>
+export MASTER_DATA_DIRECTORY=/opt/greenplum/greenplum-db/gpdata/gpmaster/gpseg-1<br/>
+export GPPORT=5432<br/>
+export PGDATABASE=testDB<br/>
+EOF&quot;</p>
+
+<p>. .bash_profile</p>
+
+<blockquote>
+<p>系统参数校验：&quot;$PGHOME/etc/gpcheck.cnf&quot; </p>
+</blockquote>
+
+<p>gpcheck -f /opt/greenplum/greenplum-db/conf/hostlist</p>
+
+<blockquote>
+<p>网络测试</p>
+</blockquote>
+
+<p>gpcheckperf -d /tmp/ upload -r N -f /opt/greenplum/greenplum-db/conf/seg_hosts</p>
+
+<p>or</p>
+
+<p>gpcheckperf -d /tmp/ upload -r N -h dbathree -h dbafour  # &quot;单独测试2台机器网络&quot;</p>
+
+<blockquote>
+<p>文件系统测试</p>
+</blockquote>
+
+<p>gpcheckperf -f seg_hosts  -d /opt/greenplum/greenplum-db/gpdata/gpdatap1 -d /opt/greenplum/greenplum-db/gpdata/gpdatap2 -d /opt/greenplum/greenplum-db/gpdata/gpdatam1 -d /opt/greenplum/greenplum-db/gpdata/gpdatam2 -r ds</p>
+
+<blockquote>
+<p>初始化 Greenplum 配置文件<br/>
+配置文件模板都在 /opt/greenplum/greenplum-db/docs/cli_help/gpconfigs<br/>
+gpinitsystem_config 是初始化 Greenplum 的模板，此模板中 Mirror Segment的配置都被注释</p>
+</blockquote>
+
+<p>[gpadmin@dbaone ~]$ cd /opt/greenplum/greenplum-db/docs/cli_help/gpconfigs</p>
+
+<p>$ cp gpinitsystem_config initgp_config</p>
+
+<p>$ vim initgp_config</p>
+
+<pre><code>ARRAY_NAME=&quot;EMC Greenplum DW&quot;
+MACHINE_LIST_FILE=/opt/greenplum/greenplum-db/conf/seg_hosts
+SEG_PREFIX=gpseg
+PORT_BASE=40000
+declare -a DATA_DIRECTORY=(/opt/greenplum/greenplum-db/gpdata/gpdatap1 /opt/greenplum/greenplum-db/gpdata/gpdatap2)
+MASTER_HOSTNAME=dbaone
+MASTER_DIRECTORY=/opt/greenplum/greenplum-db/gpdata/gpmaster
+MASTER_PORT=5432
+TRUSTED_SHELL=ssh
+CHECK_POINT_SEGMENTS=8
+ENCODING=UNICODE
+MIRROR_PORT_BASE=50000
+REPLICATION_PORT_BASE=41000
+MIRROR_REPLICATION_PORT_BASE=51000
+declare -a MIRROR_DATA_DIRECTORY=(/opt/greenplum/greenplum-db/gpdata/gpdatam1 /opt/greenplum/greenplum-db/gpdata/gpdatam2)
+</code></pre>
+
+<h2 id="toc_17"></h2>
+
+<blockquote>
+<p>初始化pg，-s 表示 standby master，若gp版本为3.8.0 不要在初始化加 standby master。</p>
+</blockquote>
+
+<p> &gt;备份方案有2种（Grouped Miior、Spread Mirror）,-S 表示使用Spread Mirror 分配 mirror节点，防止一个节点挂掉，另外一个节点集中成为瓶颈！  P301</p>
+
+<p>[gpadmin@dbaone gpconfigs]$ gpinitsystem -c initgp_config -s dbafour -S</p>
+
+<blockquote>
+<p>$ gpinitsystem -c initgp_config -S</p>
+
+<p>若初始化失败，需要删除数据目录重新来<br/>
+gpssh -f /opt/greenplum/greenplum-db/conf/hostlist -e -v &quot;cd /opt/greenplum/greenplum-db/gpdata/ &amp;&amp; rm -rf gpmaster/* &amp;&amp; rm -rf gpdatap1/* &amp;&amp; rm -rf gpdatap2/* &amp;&amp; rm -rf gpdatam1/* &amp;&amp; rm -rf gpdatam2/* &quot;</p>
+</blockquote>
+
+<h2 id="toc_18">Greenplum 配置</h2>
+
+<blockquote>
+<p> 1&gt;、配置远程可登陆</p>
+</blockquote>
+
+<p>[gpadmin@dbaone ~]$ psql postgres<br/>
+psql (8.2.15)<br/>
+Type &quot;help&quot; for help.</p>
+
+<p>testdb=# alter role gpadmin with password &#39;gpadmin&#39;;<br/>
+ALTER ROLE</p>
+
+<blockquote>
+<p>为了保证与standby master 配置文件一致，standby master的配置文件也要修改！</p>
+</blockquote>
+
+<p>[gpadmin@dbaone ~]\( vim \)MASTER_DATA_DIRECTORY/pg_hba.conf</p>
+
+<p>host    all     gpadmin         0.0.0.0/0 md5</p>
+
+<p>[gpadmin@four ~]\( vim \)MASTER_DATA_DIRECTORY/pg_hba.conf</p>
+
+<p>host    all     gpadmin         0.0.0.0/0 md5</p>
+
+<blockquote>
+<p>使配置生效！</p>
+</blockquote>
+
+<p>[gpadmin@dbaone ~]$ gpstop -u<br/>
+20160405:10:59:06:023782 gpstop:dbaone:gpadmin-[INFO]:-Starting gpstop with args: -u<br/>
+20160405:10:59:06:023782 gpstop:dbaone:gpadmin-[INFO]:-Gathering information and validating the environment...<br/>
+20160405:10:59:06:023782 gpstop:dbaone:gpadmin-[INFO]:-Obtaining Greenplum Master catalog information<br/>
+20160405:10:59:06:023782 gpstop:dbaone:gpadmin-[INFO]:-Obtaining Segment details from master...<br/>
+20160405:10:59:07:023782 gpstop:dbaone:gpadmin-[INFO]:-Greenplum Version: &#39;postgres (Greenplum Database) 4.3.6.1 build 2&#39;<br/>
+20160405:10:59:07:023782 gpstop:dbaone:gpadmin-[INFO]:-Signalling all postmaster processes to reload<br/>
+.</p>
+
+<p>C:\Users\Star&gt;psql -h 172.24.3.76 -p5432 -d postgres -U gpadmin<br/>
+Password for user gpadmin:<br/>
+psql (8.2.15)<br/>
+Type &quot;help&quot; for help.</p>
+
+<p>初始化后：登陆「」</p>
+
+<p>[gpadmin@dbaone ~]$ psql -d postgres</p>
+
+<blockquote>
+<p>查看当前所有db</p>
+</blockquote>
+
+<p>postgres=# \l<br/>
+                  List of databases<br/>
+   Name    |  Owner  | Encoding |  Access privileges <br/>
+-----------+---------+----------+---------------------<br/>
+ postgres  | gpadmin | UTF8     |<br/>
+ template0 | gpadmin | UTF8     | =c/gpadmin         <br/>
+                                : gpadmin=CTc/gpadmin<br/>
+ template1 | gpadmin | UTF8     | =c/gpadmin         <br/>
+                                : gpadmin=CTc/gpadmin<br/>
+(3 rows)</p>
+
+<blockquote>
+<p>创建表，并查看当前db下所有table</p>
+</blockquote>
+
+<p>testdb=# create table t1(id int primary key ,name varchar(128));<br/>
+NOTICE:  CREATE TABLE / PRIMARY KEY will create implicit index &quot;t1_pkey&quot; for table &quot;t1&quot;<br/>
+CREATE TABLE<br/>
+testdb=#<br/>
+testdb=# \d<br/>
+             List of relations<br/>
+ Schema | Name | Type  |  Owner  | Storage<br/>
+--------+------+-------+---------+---------<br/>
+ public | t1   | table | gpadmin | heap<br/>
+(1 row)</p>
+
+<blockquote>
+<p>启动与关闭数据库「-a 不会手动输入yes了」</p>
+</blockquote>
+
+<p>$ gpstart -a</p>
+
+<p>$ gpstop -a</p>
+
+<blockquote>
+<p>reload 配置文件</p>
+</blockquote>
+
+<p>$ gpstop -u</p>
+
+<blockquote>
+<p>查看状态</p>
+</blockquote>
+
+<p>gpstat -e #查看mirror的状态<br/>
+gpstat -f #查看standby master的状态<br/>
+gpstat -s #查看整个GP群集的状态<br/>
+gpstat -i #查看GP的版本<br/>
+gpstat --help #帮助文档，可以查看gpstat更多用法</p>
+
+<h1 id="toc_19">第三部分 - 图形工具 GUI</h1>
+
+<p>     Navicat Premium<br/>
+     <br/>
+     pgAdmin</p>
+
+<p>          <a href="http://www.pgadmin.org/download/?lang=zh_CN">http://www.pgadmin.org/download/?lang=zh_CN</a></p>
+
+<p>          <a href="http://www.postgresql.org/ftp/pgadmin3/release/">http://www.postgresql.org/ftp/pgadmin3/release/</a></p>
+
+<blockquote>
+<p>保存密码<br/>
+警 告： 你 已 经 选 择 了 保 存 密 码， 在 *nix 下 它 将 被 保 存 在 home 目 录 的 纯 文 本 文 件 中， 而 在 Windows 系 统 下 它 将 被 保 存 在 用 户 的 配 置 文 件 中。 如 果 你 不 想 这 么 做， 请 点 击 Cancel 按 钮。 <br/>
+pgAdmin 使 用 PostgreSQL 的 &#39;pgpass&#39; 机 制 保 存 密 码。 在 *nix 系 统 下， 密 码 将 被 保 存 在 ~/.pgpass 文 件 中； 而 在 Windows 系 统 下， 它 将 被 保 存 在 %APPDATA%\PostgreSQL\pgpass.conf 文 件 中 （%APPDATA% 是 位 于 用 户 配 置 文 件 之 内 的 &#39;Application Data&#39; 文 件 夹）。 这 个 机 制 被 用 来 作 为 使 用 libpg 库 连 接 数 据 库 服 务 器 的 所 有 程 序 的 缺 省 机 制， 包 括 命 令 行 程 序（例 如 pg_dump 和 pg_restore）、 其 他 GUI 程 序、 驱 动 程 序 （例 如 ： psqlODBC）。 这 意 味 着 这 些 程 序 都 可 以 使 用 这 个 保 存 的 密 码 自 动 连 接 到 数 据 库， 如 果 你 不 想 这 样 做， 不 要 使 用 pgAdmin 的 Store Password 的 选 项。</p>
+</blockquote>
+
+<h1 id="toc_20">第四部分 -- Standby Master</h1>
+
+<h2 id="toc_21">添加 Standby Master</h2>
+
+<p>参考：<a href="https://app.yinxiang.com/shard/s6/nl/387421/c576c73f-e417-40e5-8a9a-90bf229d3380">greenplum数据库master节点搭建standby</a></p>
+
+<h2 id="toc_22">删除 standby master</h2>
+
+<p>     gpinitstandby -r</p>
+
+<h2 id="toc_23">重新同步 Standby Master「若已有 Standby Master，但这个节点已经不同步了，需要重启同步」</h2>
+
+<p>     gpinitstandby -n</p>
+
+<h2 id="toc_24">查看 Standby Master 是否同步</h2>
+
+<blockquote>
+<p>GP 4.1<br/>
+testdb=# select * from gp_master_mirroring;</p>
+
+<p>GP 4.3<br/>
+testdb=# select procpid,state from pg_stat_replication;<br/>
+ procpid |   state   <br/>
+---------+-----------<br/>
+    1806 | streaming<br/>
+(1 row)</p>
+</blockquote>
+
+<h2 id="toc_25">添加 Standby Master</h2>
+
+<p>[gpadmin@dbaone ~]$ gpinitstandby -s dbafour</p>
+
+<blockquote>
+<p>20160408:10:47:23:001705 gpinitstandby:dbaone:gpadmin-[INFO]:-Validating environment and parameters for standby initialization...<br/>
+20160408:10:47:23:001705 gpinitstandby:dbaone:gpadmin-[INFO]:-Checking for filespace directory /opt/greenplum/greenplum-db/gpdata/gpmaster/gpseg-1 on dbafour<br/>
+20160408:10:47:23:001705 gpinitstandby:dbaone:gpadmin-[INFO]:------------------------------------------------------<br/>
+20160408:10:47:23:001705 gpinitstandby:dbaone:gpadmin-[INFO]:-Greenplum standby master initialization parameters<br/>
+20160408:10:47:23:001705 gpinitstandby:dbaone:gpadmin-[INFO]:------------------------------------------------------<br/>
+20160408:10:47:23:001705 gpinitstandby:dbaone:gpadmin-[INFO]:-Greenplum master hostname               = dbaone<br/>
+20160408:10:47:23:001705 gpinitstandby:dbaone:gpadmin-[INFO]:-Greenplum master data directory         = /opt/greenplum/greenplum-db/gpdata/gpmaster/gpseg-1<br/>
+20160408:10:47:23:001705 gpinitstandby:dbaone:gpadmin-[INFO]:-Greenplum master port                   = 5432<br/>
+20160408:10:47:23:001705 gpinitstandby:dbaone:gpadmin-[INFO]:-Greenplum standby master hostname       = dbafour<br/>
+20160408:10:47:23:001705 gpinitstandby:dbaone:gpadmin-[INFO]:-Greenplum standby master port           = 5432<br/>
+20160408:10:47:23:001705 gpinitstandby:dbaone:gpadmin-[INFO]:-Greenplum standby master data directory = /opt/greenplum/greenplum-db/gpdata/gpmaster/gpseg-1<br/>
+20160408:10:47:23:001705 gpinitstandby:dbaone:gpadmin-[INFO]:-Greenplum update system catalog         = On<br/>
+20160408:10:47:23:001705 gpinitstandby:dbaone:gpadmin-[INFO]:------------------------------------------------------<br/>
+20160408:10:47:23:001705 gpinitstandby:dbaone:gpadmin-[INFO]:- Filespace locations<br/>
+20160408:10:47:23:001705 gpinitstandby:dbaone:gpadmin-[INFO]:------------------------------------------------------<br/>
+20160408:10:47:23:001705 gpinitstandby:dbaone:gpadmin-[INFO]:-pg_system -&gt; /opt/greenplum/greenplum-db/gpdata/gpmaster/gpseg-1<br/>
+Do you want to continue with standby master initialization? Yy|Nn (default=N):<br/>
+y<br/>
+20160408:10:47:59:001705 gpinitstandby:dbaone:gpadmin-[INFO]:-Syncing Greenplum Database extensions to standby<br/>
+20160408:10:47:59:001705 gpinitstandby:dbaone:gpadmin-[INFO]:-The packages on dbafour are consistent.<br/>
+20160408:10:47:59:001705 gpinitstandby:dbaone:gpadmin-[INFO]:-Adding standby master to catalog...<br/>
+20160408:10:47:59:001705 gpinitstandby:dbaone:gpadmin-[INFO]:-Database catalog updated successfully.<br/>
+20160408:10:47:59:001705 gpinitstandby:dbaone:gpadmin-[INFO]:-Updating pg_hba.conf file...<br/>
+20160408:10:48:05:001705 gpinitstandby:dbaone:gpadmin-[INFO]:-pg_hba.conf files updated successfully.<br/>
+20160408:10:48:07:001705 gpinitstandby:dbaone:gpadmin-[INFO]:-Updating filespace flat files...<br/>
+20160408:10:48:07:001705 gpinitstandby:dbaone:gpadmin-[INFO]:-Filespace flat file updated successfully.<br/>
+20160408:10:48:08:001705 gpinitstandby:dbaone:gpadmin-[INFO]:-Starting standby master<br/>
+20160408:10:48:08:001705 gpinitstandby:dbaone:gpadmin-[INFO]:-Checking if standby master is running on host: dbafour  in directory: /opt/greenplum/greenplum-db/gpdata/gpmaster/gpseg-1<br/>
+20160408:10:48:10:001705 gpinitstandby:dbaone:gpadmin-[INFO]:-Cleaning up pg_hba.conf backup files...<br/>
+20160408:10:48:15:001705 gpinitstandby:dbaone:gpadmin-[INFO]:-Backup files of pg_hba.conf cleaned up successfully.<br/>
+20160408:10:48:15:001705 gpinitstandby:dbaone:gpadmin-[INFO]:-Successfully created standby master on dbafour</p>
+</blockquote>
+
+<p>testdb=# select * from gp_segment_configuration order by 1;<br/>
+ dbid | content | role | preferred_role | mode | status | port  | hostname | address  | replication_port | san_mounts<br/>
+------+---------+------+----------------+------+--------+-------+----------+----------+------------------+------------<br/>
+    1 |      -1 | p    | p              | s    | u      |  5432 | dbaone   | dbaone   |                  |<br/>
+    2 |       0 | p    | p              | s    | u      | 40000 | dbafour  | dbafour  |            41000 |<br/>
+    3 |       1 | p    | p              | s    | u      | 40001 | dbafour  | dbafour  |            41001 |<br/>
+    4 |       2 | p    | p              | s    | u      | 40000 | dbathree | dbathree |            41000 |<br/>
+    5 |       3 | p    | p              | s    | u      | 40001 | dbathree | dbathree |            41001 |<br/>
+    6 |       4 | p    | p              | s    | u      | 40000 | dbatwo   | dbatwo   |            41000 |<br/>
+    7 |       5 | p    | p              | s    | u      | 40001 | dbatwo   | dbatwo   |            41001 |<br/>
+    8 |       0 | m    | m              | s    | u      | 50000 | dbathree | dbathree |            51000 |<br/>
+    9 |       1 | m    | m              | s    | u      | 50001 | dbathree | dbathree |            51001 |<br/>
+   10 |       2 | m    | m              | s    | u      | 50000 | dbatwo   | dbatwo   |            51000 |<br/>
+   11 |       3 | m    | m              | s    | u      | 50001 | dbatwo   | dbatwo   |            51001 |<br/>
+   12 |       4 | m    | m              | s    | u      | 50000 | dbafour  | dbafour  |            51000 |<br/>
+   13 |       5 | m    | m              | s    | u      | 50001 | dbafour  | dbafour  |            51001 |<br/>
+   14 |      -1 | m    | m              | s    | u      |  5432 | dbafour  | dbafour  |                  |<br/>
+(14 rows)</p>
+
+<p>[root@dbafour ~]# ps aux | grep green | grep -v grep<br/>
+gpadmin   7423  3.0  2.5 428824 204492 ?       Ss   10:48   0:00 /opt/greenplum/greenplum-db-4.3.6.1/bin/postgres -D /opt/greenplum/greenplum-db/gpdata/gpmaster/gpseg-1 -p 5432 -b 14 -z 6 --silent-mode=true -i -M master -C -1 -x 0 -y -E<br/>
+gpadmin   8283  0.0  2.8 469228 227376 ?       Ss   Apr01   0:01 /opt/greenplum/greenplum-db-4.3.6.1/bin/postgres -D /opt/greenplum/greenplum-db/gpdata/gpdatam2/gpseg5 -p 50001 -b 13 -z 6 --silent-mode=true -i -M quiescent -C 5<br/>
+gpadmin   8284  0.0  2.8 471332 229840 ?       Ss   Apr01   0:09 /opt/greenplum/greenplum-db-4.3.6.1/bin/postgres -D /opt/greenplum/greenplum-db/gpdata/gpdatap2/gpseg1 -p 40001 -b 3 -z 6 --silent-mode=true -i -M quiescent -C 1<br/>
+gpadmin   8285  0.0  2.8 471336 227812 ?       Ss   Apr01   0:09 /opt/greenplum/greenplum-db-4.3.6.1/bin/postgres -D /opt/greenplum/greenplum-db/gpdata/gpdatap1/gpseg0 -p 40000 -b 2 -z 6 --silent-mode=true -i -M quiescent -C 0<br/>
+gpadmin   8286  0.0  2.8 469232 229420 ?       Ss   Apr01   0:01 /opt/greenplum/greenplum-db-4.3.6.1/bin/postgres -D /opt/greenplum/greenplum-db/gpdata/gpdatam1/gpseg4 -p 50000 -b 12 -z 6 --silent-mode=true -i -M quiescent -C 4</p>
+
+<p>[gpadmin@dbaone ~]$ gpstate -f</p>
+
+<blockquote>
+<p>20160408:11:36:43:002727 gpstate:dbaone:gpadmin-[INFO]:-Starting gpstate with args: -f<br/>
+20160408:11:36:43:002727 gpstate:dbaone:gpadmin-[INFO]:-local Greenplum Version: &#39;postgres (Greenplum Database) 4.3.6.1 build 2&#39;<br/>
+20160408:11:36:43:002727 gpstate:dbaone:gpadmin-[INFO]:-master Greenplum Version: &#39;PostgreSQL 8.2.15 (Greenplum Database 4.3.6.1 build 2) on x86_64-unknown-linux-gnu, compiled by GCC gcc (GCC) 4.4.2 compiled on Oct  1 2015 15:14:22&#39;<br/>
+20160408:11:36:43:002727 gpstate:dbaone:gpadmin-[INFO]:-Obtaining Segment details from master...<br/>
+20160408:11:36:44:002727 gpstate:dbaone:gpadmin-[INFO]:-Standby master details<br/>
+20160408:11:36:44:002727 gpstate:dbaone:gpadmin-[INFO]:-----------------------<br/>
+20160408:11:36:44:002727 gpstate:dbaone:gpadmin-[INFO]:-   Standby address          = dbafour<br/>
+20160408:11:36:44:002727 gpstate:dbaone:gpadmin-[INFO]:-   Standby data directory   = /opt/greenplum/greenplum-db/gpdata/gpmaster/gpseg-1<br/>
+20160408:11:36:44:002727 gpstate:dbaone:gpadmin-[INFO]:-   Standby port             = 5432<br/>
+20160408:11:36:44:002727 gpstate:dbaone:gpadmin-[INFO]:-   Standby PID              = 7423<br/>
+20160408:11:36:44:002727 gpstate:dbaone:gpadmin-[INFO]:-   Standby status           = Standby host passive<br/>
+20160408:11:36:44:002727 gpstate:dbaone:gpadmin-[INFO]:--------------------------------------------------------------<br/>
+20160408:11:36:44:002727 gpstate:dbaone:gpadmin-[INFO]:--pg_stat_replication<br/>
+20160408:11:36:44:002727 gpstate:dbaone:gpadmin-[INFO]:--------------------------------------------------------------<br/>
+20160408:11:36:44:002727 gpstate:dbaone:gpadmin-[INFO]:--WAL Sender State: streaming<br/>
+20160408:11:36:44:002727 gpstate:dbaone:gpadmin-[INFO]:--Sync state: sync<br/>
+20160408:11:36:44:002727 gpstate:dbaone:gpadmin-[INFO]:--Sent Location: 0/C0000C0<br/>
+20160408:11:36:44:002727 gpstate:dbaone:gpadmin-[INFO]:--Flush Location: 0/C0000C0<br/>
+20160408:11:36:44:002727 gpstate:dbaone:gpadmin-[INFO]:--Replay Location: 0/C0000C0<br/>
+20160408:11:36:44:002727 gpstate:dbaone:gpadmin-[INFO]:--------------------------------------------------------------</p>
+</blockquote>
+
+<p>[gpadmin@dbaone ~]$ gpstate -s</p>
+
+<blockquote>
+<p>20160408:10:48:52:001833 gpstate:dbaone:gpadmin-[INFO]:-Starting gpstate with args: -s<br/>
+20160408:10:48:52:001833 gpstate:dbaone:gpadmin-[INFO]:-local Greenplum Version: &#39;postgres (Greenplum Database) 4.3.6.1 build 2&#39;<br/>
+20160408:10:48:52:001833 gpstate:dbaone:gpadmin-[INFO]:-master Greenplum Version: &#39;PostgreSQL 8.2.15 (Greenplum Database 4.3.6.1 build 2) on x86_64-unknown-linux-gnu, compiled by GCC gcc (GCC) 4.4.2 compiled on Oct  1 2015 15:14:22&#39;<br/>
+20160408:10:48:52:001833 gpstate:dbaone:gpadmin-[INFO]:-Obtaining Segment details from master...<br/>
+20160408:10:48:52:001833 gpstate:dbaone:gpadmin-[INFO]:-Gathering data from segments...<br/>
+.<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-----------------------------------------------------<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:--Master Configuration &amp; Status<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-----------------------------------------------------<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-   Master host                    = dbaone<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-   Master postgres process ID     = 26859<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-   Master data directory          = /opt/greenplum/greenplum-db/gpdata/gpmaster/gpseg-1<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-   Master port                    = 5432<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-   Master current role            = dispatch<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-   Greenplum initsystem version   = 4.3.6.1 build 2<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-   Greenplum current version      = PostgreSQL 8.2.15 (Greenplum Database 4.3.6.1 build 2) on x86_64-unknown-linux-gnu, compiled by GCC gcc (GCC) 4.4.2 compiled on Oct  1 2015 15:14:22<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-   Postgres version               = 8.2.15<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-   Master standby                 = dbafour<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-   Standby master state           = Standby host passive<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-----------------------------------------------------<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-Segment Instance Status Report<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-----------------------------------------------------<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-   Segment Info<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Hostname                          = dbafour<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Address                           = dbafour<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Datadir                           = /opt/greenplum/greenplum-db/gpdata/gpdatap1/gpseg0<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Port                              = 40000<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-   Mirroring Info<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Current role                      = Primary<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Preferred role                    = Primary<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Mirror status                     = Synchronized<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-   Status<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      PID                               = 8285<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Configuration reports status as   = Up<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Database status                   = Up<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-----------------------------------------------------<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-   Segment Info<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Hostname                          = dbathree<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Address                           = dbathree<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Datadir                           = /opt/greenplum/greenplum-db/gpdata/gpdatam1/gpseg0<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Port                              = 50000<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-   Mirroring Info<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Current role                      = Mirror<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Preferred role                    = Mirror<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Mirror status                     = Synchronized<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-   Status<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      PID                               = 17476<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Configuration reports status as   = Up<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Segment status                    = Up<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-----------------------------------------------------<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-   Segment Info<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Hostname                          = dbafour<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Address                           = dbafour<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Datadir                           = /opt/greenplum/greenplum-db/gpdata/gpdatap2/gpseg1<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Port                              = 40001<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-   Mirroring Info<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Current role                      = Primary<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Preferred role                    = Primary<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Mirror status                     = Synchronized<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-   Status<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      PID                               = 8284<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Configuration reports status as   = Up<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Database status                   = Up<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-----------------------------------------------------<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-   Segment Info<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Hostname                          = dbathree<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Address                           = dbathree<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Datadir                           = /opt/greenplum/greenplum-db/gpdata/gpdatam2/gpseg1<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Port                              = 50001<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-   Mirroring Info<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Current role                      = Mirror<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Preferred role                    = Mirror<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Mirror status                     = Synchronized<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-   Status<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      PID                               = 17475<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Configuration reports status as   = Up<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Segment status                    = Up<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-----------------------------------------------------<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-   Segment Info<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Hostname                          = dbathree<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Address                           = dbathree<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Datadir                           = /opt/greenplum/greenplum-db/gpdata/gpdatap1/gpseg2<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Port                              = 40000<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-   Mirroring Info<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Current role                      = Primary<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Preferred role                    = Primary<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Mirror status                     = Synchronized<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-   Status<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      PID                               = 17474<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Configuration reports status as   = Up<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Database status                   = Up<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-----------------------------------------------------<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-   Segment Info<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Hostname                          = dbatwo<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Address                           = dbatwo<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Datadir                           = /opt/greenplum/greenplum-db/gpdata/gpdatam1/gpseg2<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Port                              = 50000<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-   Mirroring Info<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Current role                      = Mirror<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Preferred role                    = Mirror<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Mirror status                     = Synchronized<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-   Status<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      PID                               = 19407<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Configuration reports status as   = Up<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Segment status                    = Up<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-----------------------------------------------------<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-   Segment Info<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Hostname                          = dbathree<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Address                           = dbathree<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Datadir                           = /opt/greenplum/greenplum-db/gpdata/gpdatap2/gpseg3<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Port                              = 40001<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-   Mirroring Info<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Current role                      = Primary<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Preferred role                    = Primary<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Mirror status                     = Synchronized<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-   Status<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      PID                               = 17473<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Configuration reports status as   = Up<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Database status                   = Up<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-----------------------------------------------------<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-   Segment Info<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Hostname                          = dbatwo<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Address                           = dbatwo<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Datadir                           = /opt/greenplum/greenplum-db/gpdata/gpdatam2/gpseg3<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Port                              = 50001<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-   Mirroring Info<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Current role                      = Mirror<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Preferred role                    = Mirror<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Mirror status                     = Synchronized<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-   Status<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      PID                               = 19406<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Configuration reports status as   = Up<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Segment status                    = Up<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-----------------------------------------------------<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-   Segment Info<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Hostname                          = dbatwo<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Address                           = dbatwo<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Datadir                           = /opt/greenplum/greenplum-db/gpdata/gpdatap1/gpseg4<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Port                              = 40000<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-   Mirroring Info<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Current role                      = Primary<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Preferred role                    = Primary<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Mirror status                     = Synchronized<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-   Status<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      PID                               = 19408<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Configuration reports status as   = Up<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Database status                   = Up<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-----------------------------------------------------<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-   Segment Info<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Hostname                          = dbafour<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Address                           = dbafour<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Datadir                           = /opt/greenplum/greenplum-db/gpdata/gpdatam1/gpseg4<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Port                              = 50000<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-   Mirroring Info<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Current role                      = Mirror<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Preferred role                    = Mirror<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Mirror status                     = Synchronized<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-   Status<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      PID                               = 8286<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Configuration reports status as   = Up<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Segment status                    = Up<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-----------------------------------------------------<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-   Segment Info<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Hostname                          = dbatwo<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Address                           = dbatwo<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Datadir                           = /opt/greenplum/greenplum-db/gpdata/gpdatap2/gpseg5<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Port                              = 40001<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-   Mirroring Info<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Current role                      = Primary<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Preferred role                    = Primary<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Mirror status                     = Synchronized<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-   Status<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      PID                               = 19405<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Configuration reports status as   = Up<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Database status                   = Up<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-----------------------------------------------------<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-   Segment Info<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Hostname                          = dbafour<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Address                           = dbafour<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Datadir                           = /opt/greenplum/greenplum-db/gpdata/gpdatam2/gpseg5<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Port                              = 50001<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-   Mirroring Info<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Current role                      = Mirror<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Preferred role                    = Mirror<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Mirror status                     = Synchronized<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-   Status<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      PID                               = 8283<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Configuration reports status as   = Up<br/>
+20160408:10:48:53:001833 gpstate:dbaone:gpadmin-[INFO]:-      Segment status                    = Up</p>
+</blockquote>
+
+<h2 id="toc_26">启用 Standby Master</h2>
+
+<blockquote>
+<p>确认 Standby Master 是同步的</p>
+</blockquote>
+
+<p>gpstate -f </p>
+
+<pre><code>20160408:11:36:44:002727 gpstate:dbaone:gpadmin-[INFO]:--WAL Sender State: streaming
+20160408:11:36:44:002727 gpstate:dbaone:gpadmin-[INFO]:--Sync state: sync
+</code></pre>
+
+<blockquote>
+<p>关闭原 Master</p>
+</blockquote>
+
+<p>gpstop -m</p>
+
+<blockquote>
+<p>在 Standby Master 上激活</p>
+</blockquote>
+
+<p>vim .bash_profile</p>
+
+<pre><code>source /opt/greenplum/greenplum-db/greenplum_path.sh
+export MASTER_DATA_DIRECTORY=/opt/greenplum/greenplum-db/gpdata/gpmaster/gpseg-1
+export GPPORT=5432
+export PGDATABASE=testdb
+</code></pre>
+
+<p>. .bash_profile</p>
+
+<p>gpactivatestandby -d $MASTER_DATA_DIRECTORY </p>
+
+<blockquote>
+<p>对整个数据库进行 ANALYZE ，收集统计信息</p>
+</blockquote>
+
+<p>psql -d testdb -c &quot;ANALYZE&quot;</p>
+
+<blockquote>
+<p>所有客户端的IP，连接到 Standby Master</p>
+
+<p>切换原有的 Master，使用gpinitstandby</p>
+</blockquote>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Group Replication]]></title>
+    <link href="http://saup007.github.io/15000823671749.html"/>
+    <updated>2017-07-15T09:32:47+08:00</updated>
+    <id>http://saup007.github.io/15000823671749.html</id>
+    <content type="html"><![CDATA[
+<ul>
+<li>
+<a href="#toc_0">关于 Group Greplication</a>
+<ul>
+<li>
+<a href="#toc_1">单独的通信机制</a>
+<ul>
+<li>
+<a href="#toc_2">Binlog Event 多线程执行</a>
+<ul>
+<li>
+<a href="#toc_3">基于主键的并行执行</a>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_4">Paxos 协议优点</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_5">服务模式</a>
+<ul>
+<li>
+<a href="#toc_6">单主模式</a>
+<ul>
+<li>
+<a href="#toc_7">自动选举 &amp;&amp; Failover</a>
+</li>
+<li>
+<a href="#toc_8">读写自动切换</a>
+</li>
+<li>
+<a href="#toc_9">优点 &amp; 缺点</a>
+<ul>
+<li>
+<a href="#toc_10">优点</a>
+</li>
+<li>
+<a href="#toc_11">缺点</a>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_12">多主模式</a>
+<ul>
+<li>
+<a href="#toc_13">自增字段</a>
+</li>
+<li>
+<a href="#toc_14">优点 &amp;&amp; 缺点</a>
+<ul>
+<li>
+<a href="#toc_15">优点</a>
+</li>
+<li>
+<a href="#toc_16">缺点</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_17">多主模式思考</a>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_18">配置 Group Replication</a>
+<ul>
+<li>
+<a href="#toc_19">前期准备</a>
+<ul>
+<li>
+<a href="#toc_20">必要配置</a>
+</li>
+<li>
+<a href="#toc_21">加载 Group Replication 插件</a>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_22">问题处理</a>
+<ul>
+<li>
+<a href="#toc_23">1. 网络中断/分区处理</a>
+</li>
+<li>
+<a href="#toc_24">2. 事务不一致不能加入到组</a>
+</li>
+<li>
+<a href="#toc_25">3.</a>
+</li>
+</ul>
+</li>
+</ul>
+
+
+<span id="more"></span><!-- more -->
+
+<h2 id="toc_0">关于 Group Greplication</h2>
+
+<ul>
+<li>异步复制</li>
+<li>半同步复制</li>
+<li>Group Replication</li>
+</ul>
+
+<p>Group Replication 是组复制，不是同步复制，但最终是同步的，更确切地说，事务以相同顺序传递给所有组成员，但它们执行并不同步，接受事务被提交之后，每个成员以自己的速度提交。</p>
+
+<h3 id="toc_1">单独的通信机制</h3>
+
+<p>GR 使用 Slave 的通道，只是使用通过执行线程(Applier Thread)来执行 Binlog Event，并没有使用通道传输 Binlog Event。</p>
+
+<p>没有使用异步复制的 Binlog Event，也没有使用 MySQL 服务端口通信，而是创建一个独立 TCP 端口通信，各个 MySQL 服务器睥 Group Replication 插件通过这个端口连接在一起，两两通信</p>
+
+<h4 id="toc_2">Binlog Event 多线程执行</h4>
+
+<p>GR 插件自动创建一个通道 group_replication_applier (channel) 来执行接收到的 Binlog Event，当加入组时，GR 插件自动启动 group_replication_applier 通道的执行线程(Applier Thread)</p>
+
+<pre><code class="language-sql">-- 手工调整这个通道执行线程
+START SLAVE SQL_THREAD FOR CHANNEL &#39;group_replication_applier&#39;;
+STOP SLAVE SQL_THREAD FOR CHANNEL &#39;group_replication_applier&#39;;
+</code></pre>
+
+<h5 id="toc_3">基于主键的并行执行</h5>
+
+<pre><code class="language-sql">SET GLOBAL slave_parallel_type = &#39;LOGICAL_CLOCK&#39;;
+SET GLOBAL slave_parallel_workers = N;
+SET GLOBAL slave_preserve_commit_order = ON;
+</code></pre>
+
+<blockquote>
+<p>GR 的 LOGCAL_CLOCK 与异步复制的算法不同，GR 并发策略的逻辑时间是基于主键计算出来的，比异步复制基于锁计算出来的逻辑时间的并发性要好很多</p>
+</blockquote>
+
+<p>基于主键并行复制特点</p>
+
+<ul>
+<li>若两个事务更新同一行，则要按顺序执行，否则就可以并发</li>
+<li>DDL 不能和任务事务并发，必须等待它前面所有事务执行完才能开始执行，后面的事务也要必须等等 DDL 执行完才能执行</li>
+</ul>
+
+<p>为什么配置 slave_preserve_commit_order</p>
+
+<blockquote>
+<p>并发执行时，不管两个事务 Binlog Event 是不是同一 session 产生，只要满足上面的特点就会并发，因此同一 session 里的事务可能被安排并发执行，会导致后执行的事务先被提交的懒，为了保证同一个 session 的事务按照顺序提交，必须配置此参数，保证 Applier 上执行事务的提交顺序和 源 MySQL 一致</p>
+</blockquote>
+
+<h3 id="toc_4">Paxos 协议优点</h3>
+
+<ul>
+<li>不会脑裂 [有疑问，原主从环境有脑裂 P363]</li>
+<li>冗余好，保证 Binlog 至少被复制超过一半成员，只要同时宕机成员不超过一半不会导致数据丢失</li>
+<li>保证只要 Binlog Event 没有被传输到半数以上成员，本地成员不会将事务的 Binlog Event 写入 Binlog 文件和提交事务，从而保证宕机的服务器不会有组内在线不存在的数据，宕机的服务器重启后，不再需要特殊处理就可以加入组</li>
+</ul>
+
+<h2 id="toc_5">服务模式</h2>
+
+<ul>
+<li>单主模式 (默认模式)</li>
+<li>多主模式</li>
+</ul>
+
+<pre><code>-- 设置多主模式
+SET GLOBAL group_replication_single_primary_mode = OFF;
+</code></pre>
+
+<blockquote>
+<p>如果使用多主模式，需要加入组之前将此变量置为 OFF，服务模式不能在线切换，必须组内所有成员退出组，然后重新初始化要使用的模式，再把其他成员加进来</p>
+</blockquote>
+
+<h3 id="toc_6">单主模式</h3>
+
+<ul>
+<li>Primary Member</li>
+<li>Secondary Member</li>
+</ul>
+
+<h4 id="toc_7">自动选举 &amp;&amp; Failover</h4>
+
+<ul>
+<li><p>初始化的成员自动选举为 Primary Member</p></li>
+<li><p>Failover：对所有在线成员的 UUID 排序，选最小的为 Primary Member,复制正常进行，但要注意，客户端获取 Primary Memory 的 UUID，然后连接新的 Primary Memory</p></li>
+</ul>
+
+<pre><code class="language-sql"># 任何成员查询 Primary Member 的 UUID
+show global status like &#39;group_replication_primary_member&#39;;
+
+or
+
+SELECT * FROM performance_shchema.global_status WHERE variable_name = &#39;group_replication_primary_member&#39;;
+</code></pre>
+
+<h4 id="toc_8">读写自动切换</h4>
+
+<p>成员加入默认为 &quot;只读&quot; 模式，只有选取为 Primary Member 才会是 &quot;写&quot; 模式</p>
+
+<pre><code>SET GLOBAL super_read_only = 1;
+SET GLOBAL super_read_only = 0;
+</code></pre>
+
+<h4 id="toc_9">优点 &amp; 缺点</h4>
+
+<h5 id="toc_10">优点</h5>
+
+<h5 id="toc_11">缺点</h5>
+
+<ul>
+<li>Failover 后，客户端根据 UUID 判断是不是 Primary Member</li>
+</ul>
+
+<h3 id="toc_12">多主模式</h3>
+
+<h4 id="toc_13">自增字段</h4>
+
+<pre><code class="language-sql">-- 原 MySQL 自增变量
+SET GLOBAL auto_increment_offset = N;
+SET GLOBAL auto_increment_increment = N;
+
+# Group Replicaion 组复制自增步长，默认为 7，最大节点为 9
+SET GLOBAL group_replication_auto_increment_increment = N; 
+</code></pre>
+
+<blockquote>
+<p>注意：<br/>
+a. 如果 server-id 为 1、2、3 配置，就不需要额外配置，但不为 1、2、3 则需要配置<br/>
+若没有配置 auto_increment_increment、auto_increment_offset，则自动将 group_replication_auto_increment_increment 和 server-id 设置到 auto_increment_increment、auto_increment_offset上</p>
+
+<p>b.  auto_increment_increment 尽量设置大于或等于成员数，最好大于，因为方便以后增加节点，扩展时再改变自增比较麻烦</p>
+</blockquote>
+
+<h4 id="toc_14">优点 &amp;&amp; 缺点</h4>
+
+<h5 id="toc_15">优点</h5>
+
+<ul>
+<li>当一个成员故障，只有一部分连接失效，应用影响小</li>
+<li>当关闭一个 MySQL 节点时，可以先将连接平滑转移到其他机器上再关闭这个节点，不会瞬断</li>
+<li>性能好　[有待评估]</li>
+</ul>
+
+<h5 id="toc_16">缺点</h5>
+
+<ul>
+<li>自增步长要大于成员数，防止以后扩展麻烦</li>
+<li>不支持串行(SERIALIZABLE) 隔离等级，单节点通过锁实现</li>
+<li>不支持外键级联操作</li>
+</ul>
+
+<pre><code># 当为 True，当发现上面 2 个不支持就会报错，单主模式下为必须为 OFF
+group_replication_enforce_update_everywhere_checks = TRUE
+</code></pre>
+
+<ul>
+<li>DDL 语句并发执行的问题</li>
+</ul>
+
+<blockquote>
+<p>多主复制，通过冲突检测来辨别冲突事务，再回滚，5.7 的 DDL 不是原子操作无法回滚，因此 GR 没到 DDL 做冲突检测，如果 DDL 和有冲突的语句发生在不同成员，可能导致数据不一致.</p>
+
+<p><u>所以必须执行 DDL 前必须将有冲突的事务迁移到一台机器上执行</u></p>
+</blockquote>
+
+<h4 id="toc_17">多主模式思考</h4>
+
+<ul>
+<li>写请求可以分发多个成员上</li>
+<li><p>控制 DDL，当有 DDL 执行时，所有写请求转移到同一台 MySQL 机器 [这个实现有点复杂]</p></li>
+<li><p>折中方案，多主模式当单主模式使用</p>
+
+<ul>
+<li>与单主模式比较，去掉 Failover 主从切换</li>
+<li>解决 DDL 冲突问题，防止脑裂</li>
+<li>一套 GR 为多应用提供服务，多应用不同的数据，没有冲突</li>
+</ul></li>
+</ul>
+
+<pre><code class="language-sql">-- Session 1: A Member
+BEGIN
+INSERT INTO t1 VALUES(1);
+
+-- Session 2: B Member
+TRUNCATE t1;
+
+-- Session 1:
+COMMIT;
+
+----&gt; 2 个 session 事务执行顺序不同
+
+-- SESSION 1：
+INSERT INTO t1 VALUES(1);
+TRUNCATE t1;
+
+-- SESSION 2:
+TRUNCATE t1;
+INSERT INTO t1 VALUES(1);
+</code></pre>
+
+<h2 id="toc_18">配置 Group Replication</h2>
+
+<h3 id="toc_19">前期准备</h3>
+
+<h4 id="toc_20">必要配置</h4>
+
+<p>my.cnf 配置</p>
+
+<pre><code>​```my.cnf
+server_id                   = 1
+log_bin                     = binlog
+relay_log                   = relay-log
+gtid_mode                   = ON
+enforce_gtid_consistency    = ON
+binlog_format               = ROW
+binlog_checksum             = NONE
+master_info_repository      = TABLE
+relay_log_info_repository   = TABLE
+log_slave_update            = ON
+slave_parallel_type         = LOGIAL_CLOCK
+slave_parallel_workers      = 8
+slave_preserve_commit_order = ON
+
+# Group Replication
+plugin-load                        = group_replication.so
+transaction_write_set_extraction   = XXHASH64
+loose-group_replication_group_name = 93f19c6c-6447-11e7-9323-cb37b2d517f3
+loose-group_replication_start_on_boot = OFF
+loose-group_replication_local_address = &#39;db1:3306&#39;
+loose-group_replication_group_seeds   = &#39;db2:3306,db3:3306&#39;
+loose-group_replication_bootstrap_group = OFF
+loose-group_replication_single_primary_mode = OFF # Trun off Single primary
+</code></pre>
+
+<p>配置说明：</p>
+
+<ul>
+<li><p>开启 Binlog、Relaylog</p></li>
+<li><p>开启 GTID 功能</p></li>
+<li><p>设置 ROW 格式的 Binlog</p></li>
+<li><p>禁用 binlog_checksum (MySQL 5.7.17 不支持带 checksum Binlog Event)</p></li>
+<li><p>要使用多源复制，必须使用将 Slave 通道(Channel) 的状态信息存储到系统表</p></li>
+<li><p>开启并行复制</p></li>
+<li><p>开启主键信息采集</p>
+
+<blockquote>
+<p>GR 需要 Server 层采集更新数据的主键信息，被 HASH 存储起来，支持两种 HASH 算法：XXHASH64、MURMUR32，默认 transaction_write_set_extraction = OFF，所以要使用 Group Replication 每张表都要有主键，否则更新数据时会失败</p>
+
+<p><u><strong>一个组内的所有成员必须配置相同的 HASH 算法</strong></u></p>
+</blockquote></li>
+<li><p>plugin-load = &#39;group_replication.so&#39; 相当执行 INSTALL PLUGIN group_replication SONAME &quot;group_replication.so&quot;;</p></li>
+<li><p>group_replication_group_name = <uuid> 设置 Group Replication Name，可以通过 select uuid(); 获得</p></li>
+<li><p>group_replication_start_on_boot = OFF MySQL 启动时，不自动启动 Group Replication</p></li>
+<li><p>group_replication_local_address = <a href="ip:port">ip:port</a> 配置 Group Replication 本地成员监听端口，成员之间通过这个端口通信，如果所有成员不在一台机器上，不要配置 127.0.0.1，要配置成员内网IP和端口</p></li>
+<li><p>group_replication_group_seeds = <a href="ip:port,ip:port...">ip:port,ip:port...</a> 配置种子成员，新成员加入组时，需要与组内成员通信，请求配组重新配置允许它加入组，不写组成所有成员也可以</p></li>
+</ul>
+
+<blockquote>
+<p>当多个 Server 同时加入组时，确保使用已经存在组的成员，不要使用正在申请加入组的成员，不支持创建组的时候同时加入多个成员</p>
+</blockquote>
+
+<ul>
+<li>group_replication_bootstrap_group = OFF 如果为 ON 告诉 Group Replication 插件，它是组内第一个成员，要做初始化，初始化后改为 OFF</li>
+</ul>
+
+<blockquote>
+<p>只在 Group Replication 初始化时或整个组崩溃后恢复的情况下使用，当多个 Server 配置此参数，可能人为造成脑裂</p>
+</blockquote>
+
+<ul>
+<li>group_replication 变量加上 &quot;loose&quot; ，则可写入 my.cnf 配置文件中</li>
+</ul>
+
+<h4 id="toc_21">加载 Group Replication 插件</h4>
+
+<pre><code># 加载插件
+INSTALL PLUGIN group_replication SONAME &#39;group_replication.so&#39;;
+
+# 启用插件
+START GROUP_REPLICATION;
+    &gt; 将 MySQL 加入一个存在的 Group Replication 组或将它初始化为组内第一个成员 
+     
+# 停用插件
+STOP GROUP_REPLICATION;
+    &gt; 将 MySQL 从一个 Group Replication 组内移除
+
+</code></pre>
+
+<h2 id="toc_22">问题处理</h2>
+
+<h3 id="toc_23">1. 网络中断/分区处理</h3>
+
+<p>可以参考 <a href="https://www.percona.com/blog/2017/02/24/battle-for-synchronous-replication-in-mysql-galera-vs-group-replication/">Quest for Better Replication in MySQL: Galera vs. Group Replication</a></p>
+
+<p>当一个成员因为为网络问题被清除 Group Replication，需要手工处理，当网络恢复不能自动加入，PXC是可以的</p>
+
+<p>error log 日志显示如下</p>
+
+<pre><code>2017-07-14T11:58:57.208677+08:00 0 [Note] Plugin group_replication reported: &#39;[GCS] Removing members that have failed while processing new view.&#39;
+2017-07-14T11:58:57.273764+08:00 0 [Note] Plugin group_replication reported: &#39;getstart group_id 6c6c3761&#39;
+2017-07-14T11:58:57.274693+08:00 0 [Note] Plugin group_replication reported: &#39;getstart group_id 6c6c3761&#39;
+2017-07-14T11:59:00.531055+08:00 0 [Note] Plugin group_replication reported: &#39;state 4330 action xa_terminate&#39;
+2017-07-14T11:59:00.531314+08:00 0 [Note] Plugin group_replication reported: &#39;new state x_start&#39;
+2017-07-14T11:59:00.531338+08:00 0 [Note] Plugin group_replication reported: &#39;state 4257 action xa_exit&#39;
+2017-07-14T11:59:00.531365+08:00 0 [Note] Plugin group_replication reported: &#39;Exiting xcom thread&#39;
+2017-07-14T11:59:00.531365+08:00 0 [Note] Plugin group_replication reported: &#39;Exiting xcom thread&#39;
+2017-07-14T11:59:00.531401+08:00 0 [Note] Plugin group_replication reported: &#39;new state x_start&#39;
+</code></pre>
+
+<p>当前节点状态</p>
+
+<pre><code class="language-sql">SELECT * FROM performance_schema.replication_group_members;
+
++---------------------------+--------------------------------------+--------------+-------------+--------------+
+| CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST  | MEMBER_PORT | MEMBER_STATE |
++---------------------------+--------------------------------------+--------------+-------------+--------------+
+| group_replication_applier | 817b0415-661a-11e7-842a-782bcb479deb | 10.55.28.64  |        6666 | ERROR       |
++---------------------------+--------------------------------------+--------------+-------------+--------------+
+1 row in set (0.00 sec)
+
+</code></pre>
+
+<p>处理步骤：</p>
+
+<pre><code>localhost.(none)&gt;start group_replication; 
+ERROR 3093 (HY000): The START GROUP_REPLICATION command failed since the group is already running.
+
+localhost.(none)&gt;stop group_replication;
+Query OK, 0 rows affected (11.35 sec)
+
+localhost.(none)&gt;start group_replication; 
+Query OK, 0 rows affected (5.53 sec)
+
+localhost.(none)&gt;SELECT * FROM performance_schema.replication_group_members;
++---------------------------+--------------------------------------+--------------+-------------+--------------+
+| CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST  | MEMBER_PORT | MEMBER_STATE |
++---------------------------+--------------------------------------+--------------+-------------+--------------+
+| group_replication_applier | 817b0415-661a-11e7-842a-782bcb479deb | 10.55.28.64  |        6666 | ONLINE       |
+| group_replication_applier | c745233b-6614-11e7-a738-40f2e91dc960 | 10.13.2.29   |        6666 | ONLINE       |
+| group_replication_applier | e99a9946-6619-11e7-9b07-70e28406ebea | 10.77.16.197 |        6666 | ONLINE       |
++---------------------------+--------------------------------------+--------------+-------------+--------------+
+3 rows in set (0.00 sec)
+
+</code></pre>
+
+<h3 id="toc_24">2. 事务不一致不能加入到组</h3>
+
+<p>被隔离成员，有不是 Group Replication 组内的事务，默认是不能加入到 Group，<u><strong>若人为可知是一致性，可强制加入，谨慎使用</strong></u></p>
+
+<pre><code>
+localhost.(none)&gt;stop group_replication;
+
+localhost.(none)&gt;SELECT * FROM performance_schema.replication_group_members;
++---------------------------+--------------------------------------+-------------+-------------+--------------+
+| CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST | MEMBER_PORT | MEMBER_STATE |
++---------------------------+--------------------------------------+-------------+-------------+--------------+
+| group_replication_applier | c745233b-6614-11e7-a738-40f2e91dc960 | 10.13.2.29  |        6666 | OFFLINE      |
++---------------------------+--------------------------------------+-------------+-------------+--------------+
+1 row in set (0.00 sec)
+
+localhost.test&gt;create table t2 (id int primary key ,name varchar(10));
+Query OK, 0 rows affected (0.01 sec)
+
+localhost.test&gt;show variables like &#39;%read_only%&#39;;
++------------------+-------+
+| Variable_name    | Value |
++------------------+-------+
+| innodb_read_only | OFF   |
+| read_only        | OFF   |
+| super_read_only  | OFF   |
+| tx_read_only     | OFF   |
++------------------+-------+
+4 rows in set (0.00 sec)
+
+localhost.test&gt;start group_replication;
+ERROR 3092 (HY000): The server is not configured properly to be an active member of the group. Please see more details on error log.
+</code></pre>
+
+<p>error 日志</p>
+
+<pre><code>2017-07-14T15:00:14.966294+08:00 0 [Note] Plugin group_replication reported: &#39;A new primary was elected, enabled conflict detection until the new primary applies all relay logs&#39;
+2017-07-14T15:00:14.966366+08:00 0 [ERROR] Plugin group_replication reported: &#39;This member has more executed transactions than those present in the group. Local transactions: 5860d02e-4b55-11e7-8721-40f2e91dc960:1-788,
+93f19c6c-6447-11e7-9323-cb37b2d517f3:1-16,
+c745233b-6614-11e7-a738-40f2e91dc960:1 &gt; Group transactions: 5860d02e-4b55-11e7-8721-40f2e91dc960:1-788,
+93f19c6c-6447-11e7-9323-cb37b2d517f3:1-16&#39;
+2017-07-14T15:00:14.966383+08:00 0 [ERROR] Plugin group_replication reported: &#39;The member contains transactions not present in the group. The member will now exit the group.&#39;
+2017-07-14T15:00:14.966366+08:00 0 [ERROR] Plugin group_replication reported: &#39;This member has more executed transactions than those present in the group. Local transactions: 5860d02e-4b55-11e7-8721-40f2e91dc960:1-788,
+93f19c6c-6447-11e7-9323-cb37b2d517f3:1-16,
+c745233b-6614-11e7-a738-40f2e91dc960:1 &gt; Group transactions: 5860d02e-4b55-11e7-8721-40f2e91dc960:1-788,
+93f19c6c-6447-11e7-9323-cb37b2d517f3:1-16&#39;
+2017-07-14T15:00:14.966383+08:00 0 [ERROR] Plugin group_replication reported: &#39;The member contains transactions not present in the group. The member will now exit the group.&#39;
+2017-07-14T15:00:14.966392+08:00 0 [Note] Plugin group_replication reported: &#39;To force this member into the group you can use the group_replication_allow_local_disjoint_gtids_join option&#39;
+2017-07-14T15:00:14.966473+08:00 88181 [Note] Plugin group_replication reported: &#39;Going to wait for view modification&#39;
+2017-07-14T15:00:14.968087+08:00 0 [Note] Plugin group_replication reported: &#39;getstart group_id 6c6c3761&#39;
+2017-07-14T15:00:18.464227+08:00 0 [Note] Plugin group_replication reported: &#39;state 4330 action xa_terminate&#39;
+2017-07-14T15:00:18.464840+08:00 0 [Note] Plugin group_replication reported: &#39;new state x_start&#39;
+2017-07-14T15:00:18.464875+08:00 0 [Note] Plugin group_replication reported: &#39;state 4257 action xa_exit&#39;
+2017-07-14T15:00:18.465367+08:00 0 [Note] Plugin group_replication reported: &#39;Exiting xcom thread&#39;
+2017-07-14T15:00:18.465382+08:00 0 [Note] Plugin group_replication reported: &#39;new state x_start&#39;
+2017-07-14T15:00:23.486593+08:00 88181 [Note] Plugin group_replication reported: &#39;auto_increment_increment is reset to 1&#39;
+2017-07-14T15:00:23.486642+08:00 88181 [Note] Plugin group_replication reported: &#39;auto_increment_offset is reset to 1&#39;
+2017-07-14T15:00:23.486838+08:00 88211 [Note] Error reading relay log event for channel &#39;group_replication_applier&#39;: slave SQL thread was killed
+2017-07-14T15:00:23.487244+08:00 88208 [Note] Plugin group_replication reported: &#39;The group replication applier thread was killed&#39;
+</code></pre>
+
+<p>强制加入，一定要确定不会导致数据不一致，谨慎操作</p>
+
+<pre><code>localhost.test&gt;SET GLOBAL group_replication_allow_local_disjoint_gtids_join = ON ;
+Query OK, 0 rows affected (0.00 sec)
+
+localhost.test&gt;start group_replication;
+Query OK, 0 rows affected (2.26 sec)
+
+localhost.test&gt;SET GLOBAL group_replication_allow_local_disjoint_gtids_join = OFF ;
+Query OK, 0 rows affected (0.00 sec)
+
+localhost.test&gt;show variables like &#39;%read_only%&#39;;
++------------------+-------+
+| Variable_name    | Value |
++------------------+-------+
+| innodb_read_only | OFF   |
+| read_only        | ON    |
+| super_read_only  | ON    |
+| tx_read_only     | OFF   |
++------------------+-------+
+4 rows in set (0.00 sec)
+
+</code></pre>
+
+<h3 id="toc_25">3.</h3>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Redis Install 3.2.9]]></title>
+    <link href="http://saup007.github.io/14999625908463.html"/>
+    <updated>2017-07-14T00:16:30+08:00</updated>
+    <id>http://saup007.github.io/14999625908463.html</id>
+    <content type="html"><![CDATA[
+<ul>
+<li>
+<a href="#toc_0">编译步骤</a>
+</li>
+<li>
+<a href="#toc_1">配置文件</a>
+</li>
+<li>
+<a href="#toc_2">Key 类型</a>
+</li>
+<li>
+<a href="#toc_3">编译失败排错</a>
+<ul>
+<li>
+<a href="#toc_4">1. make test 失败 -- 缺少 tcl</a>
+</li>
+<li>
+<a href="#toc_5">2. make test 失败 -- 内存少bug</a>
+</li>
+</ul>
+</li>
+</ul>
+
+
+<span id="more"></span><!-- more -->
+
+<p>Redis 单线程架构 + I/O 多路复用来实现高性能内存数据库服务</p>
+
+<pre><code>本次编译环境 CentOS 6.5
+
+依赖 gcc、tcl
+</code></pre>
+
+<h2 id="toc_0">编译步骤</h2>
+
+<pre><code class="language-command">yum install tcl
+tar xf redis-3.2.9.tar
+cd redis-2.2.9
+make
+make test
+cd src
+make test
+make install
+</code></pre>
+
+<h2 id="toc_1">配置文件</h2>
+
+<p>默认配置</p>
+
+<pre><code class="language-redis.conf">bind 127.0.0.1
+protected-mode yes
+port 6379
+tcp-backlog 511
+timeout 0
+tcp-keepalive 300
+daemonize no
+supervised no
+pidfile /var/run/redis_6379.pid
+loglevel notice
+logfile &quot;&quot;
+databases 16
+save 900 1
+save 300 10
+save 60 10000
+stop-writes-on-bgsave-error yes
+rdbcompression yes
+rdbchecksum yes
+dbfilename dump.rdb
+dir ./
+slave-serve-stale-data yes
+slave-read-only yes
+repl-diskless-sync no
+repl-diskless-sync-delay 5
+repl-disable-tcp-nodelay no
+slave-priority 100
+appendonly no
+appendfilename &quot;appendonly.aof&quot;
+appendfsync everysec
+no-appendfsync-on-rewrite no
+auto-aof-rewrite-percentage 100
+auto-aof-rewrite-min-size 64mb
+aof-load-truncated yes
+lua-time-limit 5000
+slowlog-log-slower-than 10000
+slowlog-max-len 128
+latency-monitor-threshold 0
+notify-keyspace-events &quot;&quot;
+hash-max-ziplist-entries 512
+hash-max-ziplist-value 64
+list-max-ziplist-size -2
+list-compress-depth 0
+set-max-intset-entries 512
+zset-max-ziplist-entries 128
+zset-max-ziplist-value 64
+hll-sparse-max-bytes 3000
+activerehashing yes
+client-output-buffer-limit normal 0 0 0
+client-output-buffer-limit slave 256mb 64mb 60
+client-output-buffer-limit pubsub 32mb 8mb 60
+hz 10
+aof-rewrite-incremental-fsync yes
+</code></pre>
+
+<pre><code class="language-redis.cnf">port
+logfile
+dir
+daemonize
+</code></pre>
+
+<h2 id="toc_2">Key 类型</h2>
+
+<p>五种数据结构</p>
+
+<ul>
+<li>string 字符串 (Bitmaps 位图、HyperLogLog)</li>
+<li>hash   哈希</li>
+<li>list   列表</li>
+<li>set    集合</li>
+<li>zset   有序合集</li>
+<li>GEO 地理信息定位 Redis 3.2</li>
+</ul>
+
+<pre><code>sting 最大值不能超过 512M
+</code></pre>
+
+<p>Redis 数据结构和内部编码</p>
+
+<p><img src="http://osdzwfz5z.bkt.clouddn.com/Redis%20data%20encoding.jpg" alt="Redis data encoding"/></p>
+
+<p>一种数据结构对应多个内部编码优点</p>
+
+<ul>
+<li><p>当有更优秀内部编码可替换，对外结构和命令没有影响<br/>
+exp: list 提供 quicklist，结合 ziplist、linkedlist两者优势</p></li>
+<li><p>多种内部编码实现不同场景下发挥各自的优势 <br/>
+exp: ziplist 比较省内存,但列表元素多时性能下降,会根据配置将 list 内部实现转换为 linkedlist</p></li>
+</ul>
+
+<h2 id="toc_3">编译失败排错</h2>
+
+<h3 id="toc_4">1. make test 失败 -- 缺少 tcl</h3>
+
+<pre><code class="language-err">[root@dbaone redis-3.2.9]# make install
+cd src &amp;&amp; make install
+make[1]: Entering directory `/data/redis-3.2.9/src&#39;
+
+Hint: It&#39;s a good idea to run &#39;make test&#39; ;)
+
+    INSTALL install
+    INSTALL install
+    INSTALL install
+    INSTALL install
+    INSTALL install
+make[1]: Leaving directory `/data/redis-3.2.9/src&#39;
+[root@dbaone redis-3.2.9]#
+[root@dbaone redis-3.2.9]# make test
+cd src &amp;&amp; make test
+make[1]: Entering directory `/data/redis-3.2.9/src&#39;
+You need tcl 8.5 or newer in order to run the Redis test
+make[1]: *** [test] Error 1
+make[1]: Leaving directory `/data/redis-3.2.9/src&#39;
+make: *** [test] Error 2
+</code></pre>
+
+<p>解决：tcl 8.5 以上版本</p>
+
+<pre><code>yum install tcl -y
+</code></pre>
+
+<h3 id="toc_5">2. make test 失败 -- 内存少bug</h3>
+
+<pre><code class="language-err">!!! WARNING The following tests failed:
+
+*** [err]: Slave should be able to synchronize with the master in tests/integration/replication-psync.tcl
+Replication not started.
+*** [err]: Test replication partial resync: ok after delay (diskless: yes, reconnect: 1) in tests/integration/replication-psync.tcl
+Expected &#39;623331211feaf78c74df41dc934bfc8af5a89a69&#39; to be equal to &#39;0000000000000000000000000000000000000000&#39;
+Cleanup: may take some time... OK
+make[1]: *** [test] Error 1
+make[1]: Leaving directory `/data/redis-3.2.9/src&#39;
+make: *** [test] Error 2
+
+</code></pre>
+
+<p>解决：<a href="Two%20tests%20failing%20in%20unstable%20#2715">#2715</a> -- <a href="https://github.com/antirez/redis/commit/6a33952b8af18c4c0e778d93a69d97bc2adbc52e">fixbug 2715</a> -- <a href="http://36006798.blog.51cto.com/988282/1858935">blog 参考</a></p>
+
+<pre><code>vim tests/integration/replication-psync.tcl
+113     #test_psync {ok psync} 6 100000000 3600 0 {
+114     test_psync {ok psync} 6 10000000000 3600 0 {
+
+make test
+
+或
+
+# 增加编译机器内存 1G -&gt; 2G
+
+</code></pre>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Why Redis]]></title>
+    <link href="http://saup007.github.io/14999625750663.html"/>
+    <updated>2017-07-14T00:16:15+08:00</updated>
+    <id>http://saup007.github.io/14999625750663.html</id>
+    <content type="html"><![CDATA[
+<ul>
+<li>
+<a href="#toc_0">为什么选择使用 Redis</a>
+</li>
+<li>
+<a href="#toc_1">为什么单线程还能这么快</a>
+</li>
+<li>
+<a href="#toc_2">使用场景</a>
+<ul>
+<li>
+<a href="#toc_3">String 使用场景</a>
+</li>
+<li>
+<a href="#toc_4">Hash 使用场景</a>
+</li>
+<li>
+<a href="#toc_5">List 使用场景</a>
+</li>
+</ul>
+</li>
+</ul>
+
+
+<span id="more"></span><!-- more -->
+
+<h2 id="toc_0">为什么选择使用 Redis</h2>
+
+<ul>
+<li><p>速度快</p>
+
+<ul>
+<li>内存</li>
+<li>C 语言</li>
+<li>单线程，预防多线程竞争</li>
+</ul></li>
+<li><p>基于键值对的数据结构</p>
+
+<ul>
+<li>五种基础数据结构，衍生多种数据结构 (Bitmaps、HyperLogLog、GEO)</li>
+</ul></li>
+<li><p>丰富的功能</p>
+
+<ul>
+<li>Key 过期，实现缓存</li>
+<li>发布订阅，实现消息系统</li>
+<li>支持 Lua 脚本，可以创造新的 Redis 命令</li>
+<li>支持简单的事务</li>
+<li>提供流水线 (Pipeline)，一批命令一次性传到 Redis，减少网络开销</li>
+</ul></li>
+<li><p>简单稳定</p>
+
+<ul>
+<li>代码少</li>
+<li>单线程，模型简单</li>
+<li>不依赖操作系统中的类库，自己实现事件处理相关功能</li>
+</ul></li>
+<li><p>客户端语言多</p>
+
+<ul>
+<li>Java</li>
+<li>PHP</li>
+<li>Python</li>
+<li>C</li>
+<li>C++</li>
+<li>Nodejs</li>
+<li><a href="https://redis.io/clients">等等...</a></li>
+</ul></li>
+<li><p>持久化</p>
+
+<ul>
+<li>RDB</li>
+<li>AOF</li>
+</ul></li>
+<li><p>主从复制</p></li>
+<li><p>高可用和分布式</p>
+
+<ul>
+<li>Redis Sentinel (Reids 2.8)</li>
+<li>Redis Cluster 提供真正分布式、高可用、读写和容量扩展</li>
+</ul></li>
+</ul>
+
+<h2 id="toc_1">为什么单线程还能这么快</h2>
+
+<ul>
+<li>纯内存访问：内存响应时间大概为 100 纳秒，这是每秒达到厅万级重要基础</li>
+<li>非阻塞 I/O：epoll I/O 多路复用技术，自身事件处理模型将 epoll 中的连接、读写、关闭都转换为事件，不在网络 I/O 浪费时间</li>
+<li>单线程避免线程切换和竞态产生的消耗</li>
+</ul>
+
+<p>单线程的优点：</p>
+
+<ul>
+<li>可以简化数据结构和算法的实现</li>
+<li>单线程避免多线程切换和竞态产生的消耗，锁和线程切换通常是性能杀手</li>
+</ul>
+
+<p>单线程缺点：</p>
+
+<ul>
+<li>每个命令不能执行过长，会造成其他命令阻塞 </li>
+</ul>
+
+<h2 id="toc_2">使用场景</h2>
+
+<h3 id="toc_3">String 使用场景</h3>
+
+<ul>
+<li>缓存 (string) {MySQL 缓存}</li>
+<li>计数器 (string[incr])</li>
+<li>共享session {负载均衡的 web 服务器 session 集中管理}</li>
+<li>限速 {手机验证码 1 分钟不能超过 5 次，一个 IP 地址不能在 1 秒访问 n 次} set ex nx</li>
+</ul>
+
+<h3 id="toc_4">Hash 使用场景</h3>
+
+<ul>
+<li>关系型数据库列属性</li>
+</ul>
+
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>name</th>
+<th>age</th>
+<th>city</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>1</td>
+<td>tom</td>
+<td>23</td>
+<td>beiing</td>
+</tr>
+<tr>
+<td>2</td>
+<td>mike</td>
+<td>30</td>
+<td>tianjing</td>
+</tr>
+</tbody>
+</table>
+
+<p>user:1 -&gt; </p>
+
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>name</th>
+<th>age</th>
+<th>city</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>1</td>
+<td>tom</td>
+<td>23</td>
+<td>beijing</td>
+</tr>
+</tbody>
+</table>
+
+<p>user:2</p>
+
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>name</th>
+<th>age</th>
+<th>city</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>2</td>
+<td>mike</td>
+<td>30</td>
+<td>tianjing</td>
+</tr>
+</tbody>
+</table>
+
+<pre><code>其实有三种方法缓存用户信息
+
+1. 原生字符串：每个属于一个 Key
+
+set user:1 name tom
+set user:1 age 23
+set user:1 city beijing
+
+优点：简单直观，每个属性都支持更新操作
+缺点：占用过多 key，内存占用大，用户信息内聚性差，一般不会在生产环境使用
+
+2. 序列化字符串：将用户信息序列化用一个 key 保存
+
+set user:1 serialize(userInfo)
+
+优点：简化编程，如果合理的使用序列化可以提高内存使用率
+缺点：序列化、反序列化有性能开销，每次更新属性需要把所有数据全取出来反序列化，更新后，序列化到 Redis
+
+3.  Hash：每个用户属性使用一对 &quot;filed - value&quot;，但只用一个 key 保存
+
+hset user:1 name tom age 23 city beijing
+
+优点：简单直观，如果使用合理可以减少内在空间使用
+缺点：要控制 ziplist、hashtable 两种内部编码的转换，hashtable 会消耗更多内存
+</code></pre>
+
+<h3 id="toc_5">List 使用场景</h3>
+
+<ul>
+<li><p>消息队列</p>
+
+<p>lpush + brpop 组合实现阻塞队列，生产者使用 lpush 从左侧插入元素，多个消费使用 brpop 阻塞式&quot;抢&quot;列表尾部元素，多个客户端保证消费的负载均衡和高可用</p></li>
+<li><p>文章列表</p>
+
+<p>List 有序、支持按照索引取元素</p>
+
+<pre><code class="language-python"># 每个用户自己的文章列表
+
+用户(key) --&gt; 文章(list) --&gt; 文章内容(hash)
+
+每篇文章使用 Hash，每篇文件有 3 个属性 title、timestamp、content
+
+hmset article:1 title xx timestamp 1476536196 content xxxx
+...
+hmset article:k title xx timestamp 1476512536 content yyyy
+...
+
+向用户文章列表添加文章 user:{id}:acticles 作为文件列表的 Key
+
+lpush user:1:article article:1 article:3
+...
+lpush user:k:article article:5
+
+分页获取用户文章列表，下面伪代码将用户 id=1 的前 10 篇文件
+
+articles = lrange user:1:articles 0 9
+for article in {articles}
+    hgetall {article}
+
+</code></pre>
+
+<p>注：使用 List 存文章两个问题</p>
+
+<ol>
+<li>每次分页获取的文章个数较多，需要执行 hgetall 多次，可以考虑使用 pipline批量获取，或者考虑文章数据序列化为字符串类型，使用 mget 批量获取。</li>
+<li>分页获取文章列表时，lrange 命令在列表两端性能较好，但如果列表较大，获取列表中间范围元素性能会变差，可以考虑将 List 做二级分拆或使用 Redis 3.2 的 quicklist 内部编码实现，它结果 ziplist、linkedlist 特点，获致列表中间范围的元素也可以高效完成</li>
+</ol></li>
+<li><p>栈 lpush + lpop = Stack</p></li>
+<li><p>队列 lpush + rpop = Queue</p></li>
+<li><p>有限集合  lpush + ltrim = Capped Collection</p></li>
+<li><p>消息队列  lpuush + brpop = Message Queue</p></li>
+<li><p>排行榜 (list、zset)</p></li>
+<li><p>社交网络</p></li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Redis 命令]]></title>
+    <link href="http://saup007.github.io/14999625646195.html"/>
+    <updated>2017-07-14T00:16:04+08:00</updated>
+    <id>http://saup007.github.io/14999625646195.html</id>
+    <content type="html"><![CDATA[
+<ul>
+<li>
+<a href="#toc_0">通用命令</a>
+</li>
+<li>
+<a href="#toc_1">Key 管理</a>
+<ul>
+<li>
+<a href="#toc_2">单个 Key 管理</a>
+</li>
+<li>
+<a href="#toc_3">遍历 Key</a>
+</li>
+<li>
+<a href="#toc_4">数据库管理</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_5">字符串命令</a>
+<ul>
+<li>
+<a href="#toc_6">String 命令时间复杂度</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_7">Hash 命令</a>
+<ul>
+<li>
+<a href="#toc_8">Hash 命令时间复杂度</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_9">List 命令</a>
+<ul>
+<li>
+<a href="#toc_10">添加操作</a>
+</li>
+<li>
+<a href="#toc_11">查找</a>
+</li>
+<li>
+<a href="#toc_12">删除</a>
+</li>
+<li>
+<a href="#toc_13">修改</a>
+</li>
+<li>
+<a href="#toc_14">阻塞操作</a>
+<ul>
+<li>
+<a href="#toc_15">brpop 注意事项</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_16">List 时间复杂度</a>
+</li>
+</ul>
+</li>
+</ul>
+
+
+<span id="more"></span><!-- more -->
+
+<h2 id="toc_0">通用命令</h2>
+
+<pre><code class="language-python"># Start Redis Service
+redis-server redis.conf &amp;
+
+# Login
+redis-cli -h -p
+
+# Shutdown (nosave 关闭前是否生成持久化文件)
+# 可以使用 kill, 不要使用 kill -9 没有持久化、极端情况 AOF 和复制丢失数据
+redis-cli shutdown [nosave]|[save]
+
+# 查看所有键 (慎用 复杂度 O(n))
+keys *
+
+# 键总数 (取 redis 内置键总数变量 复杂度 O(1))
+dbsize
+
+# 键是否存在 (1 存在 0 不存在)
+exists key
+
+# 删除键 (无论什么数据类型,返回成功删除 key 个数,删除不存在的 key 返回 0)
+del key [key ...]
+
+# 键过期
+expire hello seconds
+
+返回大于 0 的整数:键剩余过期时间
+返回 -1:键没有设置过期时间
+返回 -2:键不存在
+
+ttl key 可以查看 key 剩余过期时间
+
+# 键的数据类型结构
+type key
+
+返回为 key 数据类型 (string 字符串、hash 哈希、list 列表、set 集合、zset 有序集合)
+返回 none，key 存在
+
+# 查看 key 内部编码
+object encoding key
+
+</code></pre>
+
+<h2 id="toc_1">Key 管理</h2>
+
+<h3 id="toc_2">单个 Key 管理</h3>
+
+<h3 id="toc_3">遍历 Key</h3>
+
+<h3 id="toc_4">数据库管理</h3>
+
+<h2 id="toc_5">字符串命令</h2>
+
+<pre><code class="language-python"># set
+set key value [ex seconds] [px milliseconds] [nx|xx]
+
+    * ex seconds：为 key 设置秒级过期时间
+    * px milliseconds：为 key 设置毫秒级过期时间
+    * nx：key 必须不存在才可以设置成功，用于添加
+    * xx：与 nx 相反，key 必须存在才可以设置成功，用于更新
+
+    setnx setxx 与 ex、xx 选项一样
+    setnx 可以作为分布式锁的一种实现  [链接](https://redis.io/topics/distlock)
     
+# get (若 key 不存在，返回 nil(空))
+get key
+
+# mset
+mset key value [key values ...]
+
+# mget
+mget key [key ...]
+
+# incr 计数(自增)
+incr key
+
+    127.0.0.1:6379&gt; set age 10
+    OK
+    127.0.0.1:6379&gt; incrby age 10
+    (integer) 20
+
+    * 返回值不是整数，返回错误
+    * 返回值是整数，返回自增后的结果
+    * 键不存在，按照值为 0 自增，返回结果为 1
+
+# append
+append key value
+
+# strlen
+strlen key
+
+# getset (设置并返回原值)
+getset key value
+
+# setrange (设置指定位置的字符)
+setrange key offset value
+
+    # pest -&gt; best 
+    set redis pest
+    setrange redis 0 b
+    
+# getrange (获取部分字符串,start 从 0 开始)
+getrant key start end
+
+</code></pre>
+
+<p>自增扩展命令</p>
+
+<table>
+<thead>
+<tr>
+<th>incr</th>
+<th>自增</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>decr</td>
+<td>自减</td>
+</tr>
+<tr>
+<td>incrby</td>
+<td>自增指定数字</td>
+</tr>
+<tr>
+<td>decrby</td>
+<td>自增指定数字</td>
+</tr>
+<tr>
+<td>incrbyfloat</td>
+<td>自增浮点数</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="toc_6">String 命令时间复杂度</h3>
+
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>时间复杂度</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>set key value</td>
+<td>O(1)</td>
+</tr>
+<tr>
+<td>get key</td>
+<td>O(1)</td>
+</tr>
+<tr>
+<td>del key [key ...]</td>
+<td>O(k) k 是 key 个数</td>
+</tr>
+<tr>
+<td>mset key value [key value ...]</td>
+<td>O(k) k 是 key 个数</td>
+</tr>
+<tr>
+<td>mget key [key ...]</td>
+<td>O(k) k 是 key 个数</td>
+</tr>
+<tr>
+<td>incr key</td>
+<td>O(1)</td>
+</tr>
+<tr>
+<td>decr key</td>
+<td>O(1)</td>
+</tr>
+<tr>
+<td>incrby key increment</td>
+<td>O(1)</td>
+</tr>
+<tr>
+<td>decrby key increment</td>
+<td>O(1)</td>
+</tr>
+<tr>
+<td>incrbyfloat key increment</td>
+<td>O(1)</td>
+</tr>
+<tr>
+<td>append key value</td>
+<td>O(1)</td>
+</tr>
+<tr>
+<td>strlen key</td>
+<td>O(1)</td>
+</tr>
+<tr>
+<td>setrange key offset value</td>
+<td>O(1)</td>
+</tr>
+<tr>
+<td>getrange key start end</td>
+<td>O(n) n 是字符串长度，由于获取字符串非常快，若不是很长，可以视同 O(1)</td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="toc_7">Hash 命令</h2>
+
+<pre><code class="language-python"># hset
+hset key field value
+
+成功 返回 1
+失败 返回 0
+
+    hset user:1 name tom
+    
+    hsetnx：与 setnx 一样，作用域由 key 变为 field
+    
+# hget
+hget key field
+
+成功 返回 value
+key 不存在返回 nil
+
+# hdel
+hdel key field [field ...]
+
+成功 返回删除 field 个数
+field 不存在，返回 0
+
+    hdel user:1 name
+# hlen (计算 field 个数)
+hlen key
+
+# hmset hmset 批量设置或获取 field-value
+hmget key field [field]
+hset key field value [field  value ...]
+
+    127.0.0.1:6379&gt; hmset user:1 name mike age 12 city tianjin
+    OK
+    
+    127.0.0.1:6379&gt; hmget user:1 name age
+    1) &quot;mike&quot;
+    2) &quot;12&quot;
+    
+# exists (field 是否存在)
+hexists key field
+
+存在返回 1
+不存在返回 0
+
+    127.0.0.1:6379&gt; hexists user:1 name
+    (integer) 1
+
+# hkeys (获取所有 field)
+hkeys key
+
+    127.0.0.1:6379&gt; hkeys user:1
+    1) &quot;name&quot;
+    2) &quot;age&quot;
+    3) &quot;city&quot;
+
+# hvals (获取所有 value)
+hvals key
+
+    127.0.0.1:6379&gt; hvals user:1
+    1) &quot;mike&quot;
+    2) &quot;12&quot;
+    3) &quot;tianjin&quot;
+
+# hgetall (获取所有 field value) [慎用]
+hgetall key
+
+    127.0.0.1:6379&gt; hgetall user:1
+    1) &quot;name&quot;
+    2) &quot;mike&quot;
+    3) &quot;age&quot;
+    4) &quot;12&quot;
+    5) &quot;city&quot;
+    6) &quot;tianjin&quot;
+    
+若 hash 元素较多，会阻塞 redis ，获取部分 field，可使用 hmget，一定获取全部 field，hscan 渐进式遍历 Hash
+
+# hscan
+
+?
+
+# hincrby hincrbyfloat
+
+hincrby key field
+hincrbyfloat key field
+
+    127.0.0.1:6379&gt; hincrby user:1 age 10
+    (integer) 22
+
+hincrby、hincrbyfloat 与 incrby、incrbyfloat 一样，但作用域是 field
+
+# hstrlen (计算 value 的字符串长度 Redis 3.2 以上)
+hstrlen key field
+
+    127.0.0.1:6379&gt; hstrlen user:1 name
+    (integer) 4
+
+
+</code></pre>
+
+<h3 id="toc_8">Hash 命令时间复杂度</h3>
+
+<table>
+<thead>
+<tr>
+<th>command</th>
+<th>时间复杂底</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>hset key field value</td>
+<td>O(1)</td>
+</tr>
+<tr>
+<td>hget key field</td>
+<td>O(1)</td>
+</tr>
+<tr>
+<td>hdel key field [field ...]</td>
+<td>O(k) k 是 field 个数</td>
+</tr>
+<tr>
+<td>hlen key</td>
+<td>O(1)</td>
+</tr>
+<tr>
+<td>hgetall key</td>
+<td>O(n) n 是 field 总数</td>
+</tr>
+<tr>
+<td>hmget key field [field …]</td>
+<td>O(k) k 是 field 个数</td>
+</tr>
+<tr>
+<td>hmset key field value [field key ...]</td>
+<td>O(k) k 是 field 个数</td>
+</tr>
+<tr>
+<td>hexists key field</td>
+<td>O(1)</td>
+</tr>
+<tr>
+<td>hkeys key</td>
+<td>O(n) n 是 field 总数</td>
+</tr>
+<tr>
+<td>hvals key</td>
+<td>O(n) n 是 field 总数</td>
+</tr>
+<tr>
+<td>hsetnx key field value</td>
+<td>O(1)</td>
+</tr>
+<tr>
+<td>hincrby key field increment</td>
+<td>O(1)</td>
+</tr>
+<tr>
+<td>hincrbyfloat key field increment</td>
+<td>O(1)</td>
+</tr>
+<tr>
+<td>hstrlen key field</td>
+<td>O(1)</td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="toc_9">List 命令</h2>
+
+<p>List 中每个字符串称为元素(element)，最多 2<sup>32</sup> -1 个元素，可以充当&quot;栈&quot;、&quot;队列&quot;的角色</p>
+
+<p>特点：</p>
+
+<ul>
+<li>List 中的 element 是有序的，意味可以通过索引下标获取某个元素或某个范围内的元素列表</li>
+<li>List 中的 element 是可以重复的，跟 set、zset 有明显不同</li>
+</ul>
+
+<p>List 的四种操作类型</p>
+
+<table>
+<thead>
+<tr>
+<th>操作类型</th>
+<th>操作</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>添加</td>
+<td>rpush lpush linsert</td>
+</tr>
+<tr>
+<td>查</td>
+<td>lrange lindex llen</td>
+</tr>
+<tr>
+<td>删除</td>
+<td>lpop rpop lrem ltrim</td>
+</tr>
+<tr>
+<td>修改</td>
+<td>lset</td>
+</tr>
+<tr>
+<td>阻塞操作</td>
+<td>blpop brpop</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="toc_10">添加操作</h3>
+
+<pre><code class="language-python"># 从左边插入元素
+rpush key value [value . ..]
+
+    127.0.0.1:6 379&gt; rpush listkey c b a
+    (integer) 3
+
+lrange 0 -1 从左到右获取列表所有元素
+
+    127.0.0.1:6379&gt; lrange listkey 0 -1
+    1) &quot;c&quot;
+    2) &quot;b&quot;
+    3) &quot;a&quot;
+
+# 从左边插入
+lpush key value [value ...]
+
+# 向某个元素前或后插入元素
+linsert key before|alter pivot value
+    
+    # 在元素 b 前插入元素 java，返回结果代表当前 list 长度
+    127.0.0.1:6379&gt; linsert listkey before b java
+    (integer) 4
+    127.0.0.1:6379&gt; lrange listkey 0 -1
+    1) &quot;c&quot;
+    2) &quot;java&quot;
+    3) &quot;b&quot;
+    4) &quot;a&quot;
+
+# 
+
+</code></pre>
+
+<h3 id="toc_11">查找</h3>
+
+<pre><code class="language-python"># 获取指定范围内的元素列表
+lrange key start end
+
+索引下标特点
+
+    * 从左到右，0 -&gt; N-1，从右到左，-1 -&gt; -N
+    * end 选项包含自身，即 lrange key 1 3 获取下标为 1、2、3 三个元素
+    * 
+    127.0.0.1:6379&gt; lrange listkey 0 2
+    1) &quot;c&quot;
+    2) &quot;java&quot;
+    3) &quot;b&quot;
+
+# 获取 List 指定索引标下的元素
+lindex key index
+    
+    # 获取 listkey 最后一个元素
+    127.0.0.1:6379&gt; lindex listkey -1
+    &quot;a&quot;
+
+# 获取列表长度
+llen  key
+
+    127.0.0.1:6379&gt; llen listkey
+    (integer) 4
+
+
+</code></pre>
+
+<h3 id="toc_12">删除</h3>
+
+<pre><code class="language-python"># 从列表左侧弹出元素
+lpop key
+
+    127.0.0.1:6379&gt; lrange listkey 0 -1
+    1) &quot;c&quot;
+    2) &quot;java&quot;
+    3) &quot;b&quot;
+    4) &quot;a&quot;
+    127.0.0.1:6379&gt; lpop listkey
+    &quot;c&quot;
+    127.0.0.1:6379&gt; lrange listkey 0 -1
+    1) &quot;java&quot;
+    2) &quot;b&quot;
+    3) &quot;a&quot;：
+
+# 从列表右侧弹出
+rpop key
+
+# 删除指定元素
+lrem key count value
+
+lrem 从列表找到等于 value 的元素删除，根据 count 不同
+
+    * count &gt; 0，从左到右，删除最多 count 个元素
+    * count &lt; 0，从右到左，删除最多 count 个元素
+    * count = 0，删除所有
+
+    # 从左向右插入 5 个 a，从左边删除 4 个为 a 的元素
+    127.0.0.1:6379&gt; lpush listkey a
+    (integer) 4
+    127.0.0.1:6379&gt; lpush listkey a
+    (integer) 5
+    127.0.0.1:6379&gt; lpush listkey a
+    (integer) 6
+    127.0.0.1:6379&gt; lpush listkey a
+    (integer) 7
+    127.0.0.1:6379&gt; lpush listkey a
+    (integer) 8
+    127.0.0.1:6379&gt; lrange listkey 0 -1
+    1) &quot;a&quot;
+    2) &quot;a&quot;
+    3) &quot;a&quot;
+    4) &quot;a&quot;
+    5) &quot;a&quot;
+    6) &quot;java&quot;
+    7) &quot;b&quot;
+    8) &quot;a&quot;
+    127.0.0.1:6379&gt; lrem listkey 4 a
+    (integer) 4
+    127.0.0.1:6379&gt; lrange listkey 0 -1
+    1) &quot;a&quot;
+    2) &quot;java&quot;
+    3) &quot;b&quot;
+    4) &quot;a&quot;
+
+# 按索引范围修改剪列表
+ltrim key start end
+
+    # 保留列表下标为 1-3的元素，即第 2 个到第 4 个
+    127.0.0.1:6379&gt; lrange listkey 0 -1
+    1) &quot;a&quot;
+    2) &quot;java&quot;
+    3) &quot;b&quot;
+    4) &quot;a&quot;
+    127.0.0.1:6379&gt; ltrim listkey 1 3
+    OK
+    127.0.0.1:6379&gt; lrange listkey 0 -1
+    1) &quot;java&quot;
+    2) &quot;b&quot;
+    3) &quot;a&quot;
+
+</code></pre>
+
+<h3 id="toc_13">修改</h3>
+
+<pre><code class="language-python"># 修改指定下标的元素
+lset key index newvalue
+
+    127.0.0.1:6379&gt; lrange listkey 0 -1
+    1) &quot;java&quot;
+    2) &quot;b&quot;
+    3) &quot;a&quot;
+    127.0.0.1:6379&gt; lset listkey 2 python
+    OK
+    127.0.0.1:6379&gt; lrange listkey 0 -1
+    1) &quot;java&quot;
+    2) &quot;b&quot;
+    3) &quot;python&quot;
+
+</code></pre>
+
+<h3 id="toc_14">阻塞操作</h3>
+
+<pre><code class="language-python"># key 多个列表的 key，timeout 为阻塞时间(单位为秒 s)
+blpop key [key ...] timeout
+brpop key [key ...] timeout
+ 
+blopo、brpop 是 lpop、rpop 阻塞版本
+
+</code></pre>
+
+<ul>
+<li><p>列表为空</p>
+
+<p>timeout=3，客户端要等 3 秒返回，timeout=0，客户端一直阻塞下去</p></li>
+</ul>
+
+<pre><code class="language-python">    127.0.0.1:6379&gt; brpop list:test 3
+    (nil)
+    (3.05s)
+    
+    127.0.0.1:6379&gt; brpop list:test 0
+    
+    ... 阻塞 ...
+    
+    # 在此期间另一个 session 加元素 element1，则 brpop 客户端立即返回
+    127.0.0.1:6379&gt; lpush list:test element1
+    (integer) 1
+    
+    127.0.0.1:6379&gt; brpop list:test 0
+    1) &quot;list:test&quot;
+    2) &quot;element1&quot;
+    (304.53s)
+    
+</code></pre>
+
+<ul>
+<li>列表不为空，客户端立即返回</li>
+</ul>
+
+<h4 id="toc_15">brpop 注意事项</h4>
+
+<ol>
+<li><p>如果多个 key，brpop 会从左到右遍历 key，一旦有一个 key 能弹出元素客户端立即返回</p>
+
+<pre><code>127.0.0.1:6379&gt; brpop list:1 list:2 list:3 0
+... 阻塞 ...
+
+# 另一客户端分别向 list:2、list:3 插入元素 
+127.0.0.1:6379&gt; lpush list:2 element2
+(integer) 1
+127.0.0.1:6379&gt; lpush list:3 element3
+(integer) 1
+
+# 客户端会立即返回 list:2 中的 element2，因为 list:2 最先有可以弹出的元素
+
+127.0.0.1:6379&gt; brpop list:1 list:2 list:3 0
+1) &quot;list:2&quot;
+2) &quot;element2&quot;
+(43.29s)
+
+</code></pre></li>
+<li><p>多个客户端对同一个 key 执行 brpop，最先执行的 brpop 的客户端获致弹出的值，其他客户端阻塞等待</p></li>
+</ol>
+
+<h3 id="toc_16">List 时间复杂度</h3>
+
+<table>
+<thead>
+<tr>
+<th>操作类型</th>
+<th>命令</th>
+<th>时间复杂度</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>添加</td>
+<td>rpush key value [value ...]</td>
+<td>O(k) k是元素个数</td>
+</tr>
+<tr>
+<td></td>
+<td>lpush key value [value ...]</td>
+<td>O(k) k是元素个数</td>
+</tr>
+<tr>
+<td></td>
+<td>linsert key before</td>
+<td>after pivot value</td>
+</tr>
+<tr>
+<td>查找</td>
+<td>lrange key start end</td>
+<td>O(s+n) s 是 start 偏移量，n 是 start 到 end 的范围</td>
+</tr>
+<tr>
+<td></td>
+<td>lindex key index</td>
+<td>O(n) n是索引偏移量</td>
+</tr>
+<tr>
+<td></td>
+<td>llen key</td>
+<td>O(1)</td>
+</tr>
+<tr>
+<td>删除</td>
+<td>lpop key</td>
+<td>O(1)</td>
+</tr>
+<tr>
+<td></td>
+<td>rpop key</td>
+<td>O(1)</td>
+</tr>
+<tr>
+<td></td>
+<td>lrem count value</td>
+<td>O(n)</td>
+</tr>
+<tr>
+<td></td>
+<td>ltrim key start end</td>
+<td>O(n) n 是要裁剪的元素总数</td>
+</tr>
+<tr>
+<td>修改</td>
+<td>lset key index value</td>
+<td>O(n) n 是索引的偏移量</td>
+</tr>
+<tr>
+<td>阻塞操作</td>
+<td>blpop brpop</td>
+<td>O(1)</td>
+</tr>
+</tbody>
+</table>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Redis 内部编码]]></title>
+    <link href="http://saup007.github.io/14999625423902.html"/>
+    <updated>2017-07-14T00:15:42+08:00</updated>
+    <id>http://saup007.github.io/14999625423902.html</id>
+    <content type="html"><![CDATA[
+<ul>
+<li>
+<a href="#toc_0">String 内部编码</a>
+</li>
+<li>
+<a href="#toc_1">Hash 内部编码</a>
+</li>
+<li>
+<a href="#toc_2">List 内部编码</a>
+</li>
+</ul>
+
+
+<span id="more"></span><!-- more -->
+
+<h2 id="toc_0">String 内部编码</h2>
+
+<ul>
+<li>int：8 个字节的长整型</li>
+<li>embstr：&lt;= 39 个字符的字符串</li>
+<li>raw：&gt; 39 个字符的字符串</li>
+</ul>
+
+<h2 id="toc_1">Hash 内部编码</h2>
+
+<ul>
+<li>ziplist 压缩列表</li>
+</ul>
+
+<pre><code>当 Hash 元素个数小于 hash-max-ziplist-entries(default 512 个)
+同时所有值都小于 hash-max-ziplist-value(default 64 字节)，选用 ziplist 做为 Hash 内部实现
+
+ziplist 使用更加紧凑的结构实现多个元素连续存在，比 hashtable 节省内存
+</code></pre>
+
+<ul>
+<li>hashtable 哈希表</li>
+</ul>
+
+<pre><code>当 Hash 无法满足 ziplist 时，使用 hashtable 作为 Hash 内部实现，因为此时 ziplist 读写效率下降，而 hashtable 的读写时间复杂度为 O(1)
+</code></pre>
+
+<h2 id="toc_2">List 内部编码</h2>
+
+<ul>
+<li>ziplist 压缩列表</li>
+</ul>
+
+<pre><code>当 List 元素个数小于 list-max-ziplist-entries(default 512 个)，同时列表中每个元素值都小于 list-max-ziplist-value(default 64 字节)，选用 ziplist 做为 List 内部实现减少内存使用
+</code></pre>
+
+<ul>
+<li>linkedlist 链表</li>
+</ul>
+
+<pre><code>当 List 无法满足 ziplist 条件时，使用 linkedlist 做为内部实现
+</code></pre>
+
+<p>Redis 3.2 提供 quicklist 内部内部编码，简单说是一个 ziplist 为节点的 linkedlist，结合 ziplist 和 linkedlist 优势，为列表型提供更优秀的编码，设计原理参考 <a href="https://matt.sh/redis-quicklist">redis-quicklist</a></p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Percona XtraDB Cluster vs Galera Cluster vs MySQL Group Replication]]></title>
+    <link href="http://saup007.github.io/14999530972668.html"/>
+    <updated>2017-07-13T21:38:17+08:00</updated>
+    <id>http://saup007.github.io/14999530972668.html</id>
+    <content type="html"><![CDATA[
+<ul>
+<li>
+<a href="#toc_0">Overview</a>
+<ul>
+<li>
+<a href="#toc_1">Galera Cluster</a>
+</li>
+<li>
+<a href="#toc_2">Percona XtraDB Cluster</a>
+</li>
+<li>
+<a href="#toc_3">MySQL Group Replication</a>
+</li>
+<li>
+<a href="#toc_4">MySQL InnoDB Cluster</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_5">Similarities</a>
+<ul>
+<li>
+<a href="#toc_6">Similar - Use Cases</a>
+</li>
+<li>
+<a href="#toc_7">Similar Limitation</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_8">Differences GR &amp; Galera</a>
+<ul>
+<li>
+<a href="#toc_9">Group Communication System 组通信系统</a>
+</li>
+<li>
+<a href="#toc_10">Binlogs &amp; Gcache</a>
+</li>
+<li>
+<a href="#toc_11">Node Provisioning 节点配置</a>
+</li>
+<li>
+<a href="#toc_12">GTID vs. Seqno</a>
+</li>
+<li>
+<a href="#toc_13">Partition Handling</a>
+</li>
+<li>
+<a href="#toc_14">Full Solution or Plugin</a>
+</li>
+<li>
+<a href="#toc_15">Flow Control 流控制</a>
+</li>
+<li>
+<a href="#toc_16">WAN Support</a>
+</li>
+<li>
+<a href="#toc_17">OS Support</a>
+</li>
+<li>
+<a href="#toc_18">Schema Changes - DDL</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_19">Differences PXC &amp; Galera</a>
+<ul>
+<li>
+<a href="#toc_20">PXC Strict Mode</a>
+</li>
+<li>
+<a href="#toc_21">ProxySQL 集成</a>
+</li>
+<li>
+<a href="#toc_22">性能提升</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_23">Limitations</a>
+</li>
+<li>
+<a href="#toc_24">Known Issues</a>
+<ul>
+<li>
+<a href="#toc_25">Galera Cluster/PXC Issues</a>
+</li>
+<li>
+<a href="#toc_26">Group Replication Issues</a>
+<ul>
+<li>
+<a href="#toc_27">分区容忍问题，不能防止脑裂</a>
+</li>
+<li>
+<a href="#toc_28">减少冲突</a>
+</li>
+<li>
+<a href="#toc_29">稳定性</a>
+</li>
+<li>
+<a href="#toc_30">可用性</a>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_31">Q &amp; A</a>
+</li>
+<li>
+<a href="#toc_32">Performance Tests</a>
+</li>
+</ul>
+
+
+<span id="more"></span><!-- more -->
+
+<h2 id="toc_0">Overview</h2>
+
+<h3 id="toc_1">Galera Cluster</h3>
+
+<ul>
+<li>由 Coder&lt;!----&gt;ship 开发 <a href="http://galeracluster.com">官网</a></li>
+<li>包含在MariaDB，在Percona、MySQL 都可以使用</li>
+</ul>
+
+<p>Galera Cluster 是一个基于 InnoDB 多主的同步复制，可以读写任何节点，即使失去任何一个节点也不影响业务中断，而且无需复杂的 failover 操作。</p>
+
+<h3 id="toc_2">Percona XtraDB Cluster</h3>
+
+<ul>
+<li>由 Percona 开发，在 Galera 基础打 Patch <a href="https://www.percona.com/software/mysql-database/percona-xtradb-cluster">官网</a></li>
+<li>自 2012 年 4 月可用</li>
+<li>附加的特性
+
+<ul>
+<li>PFS 扩展支持</li>
+<li>SST/XtraBackup 方式的改变</li>
+<li>PXC Strict mode *</li>
+<li>ProxySQL 集成 *</li>
+<li>提升性能 *</li>
+</ul></li>
+</ul>
+
+<h3 id="toc_3">MySQL Group Replication</h3>
+
+<ul>
+<li>由 Oracle 官方开发</li>
+<li>2016 年 12 月 MySQL 5.7.17 发布 GA</li>
+<li>MySQL InnoDB Cluster 整体解决方案</li>
+</ul>
+
+<p>MySQL Group Replication 是一个 MySQL Server Plugin，提供分布式状态机复制与 Server 强大协调，当在一个 Group Replication 时，Server 将自动协调，每个节点都可以自动处理更新，自动检测，有一个 membership service 维护一个 view，记录组内 记录可见成员在某个时间点一致性和高可用性的，当任何一个成加入或离开，view 就会相应的更新</p>
+
+<h3 id="toc_4">MySQL InnoDB Cluster</h3>
+
+<p><img src="http://osdzwfz5z.bkt.clouddn.com/14994853997910.jpg" alt="" style="width:610px;"/></p>
+
+<h2 id="toc_5">Similarities</h2>
+
+<ul>
+<li>MySQL/MariaDB</li>
+<li>复制方法</li>
+<li>所有节点都有全部的数据 - 读仅发生在当前本地节点</li>
+<li>都需要 InnoDB/XtraDB 引擎</li>
+<li>都支持 多主的拓扑 (Active-active multi-master Topology)
+
+<ul>
+<li>写多主节点</li>
+<li>不需要复杂的 Failover 操作</li>
+</ul></li>
+<li>节点管理，加入和离开都是完全自动处理的</li>
+<li>执行和写都是按全局的顺序进行的</li>
+<li>数据一致性</li>
+<li>乐观锁 / 最早提交的先赢</li>
+<li>Quorum - 防止脑裂</li>
+</ul>
+
+<h3 id="toc_6">Similar - Use Cases</h3>
+
+<ul>
+<li>严格的持久化环境</li>
+<li>同时定入多个节点，保证数据一致性</li>
+<li>减少故障转移时间 (Reduce failover time)</li>
+</ul>
+
+<h3 id="toc_7">Similar Limitation</h3>
+
+<ul>
+<li>大事务或长事务
+
+<ul>
+<li>很大的可能失败</li>
+<li>大事务导致在有效事务</li>
+</ul></li>
+<li>热点，多个节点更新同一行数据</li>
+<li>只有一个节点写，是最好的解决方案</li>
+</ul>
+
+<h2 id="toc_8">Differences GR &amp; Galera</h2>
+
+<ul>
+<li>Group Communication System 组通信系统</li>
+<li>Binlogs &amp; Gcache</li>
+<li>Node Provisioning 节点配置</li>
+<li>GTID vs Seqno</li>
+<li>Partition Handling 分区控制</li>
+<li>Full Solution or Plugin</li>
+<li>Flow Control 流控制</li>
+<li>WAN Support</li>
+<li>OS Support</li>
+<li>Schema Changes DDL</li>
+</ul>
+
+<h3 id="toc_9">Group Communication System 组通信系统</h3>
+
+<ul>
+<li><p>Galera</p>
+
+<ul>
+<li>标志的单环顺序 Totem Single-ring Ordering</li>
+<li>所有节点都必须有 ACK 消息</li>
+</ul></li>
+<li><p>MySQL Group Replication</p>
+
+<ul>
+<li>基于 Paxos</li>
+<li>Paxos 只要求大多数 ACK 消息</li>
+</ul></li>
+</ul>
+
+<h3 id="toc_10">Binlogs &amp; Gcache</h3>
+
+<ul>
+<li><p>Galera Cluster/PXC</p>
+
+<ul>
+<li>uses binlog row events</li>
+<li>but does not require binary logging</li>
+<li>writes events to Gcache (con gurable size)</li>
+</ul></li>
+<li><p>MySQL Group Replication</p>
+
+<ul>
+<li>requires binary logging</li>
+</ul></li>
+</ul>
+
+<h3 id="toc_11">Node Provisioning 节点配置</h3>
+
+<ul>
+<li><p>Galera Cluster/PXC</p>
+
+<ul>
+<li>has State Snapshot Transfer (SST) 全量同步
+
+<ul>
+<li>Percona XtraBackup (Recommended)</li>
+<li>rsync</li>
+<li>mysqldump</li>
+</ul></li>
+<li>incremental State Transfer (IST) using GCache 增量同步</li>
+</ul></li>
+<li><p>MySQL Group Replication</p>
+
+<ul>
+<li>没有自动全量同步，除非保留所有 Binlog</li>
+<li>用于同步的异步复制通道</li>
+</ul></li>
+</ul>
+
+<h3 id="toc_12">GTID vs. Seqno</h3>
+
+<ul>
+<li><p>Galera Cluster/PXC</p>
+
+<ul>
+<li>has a seqno which is a incrementing number</li>
+</ul></li>
+<li><p>MySQL Group Replication</p>
+
+<ul>
+<li>依赖 MySQL GTID</li>
+<li>writes to a cluster create GTID events on the GR Cluster UUID</li>
+</ul></li>
+</ul>
+
+<h3 id="toc_13">Partition Handling</h3>
+
+<ul>
+<li><p>Galera Cluster/PXC</p>
+
+<ul>
+<li>A partitioned node will refuse reads/writes (con gurable)</li>
+<li>A partitioned node will automatically recover and rejoin </li>
+</ul></li>
+<li><p>MySQL Group Replication</p>
+
+<ul>
+<li>A partitioned node will accept reads</li>
+<li>A partitioned node will accept write requests, but will hang forever</li>
+<li>A partitioned node needs to be manually rejoined to the cluster</li>
+</ul></li>
+</ul>
+
+<h3 id="toc_14">Full Solution or Plugin</h3>
+
+<ul>
+<li>Plugin
+
+<ul>
+<li>Group Replication is a &#39;Replication Plugin&#39;</li>
+<li>several split brain bugs in current code ( fixes pending!)</li>
+</ul></li>
+<li><p>Solution</p>
+
+<ul>
+<li>Galera Cluster 不处理应用连接</li>
+<li>与 GR 相比有更强的防止脑裂</li>
+<li>MySQL InnoDB Cluster (w. MySQLRouter)</li>
+</ul></li>
+<li><p>Full Solution </p>
+
+<ul>
+<li>Percona XtraDB Cluster (w. ProxySQL)</li>
+<li>集成 ProxySQL</li>
+<li>严格的 mode，防止使用限制 </li>
+</ul></li>
+</ul>
+
+<h3 id="toc_15">Flow Control 流控制</h3>
+
+<p>防止太慢的节点，被落下太远</p>
+
+<ul>
+<li><p>Galera Cluster/PXC</p>
+
+<ul>
+<li>当一个节点慢到一个限制，阻止所有节点写</li>
+<li>Flow Control 的消息已经发送</li>
+<li>low defaults; Galera: 16(*), PXC: 100</li>
+<li>Tell others to stop writes</li>
+</ul></li>
+<li><p>MySQL Group Replication</p>
+
+<ul>
+<li>每个节点都有每个成员的统计信息</li>
+<li>每个独立的节点决定写的阈值</li>
+<li>high default: 25000</li>
+<li>如果有节点太慢，其他节点放慢写速度</li>
+</ul></li>
+</ul>
+
+<h3 id="toc_16">WAN Support</h3>
+
+<ul>
+<li><p>Galera Cluster/PXC</p>
+
+<ul>
+<li>投票权重</li>
+<li>调节网络通信设置</li>
+<li>减少分段网络流量</li>
+<li>仲裁人</li>
+</ul></li>
+<li><p>MySQL Group Replication</p>
+
+<ul>
+<li>不建议在  WAN 上使用</li>
+</ul></li>
+</ul>
+
+<h3 id="toc_17">OS Support</h3>
+
+<ul>
+<li><p>Galera</p>
+
+<ul>
+<li>FreeBSD &amp; Linux</li>
+</ul></li>
+<li><p>Galera Cluster/PXC</p>
+
+<ul>
+<li>Linux</li>
+</ul></li>
+<li><p>MySQL Group Replication</p>
+
+<ul>
+<li>Linux, Windows, Solaris, OSX, FreeBSD</li>
+</ul></li>
+</ul>
+
+<h3 id="toc_18">Schema Changes - DDL</h3>
+
+<ul>
+<li><p>Galera Cluster/PXC</p>
+
+<ul>
+<li>Total Order Isolation</li>
+<li>All writes will be blocked during Writes on other nodes will be terminated</li>
+<li>Workarounds 变通办法
+
+<ul>
+<li>pt-online-schema-change</li>
+<li>wsrep_osu_method=RSU
+
+<ul>
+<li>更多的操作工作</li>
+<li>并不是所有 DDL 可行</li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li><p>MySQL Group Replication</p>
+
+<ul>
+<li>DDL 并不会阻塞写，像平常使用一样</li>
+<li>仅建议在单主模式下使用 (因为 DDL 并没有冲突检测)</li>
+</ul></li>
+</ul>
+
+<h2 id="toc_19">Differences PXC &amp; Galera</h2>
+
+<ul>
+<li>扩展 PFS 支持</li>
+<li>SST/XtraBackup 方式的改变</li>
+<li>Bug-Fixes</li>
+<li>PXC Strict Mode - PXC 严格的 Mode</li>
+<li>ProxySQL 集成</li>
+<li>性能提升</li>
+</ul>
+
+<h3 id="toc_20">PXC Strict Mode</h3>
+
+<p>预防实验性或不支持的特性</p>
+
+<ul>
+<li>仅支持 InnoDB 的操作</li>
+<li>预防修改 binlog_format!=ROW</li>
+<li>需要 Table 有主键</li>
+<li>禁用不支持的特性
+
+<ul>
+<li>GET_LOCK,LOCK TABLES,CTAS</li>
+<li>FLUSH TABLES <tables> WITH READ LOCK</li>
+<li>tx_isolation=SERIALIZABLE</li>
+</ul></li>
+</ul>
+
+<h3 id="toc_21">ProxySQL 集成</h3>
+
+<p>ProxySQL 在 PXC 当负载均衡的角色</p>
+
+<ul>
+<li>proxysql-admin 配置工具</li>
+<li><p>ProxySQL schedulers</p>
+
+<ul>
+<li>健康检查</li>
+<li>重新配置节点</li>
+</ul></li>
+<li><p>PXC 维护模式</p>
+
+<ul>
+<li>tell load balancer to rebalance load</li>
+</ul></li>
+</ul>
+
+<h3 id="toc_22">性能提升</h3>
+
+<ul>
+<li>可伸缩性 fixs PXC 5.7.17</li>
+<li><p>新的默认值</p>
+
+<ul>
+<li> gcs.fc_limit=100</li>
+<li> evs.send_window=10</li>
+<li> evs.user_send_window=4</li>
+</ul></li>
+</ul>
+
+<p><img src="http://osdzwfz5z.bkt.clouddn.com/14994914047051.jpg" alt=""/></p>
+
+<h2 id="toc_23">Limitations</h2>
+
+<ul>
+<li><p>Galera Cluster/PXC</p>
+
+<ul>
+<li>InnoDB/XtraDB Only</li>
+<li>tx_isolation=SERIALIZABLE</li>
+<li>GET_LOCK()</li>
+<li>LOCK TABLES</li>
+<li>SELECT ... FOR UPDATE</li>
+<li>Careful with ALTER TABLE ... IMPORT/EXPORT</li>
+<li>Capped maximum transaction size 最大事务</li>
+<li>XA transactions</li>
+</ul></li>
+<li><p>Group Replication</p>
+
+<ul>
+<li>InnoDB/XtraDB Only</li>
+<li>tx_isolation=SERIALIZABLE</li>
+<li>GET_LOCK()</li>
+<li>LOCK TABLES</li>
+<li>SELECT ... FOR UPDATE</li>
+<li>CarefulwithALTER TABLE ... IMPORT/EXPORT.</li>
+<li>Careful with large transactions</li>
+<li>no support for tables with multi-level foreign key dependencies, can create inconsistencies</li>
+</ul></li>
+</ul>
+
+<h2 id="toc_24">Known Issues</h2>
+
+<h3 id="toc_25">Galera Cluster/PXC Issues</h3>
+
+<ul>
+<li><p>Crashes due to background thread handling trx<br/>
+processing</p>
+
+<ul>
+<li>mysql-wsrep#306: stored procedure aborts</li>
+<li>mysql-wsrep#305: event scheduler</li>
+<li>mysql-wsrep#304: local scope functions such as CURRENT_USER()</li>
+</ul></li>
+<li><p>Various crashes related to DDL</p>
+
+<ul>
+<li>mysql-wsrep#301:runningSHOW CREATE TABLE in multiple nodes with DDL can cause crash.</li>
+<li>mysql-wsrep#275: Aborting trx leaves behind open tables in cache can cause crash</li>
+</ul></li>
+<li><p>Concurrent DDLs using wsrep_OSU_method=RSU crash/inconsistency issues</p>
+
+<ul>
+<li>mysql-wsrep#283 &amp; mysql-wsrep#282</li>
+</ul></li>
+<li><p>Shutdown issues</p>
+
+<ul>
+<li>mysql-wsrep#303: cleanup during shutdown fails to clear the EXPLICT MDL locks (FTWRL)</li>
+<li>mysql-wsrep#273: Not getting clean shutting down message if we start the server with unknown variable</li>
+<li>mysql-wsrep#279: Trying to access stale binlog handler leads to crash </li>
+</ul></li>
+</ul>
+
+<h3 id="toc_26">Group Replication Issues</h3>
+
+<h4 id="toc_27">分区容忍问题，不能防止脑裂</h4>
+
+<pre><code>* #84727: partitioned nodes still accept writes: queries hang (~Fixed in 5.7.20)
+* #84728: GR failure at start still starts MySQL (~Fixed in 8.0.2)
+* #84729: block reads on partitioned nodes
+* #84733: not possible to start with super_read_only=1 (Fixed in 8.0.2)
+* #84784: Nodes Do Not Reconnect
+* #84795: STOP GROUP_REPLICATION sets super_read_only=off
+</code></pre>
+
+<h4 id="toc_28">减少冲突</h4>
+
+<pre><code>* #84731: mysql client connections get stuck during GR start
+</code></pre>
+
+<h4 id="toc_29">稳定性</h4>
+
+<pre><code>* #84785: Prevent Large Transactions in Group Replication (~Fixed in 5.7.19)
+* #84792: Member using 100% CPU in idle cluster (*)
+* #84796: GR Member status is wrong
+</code></pre>
+
+<h4 id="toc_30">可用性</h4>
+
+<pre><code>* #84674: unresolved hostnames block GR from starting (~Fixed in 5.7.18)
+* #84794: cannot kill query that is stuck inside GR
+* #84798: Group Replication can use some verbosity in the error log
+</code></pre>
+
+<h2 id="toc_31">Q &amp; A</h2>
+
+<p>这个看原 PDF 吧。</p>
+
+<h2 id="toc_32">Performance Tests</h2>
+
+<p><img src="http://osdzwfz5z.bkt.clouddn.com/14994921791637.jpg" alt=""/></p>
+
+]]></content>
   </entry>
   
 </feed>
