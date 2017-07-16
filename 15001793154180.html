@@ -1,0 +1,740 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+    
+  安装Performance Monitor - DBA Plus
+  
+  </title>
+  
+  
+  <link href="atom.xml" rel="alternate" title="DBA Plus" type="application/atom+xml">
+    <link rel="stylesheet" href="asset/css/foundation.min.css" />
+    <link rel="stylesheet" href="asset/css/docs.css" />
+    <script src="asset/js/vendor/modernizr.js"></script>
+    <script src="asset/js/vendor/jquery.js"></script>
+  <script src="asset/highlightjs/highlight.pack.js"></script>
+  <link href="asset/highlightjs/styles/github.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script>hljs.initHighlightingOnLoad();</script>
+<script type="text/javascript">
+  function before_search(){
+    var searchVal = 'site: ' + document.getElementById('search_input').value;
+    document.getElementById('search_q').value = searchVal;
+    return true;
+  }
+</script>
+  </head>
+  <body class="antialiased hide-extras">
+    
+    <div class="marketing off-canvas-wrap" data-offcanvas>
+      <div class="inner-wrap">
+
+
+<nav class="top-bar docs-bar hide-for-small" data-topbar>
+
+
+  <section class="top-bar-section">
+  <div class="row">
+      <div style="position: relative;width:100%;"><div style="position: absolute; width:100%;">
+        <ul id="main-menu" class="left">
+        
+        <li id=""><a target="_self" href="index.html">Home</a></li>
+        
+        <li id=""><a target="_self" href="archives.html">Archives</a></li>
+        
+        <li id=""><a target="_self" href="about.html">About</a></li>
+        
+        </ul>
+
+        <ul class="right" id="search-wrap">
+          <li>
+<form target="_blank" onsubmit="return before_search();" action="http://google.com/search" method="get">
+    <input type="hidden" id="search_q" name="q" value="" />
+    <input tabindex="1" type="search" id="search_input"  placeholder="Search"/>
+</form>
+</li>
+          </ul>
+      </div></div>
+  </div>
+  </section>
+
+</nav>
+
+        <nav class="tab-bar show-for-small">
+  <a href="javascript:void(0)" class="left-off-canvas-toggle menu-icon">
+    <span> &nbsp; DBA Plus</span>
+  </a>
+</nav>
+
+<aside class="left-off-canvas-menu">
+      <ul class="off-canvas-list">
+        
+        <li><a target="_self" href="index.html">Home</a></li>
+        
+        <li><a target="_self" href="archives.html">Archives</a></li>
+        
+        <li><a target="_self" href="about.html">About</a></li>
+        
+
+    <li><label>Categories</label></li>
+
+        
+            <li><a href="Redis.html">Redis</a></li>
+        
+            <li><a href="MySQL.html">MySQL</a></li>
+        
+            <li><a href="Greenplum.html">Greenplum</a></li>
+         
+
+      </ul>
+    </aside>
+
+<a class="exit-off-canvas" href="#"></a>
+
+
+        <section id="main-content" role="main" class="scroll-container">
+        
+       
+
+ <script type="text/javascript">
+  $(function(){
+    $('#menu_item_index').addClass('is_active');
+  });
+</script>
+<div class="row">
+  <div class="large-8 medium-8 columns">
+      <div class="markdown-body article-wrap">
+       <div class="article">
+          
+          <h1>安装Performance Monitor</h1>
+     
+        <div class="read-more clearfix">
+          <span class="date">2017/7/16</span>
+
+          <span>posted in&nbsp;</span> 
+          
+              <span class="posted-in"><a href='Greenplum.html'>Greenplum</a></span>
+           
+         
+          <span class="comments">
+            
+              <a href="15001793154180.html#disqus_thread">comments</a>
+            
+
+            
+          </span>
+
+        </div>
+      </div><!-- article -->
+
+      <div class="article-content">
+      <p>参考：</p>
+
+<p><a href="http://www.greenplumdba.com/setting-up-greenplum-command-center">Installing and enabling Greenplum Command Center</a></p>
+
+<p><a href="http://www.zhongweicheng.com/?p=858">Installation GreenPlum Performance Monitor</a></p>
+
+<p><a href="http://blog.csdn.net/jameswangcnbj/article/details/50740383">GreenPlum安装性能监控工具GPCCC（Greenplum Command Center Console）</a></p>
+
+<ul>
+<li>
+<a href="#toc_0">前期准备：</a>
+<ul>
+<li>
+<a href="#toc_1">安装依赖</a>
+</li>
+<li>
+<a href="#toc_2">安装gpperfmon</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_3">安装 greenplum cc web</a>
+<ul>
+<li>
+<a href="#toc_4">更改权限 &amp; 环境变量</a>
+</li>
+<li>
+<a href="#toc_5">创建 Command Center 实例</a>
+</li>
+<li>
+<a href="#toc_6">启动服务</a>
+</li>
+</ul>
+</li>
+</ul>
+
+
+<h2 id="toc_0">前期准备：</h2>
+
+<pre><code>a. 创建greenplum监控用数据库(gpperfmon)
+
+b. 创建greenplum监控用数据库角色(gpmon)
+
+c. 配置greenplum数据库接受来自perfmon监控的链接文件(pg_hba.conf和.pgpass)
+
+d. 设置postgresql.conf文件，增加启用监控的参数。（这些参数默认会添加在文件的末尾）
+
+gp_enable_gpperfmon=on
+gpperfmon_port=8888
+gp_external_enable_exec=on
+gpperfmon_log_alert_level=warning
+
+e. 设置pg_hba.conf文件，增加如下信息：
+
+      local    gpperfmon         gpmon         md5
+      host     all               gpmon         127.0.0.1/28    md5
+</code></pre>
+
+<h3 id="toc_1">安装依赖</h3>
+
+<p>yum install vixie-cron -y   # 若 gpcc要安装 workload manaager，需要安装这个</p>
+
+<h3 id="toc_2">安装gpperfmon</h3>
+
+<p>[gpadmin@dbaone ~]$ gpperfmon_install --enable --password 123456 --port 5432</p>
+
+<blockquote>
+<p>20160412:16:10:01:019577 gpperfmon_install:dbaone:gpadmin-[INFO]:-PGPORT=5432 psql -f /opt/greenplum/greenplum-db/./lib/gpperfmon/gpperfmon3.sql template1 &gt;&amp; /dev/null<br/>
+20160412:16:10:11:019577 gpperfmon_install:dbaone:gpadmin-[INFO]:-PGPORT=5432 psql -f /opt/greenplum/greenplum-db/./lib/gpperfmon/gpperfmon4.sql gpperfmon &gt;&amp; /dev/null<br/>
+20160412:16:10:12:019577 gpperfmon_install:dbaone:gpadmin-[INFO]:-PGPORT=5432 psql -f /opt/greenplum/greenplum-db/./lib/gpperfmon/gpperfmon41.sql gpperfmon &gt;&amp; /dev/null<br/>
+20160412:16:10:14:019577 gpperfmon_install:dbaone:gpadmin-[INFO]:-PGPORT=5432 psql -f /opt/greenplum/greenplum-db/./lib/gpperfmon/gpperfmon42.sql gpperfmon &gt;&amp; /dev/null<br/>
+20160412:16:10:17:019577 gpperfmon_install:dbaone:gpadmin-[INFO]:-PGPORT=5432 psql -f /opt/greenplum/greenplum-db/./lib/gpperfmon/gpperfmonC.sql template1 &gt;&amp; /dev/null<br/>
+20160412:16:10:17:019577 gpperfmon_install:dbaone:gpadmin-[INFO]:-PGPORT=5432 psql template1 -c &quot;DROP ROLE IF EXISTS gpmon&quot;  &gt;&amp; /dev/null<br/>
+20160412:16:10:17:019577 gpperfmon_install:dbaone:gpadmin-[INFO]:-PGPORT=5432 psql template1 -c &quot;CREATE ROLE gpmon WITH SUPERUSER CREATEDB LOGIN ENCRYPTED PASSWORD &#39;123456&#39;&quot;  &gt;&amp; /dev/null<br/>
+20160412:16:10:17:019577 gpperfmon_install:dbaone:gpadmin-[INFO]:-echo &quot;local    gpperfmon         gpmon         md5&quot; &gt;&gt; /opt/greenplum/greenplum-db/gpdata/gpmaster/gpseg-1/pg_hba.conf<br/>
+20160412:16:10:17:019577 gpperfmon_install:dbaone:gpadmin-[INFO]:-echo &quot;host     all         gpmon         127.0.0.1/28    md5&quot; &gt;&gt; /opt/greenplum/greenplum-db/gpdata/gpmaster/gpseg-1/pg_hba.conf<br/>
+20160412:16:10:17:019577 gpperfmon_install:dbaone:gpadmin-[INFO]:-touch /home/gpadmin/.pgpass &gt;&amp; /dev/null<br/>
+20160412:16:10:17:019577 gpperfmon_install:dbaone:gpadmin-[INFO]:-mv -f /home/gpadmin/.pgpass /home/gpadmin/.pgpass.1460448601 &gt;&amp; /dev/null<br/>
+20160412:16:10:17:019577 gpperfmon_install:dbaone:gpadmin-[INFO]:-echo &quot;*:5432:gpperfmon:gpmon:123456&quot; &gt;&gt; /home/gpadmin/.pgpass<br/>
+20160412:16:10:17:019577 gpperfmon_install:dbaone:gpadmin-[INFO]:-cat /home/gpadmin/.pgpass.1460448601 &gt;&gt; /home/gpadmin/.pgpass<br/>
+20160412:16:10:17:019577 gpperfmon_install:dbaone:gpadmin-[INFO]:-chmod 0600 /home/gpadmin/.pgpass &gt;&amp; /dev/null<br/>
+20160412:16:10:17:019577 gpperfmon_install:dbaone:gpadmin-[INFO]:-PGPORT=5432 gpconfig -c gp_enable_gpperfmon -v on &gt;&amp; /dev/null<br/>
+20160412:16:10:23:019577 gpperfmon_install:dbaone:gpadmin-[INFO]:-PGPORT=5432 gpconfig -c gpperfmon_port -v 8888 &gt;&amp; /dev/null<br/>
+20160412:16:10:29:019577 gpperfmon_install:dbaone:gpadmin-[INFO]:-PGPORT=5432 gpconfig -c gp_external_enable_exec -v on --masteronly &gt;&amp; /dev/null<br/>
+20160412:16:10:35:019577 gpperfmon_install:dbaone:gpadmin-[INFO]:-PGPORT=5432 gpconfig -c gpperfmon_log_alert_level -v warning &gt;&amp; /dev/null<br/>
+20160412:16:10:40:019577 gpperfmon_install:dbaone:gpadmin-[INFO]:-gpperfmon will be enabled after a full restart of GPDB</p>
+</blockquote>
+
+<pre><code> # 跑一些脚本，创建表和视图
+</code></pre>
+
+<p>[gpadmin@dbaone ~]\( ll \)GPHOME/lib/gpperfmon/<br/>
+total 56<br/>
+-rwxr-xr-x 1 gpadmin gpadmin 18339 Nov 13 15:44 gpperfmon3.sql<br/>
+-rwxr-xr-x 1 gpadmin gpadmin  9051 Nov 13 15:44 gpperfmon41.sql<br/>
+-rwxr-xr-x 1 gpadmin gpadmin 14407 Nov 13 15:44 gpperfmon42.sql<br/>
+-rwxr-xr-x 1 gpadmin gpadmin  3277 Nov 13 15:44 gpperfmon4.sql<br/>
+-rwxr-xr-x 1 gpadmin gpadmin   250 Nov 13 15:44 gpperfmonC.sql</p>
+
+<pre><code> # 重启gp生效
+</code></pre>
+
+<p>[gpadmin@dbaone ~]$ gpstop -afr</p>
+
+<blockquote>
+<p>20160412:16:40:14:020911 gpstop:dbaone:gpadmin-[INFO]:-Starting gpstop with args: -afr<br/>
+20160412:16:40:14:020911 gpstop:dbaone:gpadmin-[INFO]:-Gathering information and validating the environment...<br/>
+20160412:16:40:14:020911 gpstop:dbaone:gpadmin-[INFO]:-Obtaining Greenplum Master catalog information<br/>
+20160412:16:40:14:020911 gpstop:dbaone:gpadmin-[INFO]:-Obtaining Segment details from master...<br/>
+20160412:16:40:15:020911 gpstop:dbaone:gpadmin-[INFO]:-Greenplum Version: &#39;postgres (Greenplum Database) 4.3.6.2 build 1&#39;<br/>
+20160412:16:40:15:020911 gpstop:dbaone:gpadmin-[INFO]:-There are 0 connections to the database<br/>
+20160412:16:40:15:020911 gpstop:dbaone:gpadmin-[INFO]:-Commencing Master instance shutdown with mode=&#39;fast&#39;<br/>
+20160412:16:40:15:020911 gpstop:dbaone:gpadmin-[INFO]:-Master host=dbaone<br/>
+20160412:16:40:15:020911 gpstop:dbaone:gpadmin-[INFO]:-Detected 0 connections to database<br/>
+20160412:16:40:15:020911 gpstop:dbaone:gpadmin-[INFO]:-Using standard WAIT mode of 120 seconds<br/>
+20160412:16:40:15:020911 gpstop:dbaone:gpadmin-[INFO]:-Commencing Master instance shutdown with mode=fast<br/>
+20160412:16:40:15:020911 gpstop:dbaone:gpadmin-[INFO]:-Master segment instance directory=/opt/greenplum/greenplum-db/gpdata/gpmaster/gpseg-1<br/>
+20160412:16:40:16:020911 gpstop:dbaone:gpadmin-[INFO]:-Attempting forceful termination of any leftover master process<br/>
+20160412:16:40:16:020911 gpstop:dbaone:gpadmin-[INFO]:-Terminating processes for segment /opt/greenplum/greenplum-db/gpdata/gpmaster/gpseg-1<br/>
+20160412:16:40:16:020911 gpstop:dbaone:gpadmin-[INFO]:-Stopping master standby host dbafour mode=fast<br/>
+20160412:16:40:17:020911 gpstop:dbaone:gpadmin-[INFO]:-Successfully shutdown standby process on dbafour<br/>
+20160412:16:40:17:020911 gpstop:dbaone:gpadmin-[INFO]:-Commencing parallel primary segment instance shutdown, please wait...<br/>
+20160412:16:40:17:020911 gpstop:dbaone:gpadmin-[INFO]:-0.00% of jobs completed<br/>
+20160412:16:40:27:020911 gpstop:dbaone:gpadmin-[INFO]:-100.00% of jobs completed<br/>
+20160412:16:40:27:020911 gpstop:dbaone:gpadmin-[INFO]:-Commencing parallel mirror segment instance shutdown, please wait...<br/>
+20160412:16:40:27:020911 gpstop:dbaone:gpadmin-[INFO]:-0.00% of jobs completed<br/>
+20160412:16:40:37:020911 gpstop:dbaone:gpadmin-[INFO]:-100.00% of jobs completed<br/>
+20160412:16:40:37:020911 gpstop:dbaone:gpadmin-[INFO]:-----------------------------------------------------<br/>
+20160412:16:40:37:020911 gpstop:dbaone:gpadmin-[INFO]:-   Segments stopped successfully      = 12<br/>
+20160412:16:40:37:020911 gpstop:dbaone:gpadmin-[INFO]:-   Segments with errors during stop   = 0<br/>
+20160412:16:40:37:020911 gpstop:dbaone:gpadmin-[INFO]:-----------------------------------------------------<br/>
+20160412:16:40:37:020911 gpstop:dbaone:gpadmin-[INFO]:-Successfully shutdown 12 of 12 segment instances<br/>
+20160412:16:40:37:020911 gpstop:dbaone:gpadmin-[INFO]:-Database successfully shutdown with no errors reported<br/>
+20160412:16:40:37:020911 gpstop:dbaone:gpadmin-[INFO]:-Cleaning up leftover gpmmon process<br/>
+20160412:16:40:37:020911 gpstop:dbaone:gpadmin-[INFO]:-No leftover gpmmon process found<br/>
+20160412:16:40:37:020911 gpstop:dbaone:gpadmin-[INFO]:-Cleaning up leftover gpsmon processes<br/>
+20160412:16:40:37:020911 gpstop:dbaone:gpadmin-[INFO]:-No leftover gpsmon processes on some hosts. not attempting forceful termination on these hosts<br/>
+20160412:16:40:37:020911 gpstop:dbaone:gpadmin-[INFO]:-Cleaning up leftover shared memory<br/>
+20160412:16:40:42:020911 gpstop:dbaone:gpadmin-[INFO]:-Restarting System...</p>
+</blockquote>
+
+<p>[gpadmin@dbaone ~]\( ps -ef | grep gpmmon | grep -v grep<br/>
+gpadmin  21113 21104  0 16:40 ?        00:00:00 /opt/greenplum/greenplum-db-4.3.6.2/bin/gpmmon -D /opt/greenplum/greenplum-db/gpdata/gpmaster/gpseg-1/gpperfmon/conf/gpperfmon.conf -p 5432<br/>
+[gpadmin@dbaone ~]\)<br/>
+[gpadmin@dbaone ~]$ ps -ef | grep greenplum | grep -v grep<br/>
+gpadmin  21104     1  0 16:40 ?        00:00:00 /opt/greenplum/greenplum-db-4.3.6.2/bin/postgres -D /opt/greenplum/greenplum-db/gpdata/gpmaster/gpseg-1 -p 5432 -b 1 -z 6 --silent-mode=true -i -M master -C -1 -x 14 -E<br/>
+gpadmin  21113 21104  0 16:40 ?        00:00:00 /opt/greenplum/greenplum-db-4.3.6.2/bin/gpmmon -D /opt/greenplum/greenplum-db/gpdata/gpmaster/gpseg-1/gpperfmon/conf/gpperfmon.conf -p 5432<br/>
+gpadmin  21393     1  0 16:40 ?        00:00:00 /opt/greenplum/greenplum-db/./bin/gpsmon -m 0 -i -t 150 -l /opt/greenplum/greenplum-db/gpdata/gpmaster/gpseg-1/gpperfmon/logs -v 0 8888</p>
+
+<p>[gpadmin@dbaone ~]$ psql<br/>
+psql (8.2.15)<br/>
+Type &quot;help&quot; for help.</p>
+
+<p>testdb=# \l<br/>
+                  List of databases<br/>
+   Name    |  Owner  | Encoding |  Access privileges<br/>
+-----------+---------+----------+---------------------<br/>
+ gpperfmon | gpadmin | UTF8     | gpadmin=CTc/gpadmin<br/>
+                                : =c/gpadmin<br/>
+ postgres  | gpadmin | UTF8     |<br/>
+ template0 | gpadmin | UTF8     | =c/gpadmin<br/>
+                                : gpadmin=CTc/gpadmin<br/>
+ template1 | gpadmin | UTF8     | =c/gpadmin<br/>
+                                : gpadmin=CTc/gpadmin<br/>
+ testdb    | gpadmin | UTF8     |<br/>
+(5 rows)</p>
+
+<p>testdb=# select * from pg_user;<br/>
+ usename | usesysid | usecreatedb | usesuper | usecatupd |  passwd  | valuntil | useconfig<br/>
+---------+----------+-------------+----------+-----------+----------+----------+-----------<br/>
+ gpadmin |       10 | t           | t        | t         | ******** |          |<br/>
+ gpmon   |    19414 | t           | t        | t         | ******** |          |<br/>
+(2 rows)</p>
+
+<p>testdb=# \du<br/>
+                       List of roles<br/>
+ Role name |            Attributes             | Member of<br/>
+-----------+-----------------------------------+-----------<br/>
+ gpadmin   | Superuser, Create role, Create DB |<br/>
+ gpmon     | Superuser, Create DB              |</p>
+
+<pre><code> # 确认Performance Monitor数据库写入数据是否正常，检查是否有记录写入 「若第1次没有结果，等几秒再试一次」
+</code></pre>
+
+<p>[gpadmin@dbaone ~]$ psql gpperfmon -c &#39;SELECT * FROM system_now;&#39;<br/>
+        ctime        | hostname | mem_total  |  mem_used  | mem_actual_used | mem_actual_free | swap_total | swap_used | swap_page_in | swap_page_out | cpu_user | cpu_sys | cpu_idle | load0 | load1 | load2 | quantum | disk_ro_rate | disk_wo_rate | disk_rb_rate | disk_wb<br/>
+<u>rate | net</u>rp_rate | net_wp_rate | net_rb_rate | net_wb_rate<br/>
+---------------------+----------+------------+------------+-----------------+-----------------+------------+-----------+--------------+---------------+----------+---------+----------+-------+-------+-------+---------+--------------+--------------+--------------+--------<br/>
+------+-------------+-------------+-------------+-------------<br/>
+ 2016-04-12 16:47:45 | dbatwo   | 8254828544 | 8112623616 |      1895161856 |      6359666688 |  536866816 |         0 |            0 |             0 |     0.05 |    0.05 |     99.9 |     0 |  0.01 |     0 |      15 |            0 |            0 |            0 |<br/>
+    0 |          16 |           9 |       21129 |       20901<br/>
+ 2016-04-12 16:47:45 | dbafour  | 8254828544 | 7996710912 |      1393299456 |      6861529088 |  536866816 |    253952 |            0 |             0 |     0.07 |    0.07 |    99.83 |  0.06 |  0.06 |  0.02 |      15 |            0 |            1 |            0 |<br/>
+14229 |          17 |          11 |       21225 |       41669<br/>
+ 2016-04-12 16:47:45 | dbaone   | 8254828544 | 8084590592 |      3054915584 |      5199912960 |  536866816 |         0 |            0 |             0 |     0.35 |     0.2 |    99.45 |     0 |     0 |     0 |      15 |            0 |            2 |            0 |<br/>
+ 8715 |          22 |          17 |        2977 |        1907<br/>
+ 2016-04-12 16:47:45 | dbathree | 8254828544 | 8094613504 |      1864966144 |      6389862400 |  536866816 |   1363968 |            0 |             0 |     0.03 |    0.05 |    99.92 |  0.04 |  0.03 |     0 |      15 |            0 |            1 |            0 |<br/>
+10893 |          17 |          11 |       41906 |       20978<br/>
+(4 rows)</p>
+
+<blockquote>
+<p>将必要的 .pgpass 、pg_hba.conf 传到 standby master上</p>
+</blockquote>
+
+<p>[gpadmin@dbaone ~]$ scp .pgpass dbafour:/home/gpadmin/<br/>
+.pgpass</p>
+
+<p>[gpadmin@dbaone ~]\( scp \)MASTER_DATA_DIRECTORY/pg_hba.conf dbafour:/$MASTER_DATA_DIRECTORY/pg_hba.conf<br/>
+pg_hba.conf</p>
+
+<h2 id="toc_3">安装 greenplum cc web</h2>
+
+<p>[root@dbaone greenplum-cc-web]# ./greenplum-cc-web-2.0.0-build-32-RHEL5-x86_64.bin</p>
+
+<pre><code>********************************************************************************
+Do you accept the Pivotal Greenplum Database end user license
+agreement? [yes | no]
+********************************************************************************
+
+yes
+
+********************************************************************************
+Provide the installation path for Greenplum Command Center or
+press ENTER to accept the default installation path:     
+
+/usr/local/greenplum-cc-web-2.0.0-build-32
+********************************************************************************
+
+/opt/greenplum/greenplum-cc-web-2.0.0-build-32
+
+********************************************************************************
+Install Greenplum Command Center into &lt;/opt/greenplum/greenplum-cc-web-2.0.0-build-32&gt;? [yes | no]
+********************************************************************************
+
+yes
+
+Extracting product to /opt/greenplum/greenplum-cc-web-2.0.0-build-32
+
+********************************************************************************
+Installation complete.
+Greenplum Command Center is installed in /opt/greenplum/greenplum-cc-web-2.0.0-build-32
+
+To complete the environment configuration, please ensure that the
+gpcc_path.sh file is sourced.
+********************************************************************************
+</code></pre>
+
+<h3 id="toc_4">更改权限 &amp; 环境变量</h3>
+
+<p>[root]# chown gpadmin.gpadmin -R /opt/greenplum/greenplum-cc-web</p>
+
+<p>[root]# chown gpadmin.gpadmin -R /opt/greenplum/greenplum-cc-web-2.0.0-build-32/</p>
+
+<blockquote>
+<p>加载环境变量 gpadmin &amp;&amp; root</p>
+</blockquote>
+
+<p>vim .bashrc</p>
+
+<pre><code># For GP web
+source /opt/greenplum/greenplum-cc-web/gpcc_path.sh
+</code></pre>
+
+<p>source ~/.bashrc</p>
+
+<blockquote>
+<p>修改权限</p>
+</blockquote>
+
+<p>vim $MASTER_DATA_DIRECTORY/pg_hba.conf</p>
+
+<pre><code> host    gpperfmon   gpmon           ::1/128    md5
+</code></pre>
+
+<p>$ gpstop -u</p>
+
+<blockquote>
+<p>将 Master安装的，拷贝到 其他节点</p>
+</blockquote>
+
+<p>$ gpccinstall -f  /opt/greenplum/greenplum-db/conf/hostlist</p>
+
+<h3 id="toc_5">创建 Command Center 实例</h3>
+
+<p>[gpadmin@dbaone ~]$ gpcmdr --setup</p>
+
+<pre><code>An instance name is used by the Greenplum Command Center as
+a way to uniquely identify a Greenplum Database that has the monitoring
+components installed and configured.  This name is also used to control
+specific instances of the Greenplum Command Center web UI.  Instance names
+can contain letters, digits and underscores and are not case sensitive.
+
+Please enter a new instance name:
+&gt; Mr_Liu_gp
+The web component of the Greenplum Command Center can connect to a
+monitor database on a remote Greenplum Database.
+
+Is the master host for the Greenplum Database remote? Yy|Nn  (default=N):
+&gt;
+  The display name is shown in the web interface and does not need to be a hostname.
+
+What would you like to use for the display name for this instance:
+&gt; greenplum_test
+What port does the Greenplum Database use? (default=5432):
+&gt;
+Creating instance schema in GPDB.  Please wait ...
+The display name is shown in the web interface and does not need to bea hostname.
+
+Would you like to install workload manager? Yy|Nn (default=N):        ## 若与master不在一台机器上，是不能选择y的。
+&gt;
+Skipping installation of workload manager.
+The Greenplum Command Center runs a small web server for the UI and web API.
+This web server by default runs on port 28080, but you may specify any available port.
+
+What port would you like the web server to use for this instance? (default=28080):
+&gt;
+Users logging in to the Command Center must provide database user
+credentials.  In order to protect user names and passwords, it is recommended 
+that SSL be enabled.
+
+Do you want to enable SSL for the Web API Yy|Nn (default=N):
+&gt;
+
+Do you want to enable ipV6 for the Web API Yy|Nn (default=N):
+&gt;
+
+Do you want to enable Cross Site Request Forgery Protection for the Web API Yy|Nn (default=N):
+&gt;
+
+Do you want to copy the instance to a standby master host Yy|Nn (default=Y):
+&gt;
+What is the hostname of the standby master host? [smdw]: dbafour
+standby is dbafour
+
+Done writing lighttpd configuration to /opt/greenplum/greenplum-cc-web/./instances/mr_liu_gp/conf/lighttpd.conf
+Done writing web UI configuration to /opt/greenplum/greenplum-cc-web/./instances/mr_liu_gp/conf/gpperfmonui.conf
+  Done writing web UI clustrs configuration to /opt/greenplum/greenplum-cc-web/./instances/mr_liu_gp/conf/clusters.conf
+
+Copying instance &#39;mr_liu_gp&#39; to host &#39;dbafour&#39;...
+
+Greenplum Command Center UI configuration is now complete.  If
+at a later date you want to change certain parameters, you can
+either re-run &#39;gpcmdr --setup&#39; or edit the configuration file
+located at /opt/greenplum/greenplum-cc-    web/./instances/mr_liu_gp/conf/gpperfmonui.conf.
+
+The web UI for this instance is available at http://dbaone:28080/
+
+You can now start the web UI for this instance by running: gpcmdr -- start mr_liu_gp
+No instances
+</code></pre>
+
+<p>vim /opt/greenplum/greenplum-cc-web/www/gpmonws.py</p>
+
+<pre><code> # 修改连接 Greenplum database 恒为真
+
+# This service can be called without a login
+# To check if GPDB is up or not
+# this can be used by the GUI to decide weather to display login screen or gpstart screen
+class gpdbup:
+  def GET(self):
+    web.header(&#39;Content-Type&#39;, &#39;text/xml&#39;)
+    web.header(&#39;Cache-Control&#39;, &#39;no-store&#39;)
+
+    cleanKrbFile()
+    database_up = False
+
+    try:
+        database_up = db.is_gpdb_running(gpdb_server_name)
+    except db.GPDBError, errorinfo:
+        return mkerr(error.DATA_ACCESS, errorinfo.__str__())
+
+    #return render.gpdbup(database_up)
+    return render.gpdbup(True)
+</code></pre>
+
+<p>or</p>
+
+<pre><code> # 修改连接 Master的主机名
+
+# This service can be called without a login
+# To check if GPDB is up or not
+# this can be used by the GUI to decide weather to display login screen or gpstart screen
+class gpdbup:
+def GET(self):
+    web.header(&#39;Content-Type&#39;, &#39;text/xml&#39;)
+    web.header(&#39;Cache-Control&#39;, &#39;no-store&#39;)
+
+    cleanKrbFile()
+    database_up = False
+
+    try:
+        #database_up = db.is_gpdb_running(gpdb_server_name)
+        database_up = db.is_gpdb_running(&#39;dbaone&#39;)
+    except db.GPDBError, errorinfo:
+        return mkerr(error.DATA_ACCESS, errorinfo.__str__())
+
+    return render.gpdbup(database_up)
+</code></pre>
+
+<p>若不修改文件，则为下面状况：<br/>
+<img src="http://upload-images.jianshu.io/upload_images/60026-ede1f559e1c975d3.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Image.png"/></p>
+
+<h3 id="toc_6">启动服务</h3>
+
+<p>$ gpcmdr --start mr_liu_gp</p>
+
+<p><a href="http://dbaone:28080/">http://dbaone:28080/</a></p>
+
+
+    
+
+      </div>
+
+      <div class="row">
+        <div class="large-6 columns">
+        <p class="text-left" style="padding:15px 0px;">
+      
+          <a href="15001795567958.html" 
+          title="Previous Post: ">&laquo; </a>
+      
+        </p>
+        </div>
+        <div class="large-6 columns">
+      <p class="text-right" style="padding:15px 0px;">
+      
+          <a  href="15001790106489.html" 
+          title="Next Post: Greenplum安装篇">Greenplum安装篇 &raquo;</a>
+      
+      </p>
+        </div>
+      </div>
+      <div class="comments-wrap">
+        <div class="share-comments">
+          
+
+          
+            <div id="disqus_thread"></div>
+          
+
+          
+        </div>
+      </div>
+    </div><!-- article-wrap -->
+  </div><!-- large 8 -->
+
+
+
+
+ <div class="large-4 medium-4 columns">
+  <div class="hide-for-small">
+    <div id="sidebar" class="sidebar">
+          <div id="site-info" class="site-info">
+            
+                <div class="site-a-logo"><img src="images/blog_icon.jpg" /></div>
+            
+                <h1>DBA Plus</h1>
+                <div class="site-des"></div>
+                <div class="social">
+
+
+
+
+
+
+<a target="_blank" class="instagram" href="https://www.instagram.com/dbaplus" title="Instagram">Instagram</a>
+<a target="_blank" class="weibo" href="http://www.weibo.com/saup007" title="weibo">Weibo</a>
+
+<a target="_blank" class="github" target="_blank" href="https://github.com/saup007" title="GitHub">GitHub</a>
+
+  <a target="_blank" class="rss" href="atom.xml" title="RSS">RSS</a>
+                
+              	 </div>
+          	</div>
+
+             
+
+              <div id="site-categories" class="side-item ">
+                <div class="side-header">
+                  <h2>Categories</h2>
+                </div>
+                <div class="side-content">
+
+      	<p class="cat-list">
+        
+            <a href="Redis.html"><strong>Redis</strong></a>
+        
+            <a href="MySQL.html"><strong>MySQL</strong></a>
+        
+            <a href="Greenplum.html"><strong>Greenplum</strong></a>
+         
+        </p>
+
+
+                </div>
+              </div>
+
+              <div id="site-categories" class="side-item">
+                <div class="side-header">
+                  <h2>Recent Posts</h2>
+                </div>
+                <div class="side-content">
+                <ul class="posts-list">
+	      
+		      
+			      <li class="post">
+			        <a href="15001795567958.html"></a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="15001793154180.html">安装Performance Monitor</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="15001790106489.html">Greenplum安装篇</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="15000823671749.html">Group Replication</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14999625908463.html">Redis Install 3.2.9</a>
+			      </li>
+		     
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		   
+		  		</ul>
+                </div>
+              </div>
+        </div><!-- sidebar -->
+      </div><!-- hide for small -->
+</div><!-- large 4 -->
+
+</div><!-- row -->
+
+ <div class="page-bottom clearfix">
+  <div class="row">
+   <p class="copyright">Copyright &copy; 2015
+Powered by <a target="_blank" href="http://www.mweb.im">MWeb</a>,&nbsp; 
+Theme used <a target="_blank" href="http://github.com">GitHub CSS</a>.</p>
+  </div>
+</div>
+
+        </section>
+      </div>
+    </div>
+
+
+<script type="text/javascript">
+    var disqus_shortname = 'saup007'; 
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+
+<script type="text/javascript">
+var disqus_shortname = 'saup007'; 
+
+(function () {
+var s = document.createElement('script'); s.async = true;
+s.type = 'text/javascript';
+s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+(document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+}());
+</script>
+  
+    
+
+    <script src="asset/js/foundation.min.js"></script>
+    <script>
+      $(document).foundation();
+      function fixSidebarHeight(){
+        var w1 = $('.markdown-body').height();
+          var w2 = $('#sidebar').height();
+          if (w1 > w2) { $('#sidebar').height(w1); };
+      }
+      $(function(){
+        fixSidebarHeight();
+      })
+      $(window).load(function(){
+          fixSidebarHeight();
+      });
+     
+    </script>
+
+    
+
+
+
+  </body>
+</html>
