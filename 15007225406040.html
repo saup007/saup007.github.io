@@ -1,0 +1,1287 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+    
+  MySQL登陆验证 & old password - DBA Plus
+  
+  </title>
+  
+  
+  <link href="atom.xml" rel="alternate" title="DBA Plus" type="application/atom+xml">
+    <link rel="stylesheet" href="asset/css/foundation.min.css" />
+    <link rel="stylesheet" href="asset/css/docs.css" />
+    <script src="asset/js/vendor/modernizr.js"></script>
+    <script src="asset/js/vendor/jquery.js"></script>
+  <script src="asset/highlightjs/highlight.pack.js"></script>
+  <link href="asset/highlightjs/styles/github.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script>hljs.initHighlightingOnLoad();</script>
+<script type="text/javascript">
+  function before_search(){
+    var searchVal = 'site:saup007.github.io ' + document.getElementById('search_input').value;
+    document.getElementById('search_q').value = searchVal;
+    return true;
+  }
+</script>
+  </head>
+  <body class="antialiased hide-extras">
+    
+    <div class="marketing off-canvas-wrap" data-offcanvas>
+      <div class="inner-wrap">
+
+
+<nav class="top-bar docs-bar hide-for-small" data-topbar>
+
+
+  <section class="top-bar-section">
+  <div class="row">
+      <div style="position: relative;width:100%;"><div style="position: absolute; width:100%;">
+        <ul id="main-menu" class="left">
+        
+        <li id=""><a target="_self" href="index.html">Home</a></li>
+        
+        <li id=""><a target="_self" href="archives.html">Archives</a></li>
+        
+        <li id=""><a target="_self" href="about.html">About</a></li>
+        
+        </ul>
+
+        <ul class="right" id="search-wrap">
+          <li>
+<form target="_blank" onsubmit="return before_search();" action="http://google.com/search" method="get">
+    <input type="hidden" id="search_q" name="q" value="" />
+    <input tabindex="1" type="search" id="search_input"  placeholder="Search"/>
+</form>
+</li>
+          </ul>
+      </div></div>
+  </div>
+  </section>
+
+</nav>
+
+        <nav class="tab-bar show-for-small">
+  <a href="javascript:void(0)" class="left-off-canvas-toggle menu-icon">
+    <span> &nbsp; DBA Plus</span>
+  </a>
+</nav>
+
+<aside class="left-off-canvas-menu">
+      <ul class="off-canvas-list">
+        
+        <li><a target="_self" href="index.html">Home</a></li>
+        
+        <li><a target="_self" href="archives.html">Archives</a></li>
+        
+        <li><a target="_self" href="about.html">About</a></li>
+        
+
+    <li><label>Categories</label></li>
+
+        
+            <li><a href="Redis.html">Redis</a></li>
+        
+            <li><a href="MySQL.html">MySQL</a></li>
+        
+            <li><a href="Greenplum.html">Greenplum</a></li>
+         
+
+      </ul>
+    </aside>
+
+<a class="exit-off-canvas" href="#"></a>
+
+
+        <section id="main-content" role="main" class="scroll-container">
+        
+       
+
+ <script type="text/javascript">
+  $(function(){
+    $('#menu_item_index').addClass('is_active');
+  });
+</script>
+<div class="row">
+  <div class="large-8 medium-8 columns">
+      <div class="markdown-body article-wrap">
+       <div class="article">
+          
+          <h1>MySQL登陆验证 & old password</h1>
+     
+        <div class="read-more clearfix">
+          <span class="date">2017/7/22</span>
+
+          <span>posted in&nbsp;</span> 
+          
+              <span class="posted-in"><a href='MySQL.html'>MySQL</a></span>
+           
+         
+          <span class="comments">
+            
+              <a href="http://saup007.github.io/15007225406040.html#disqus_thread">comments</a>
+            
+
+            
+          </span>
+
+        </div>
+      </div><!-- article -->
+
+      <div class="article-content">
+      <ul>
+<li>
+<a href="#toc_0">一、MySQL 客户端连接的两种方式</a>
+<ul>
+<li>
+<a href="#toc_1">1. -hlocalhost</a>
+</li>
+<li>
+<a href="#toc_2">2. socket 方式连接</a>
+</li>
+<li>
+<a href="#toc_3">3. -h127.0.0.1 方式连接</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_4">二、MySQL 登陆验证</a>
+<ul>
+<li>
+<a href="#toc_5">1、Host、User</a>
+</li>
+<li>
+<a href="#toc_6">2、Password</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_7">3、权限变更</a>
+</li>
+<li>
+<a href="#toc_8">4、短密码升级方法</a>
+</li>
+<li>
+<a href="#toc_9">三、MySQL 5.7</a>
+</li>
+<li>
+<a href="#toc_10">四、 SSL</a>
+</li>
+</ul>
+
+
+<span id="more"></span><!-- more -->
+
+<h2 id="toc_0">一、MySQL 客户端连接的两种方式</h2>
+
+<p>参考：<a href="http://dev.mysql.com/doc/refman/5.5/en/can-not-connect-to-server.html">B.5.2.2 Can&#39;t connect to [local] MySQL server</a></p>
+
+<p>连接 MySQL 两种方式，一种是通过  Unix socket (default /emp/mysql.sock) ，另外一种是 TCP/IP 。</p>
+
+<p>     socket 比 TCP/IP 更快的方式，但仅能在同一台机器才可以访问<br/>
+     socket 在没有指定 hostname 或指定 localhost 时使用</p>
+
+<p>所以 -h localhost 是通过 socket 方式访问 MySQL，-h 127.0.0.1 是通过 TCP/IP 访问 MySQL。</p>
+
+<p>MySQL 用户列表</p>
+
+<pre><code>mysql@localhost.(none)&gt;select user,host,password,plugin from mysql.user;
++-------+--------------+-------------------------------------------+-----------------------+
+| user  | host         | password                                  | plugin                |
++-------+--------------+-------------------------------------------+-----------------------+
+| root  | localhost    | *81F5E21E35407D884A6CD4A731AEBFB6AF209E1B | mysql_native_password |
+| root  | dbaone       | *81F5E21E35407D884A6CD4A731AEBFB6AF209E1B | mysql_native_password |
+| root  | 127.0.0.1    | *81F5E21E35407D884A6CD4A731AEBFB6AF209E1B | mysql_native_password |
+| root  | ::1          | *81F5E21E35407D884A6CD4A731AEBFB6AF209E1B | mysql_native_password |
+| test1 | %            | 773359240eb9a1d9                          | mysql_old_password    |
+| root  | %            | *81F5E21E35407D884A6CD4A731AEBFB6AF209E1B | mysql_native_password |
+| root  | 192.168.56.% | *81F5E21E35407D884A6CD4A731AEBFB6AF209E1B | mysql_native_password |
+| test2 | %            | *23AE809DDACAF96AF0FD78ED04B6A265E05AA257 | mysql_native_password |
++-------+--------------+-------------------------------------------+-----------------------+
+8 rows in set (0.00 sec)
+</code></pre>
+
+<h3 id="toc_1">1. -hlocalhost</h3>
+
+<p>默认是找 socket 文件，不能连接因为sock不是默认位置。</p>
+
+<pre><code># mysql -uroot -proot -hlocalhost -P 3308 -e &quot;select user(); status ;&quot;
+**ERROR 2002 (HY000): Can&#39;t connect to local MySQL server through socket &#39;/tmp/mysql.sock&#39; (2)**
+</code></pre>
+
+<h3 id="toc_2">2. socket 方式连接</h3>
+
+<p>status 显示通过 UNIX socket 方式连接</p>
+
+<pre><code># mysql -uroot -proot -S /tmp/mysql-3308.sock  -e &quot;select user(); status ;&quot;
++----------------+
+| user()         |
++----------------+
+| root@localhost |
++----------------+
+--------------
+mysql  Ver 14.14 Distrib 5.5.15, for Linux (x86_64) using  EditLine wrapper
+
+Connection id:        14
+Current database:   
+**Current user:        root@localhost**
+SSL:            Not in use
+Current pager:        stdout
+Using outfile:        &#39;&#39;
+Using delimiter:    ;
+Server version:        5.6.35-log Source distribution
+Protocol version:    10
+**Connection:        Localhost via UNIX socket**
+Server characterset:    utf8
+Db     characterset:    utf8
+Client characterset:    utf8
+Conn.  characterset:    utf8
+UNIX socket:        /tmp/mysql-3308.sock
+Uptime:            2 hours 44 min 38 sec
+
+Threads: 2  Questions: 68  Slow queries: 0  Opens: 70  Flush tables: 1  Open tables: 63  Queries per second avg: 0.006
+--------------
+</code></pre>
+
+<h3 id="toc_3">3. -h127.0.0.1 方式连接</h3>
+
+<p>status 显示通过 TCP/IP 连接，但为什么不是 root@127.0.0.1 而是 root@localhost ，这个就是第二部分，MySQL 登陆验证的部分。</p>
+
+<pre><code># mysql -uroot -proot -h127.0.0.1 -P 3308 -e &quot;select user(); status ;&quot;
++----------------+
+| user()         |
++----------------+
+| root@localhost |
++----------------+
+--------------
+mysql  Ver 14.14 Distrib 5.5.15, for Linux (x86_64) using  EditLine wrapper
+
+Connection id:        13
+Current database:   
+**Current user:        root@localhost**
+SSL:            Not in use
+Current pager:        stdout
+Using outfile:        &#39;&#39;
+Using delimiter:    ;
+Server version:        5.6.35-log Source distribution
+Protocol version:    10
+**Connection:        127.0.0.1 via TCP/IP**
+Server characterset:    utf8
+Db     characterset:    utf8
+Client characterset:    utf8
+Conn.  characterset:    utf8
+TCP port:        3308
+Uptime:            2 hours 42 min 42 sec
+
+Threads: 2  Questions: 62  Slow queries: 0  Opens: 70  Flush tables: 1  Open tables: 63  Queries per second avg: 0.006
+--------------
+</code></pre>
+
+<h2 id="toc_4">二、MySQL 登陆验证</h2>
+
+<p>参考：</p>
+
+<p><a href="https://dev.mysql.com/doc/refman/5.5/en/connection-access.html">6.2.4 Access Control, Stage 1: Connection Verification</a></p>
+
+<p><a href="http://blog.csdn.net/zbszhangbosen/article/details/7434154">mysql 空用户（user 列为空）带来的影响</a></p>
+
+<h3 id="toc_5">1、Host、User</h3>
+
+<p>MySQL 用户验证一般是（Host、User、Password），但先验证 Host，再验证 User，最后验证 Password</p>
+
+<blockquote>
+<p>Your identity is based on two pieces of information:<br/>
+- The client host from which you connect<br/>
+- Your MySQL user name</p>
+</blockquote>
+
+<ul>
+<li>如果 Host 是空的，则代表任何主机可以登陆。5.5、5.6 初始化 Host 默认不会为空</li>
+<li>如果 User 是空的，则代表可以匹配任何用户。5.5、5.6 初始化 localhost 和当前机器 hostname 的 User 为空</li>
+<li>如果 Password 是空的，则代表不需要密码就可以登陆。</li>
+</ul>
+
+<p>当 MySQL 启动时，会把所有权限相当的表数据读到内存中(包括 mysql.user )，有一定排序规则。当用户登陆时，匹配到第一个记录就是要检验的记录。</p>
+
+<ul>
+<li>首先按 Host 排序，第一位是特别的主机名或IP，% 意味任何不特定的主机，任何主机都可以访问，&#39;&#39; 也表示任何主机都可以访问，但排在 % 之后。（相同意义的 hostname、IP，默认使用hostname，添加参数skip-name-resolve后，使用IP）</li>
+<li>IP 不受子网掩网影响，因此 192.168.1.13 和 192.168.1.0/255.255.255.0 都是特别指定的，排序是没有办法确认先后。</li>
+<li>相同 Host，再按 User 排序。</li>
+</ul>
+
+<p>参考官方文档例子：</p>
+
+<p>表中记录是这样</p>
+
+<pre><code>+-----------+----------+-
+| Host      | User    | ...
++-----------+----------+-
+| %        | root    | ...
+| %        | jeffrey  | ...
+| localhost | root    | ...
+| localhost |          | ...
++-----------+----------+-
+</code></pre>
+
+<p>读到内存中的是这样</p>
+
+<pre><code>+-----------+----------+-
+| Host      | User    | ...
++-----------+----------+-
+| localhost | root    | ...
+| localhost |          | ...
+| %        | jeffrey  | ...
+| %        | root    | ...
++-----------+----------+-
+</code></pre>
+
+<p>如果从 localhost 登陆，用户名为 jeffrey，第一感觉应该是 jeffrey@% 的记录，实际是 jeffrey@localhost，因为先匹配 Host，localhost 是匹配的，usr为空，代表任何用户都可以，host、user匹配结果后，就不会再往下匹配了。(当然要忽略 password )</p>
+
+<p>按规则指定 &quot;主机名&quot;或IP，都属于第一顺序 ，那localhost 和 127.0.01 哪个更优先？</p>
+
+<pre><code># cat /etc/hosts
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+192.168.56.101 dbaone
+192.168.56.102 dbatwo
+</code></pre>
+
+<p>下面已经演示的，通过 127.0.0.1 连接，当前用户却是 root@localhost，不是 root@127.0.0.1，说明主机名排在IP前面，也可能默认以主机名缓存验证(host cache)。</p>
+
+<pre><code># mysql -uroot -proot -h127.0.0.1 -P 3308 -e &quot;select user(); status ;&quot;
++----------------+
+| user()         |
++----------------+
+| root@localhost |
++----------------+
+--------------
+mysql  Ver 14.14 Distrib 5.5.15, for Linux (x86_64) using  EditLine wrapper
+
+Connection id:        13
+Current database:   
+**Current user:        root@localhost**
+SSL:            Not in use
+Current pager:        stdout
+Using outfile:        &#39;&#39;
+Using delimiter:    ;
+Server version:        5.6.35-log Source distribution
+Protocol version:    10
+**Connection:        127.0.0.1 via TCP/IP**
+Server characterset:    utf8
+Db     characterset:    utf8
+Client characterset:    utf8
+Conn.  characterset:    utf8
+TCP port:        3308
+Uptime:            2 hours 42 min 42 sec
+
+Threads: 2  Questions: 62  Slow queries: 0  Opens: 70  Flush tables: 1  Open tables: 63  Queries per second avg: 0.006
+</code></pre>
+
+<p>当我修改 root@localhost 的密码，但不修改 root@127.0.0.1 的密码，说明匹配 mysql.user 中 host=localhost，user=root 这行，直接报密码错误，即使 hos=127.0.0.1，user=root 是正确的。</p>
+
+<pre><code>mysql@localhost.(none)&gt;update mysql.user set password=password(&#39;rootroot&#39;) where user=&#39;root&#39; and host=&#39;localhost&#39;;
+Query OK, 1 row affected (0.00 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql@localhost.(none)&gt;flush privileges;
+Query OK, 0 rows affected (0.18 sec)
+
+mysql@localhost.(none)&gt;select user,host,password,plugin from mysql.user where user=&#39;root&#39;;
++------+--------------+-------------------------------------------+-----------------------+
+| user | host         | password                                  | plugin                |
++------+--------------+-------------------------------------------+-----------------------+
+| root | localhost    | *6C362347EBEAA7DF44F6D34884615A35095E80EB | mysql_native_password |**
+| root | dbaone       | *81F5E21E35407D884A6CD4A731AEBFB6AF209E1B | mysql_native_password |
+| root | 127.0.0.1    | *81F5E21E35407D884A6CD4A731AEBFB6AF209E1B | mysql_native_password |
+| root | ::1          | *81F5E21E35407D884A6CD4A731AEBFB6AF209E1B | mysql_native_password |
+| root | %            | *81F5E21E35407D884A6CD4A731AEBFB6AF209E1B | mysql_native_password |
+| root | 192.168.56.% | *81F5E21E35407D884A6CD4A731AEBFB6AF209E1B | mysql_native_password |
++------+--------------+-------------------------------------------+-----------------------+
+6 rows in set (0.00 sec)
+
+# mysql -uroot -proot -h127.0.0.1 -P 3308 -e &quot;select user(); status ;&quot;
+ERROR 1045 (28000): Access denied for user &#39;root&#39;@&#39;localhost&#39; (using password: YES)
+
+</code></pre>
+
+<p>当然，如果将 skip-name-resolve 加到 my.cnf，重启MySQL，直接匹配 root@127.0.0.1，就可以登陆了。</p>
+
+<pre><code>mysql@localhost.(none)&gt;show variables like &#39;%skip_name_resolve%&#39;;
++------------------------+-------+
+| Variable_name          | Value |
++------------------------+-------+
+**| skip_name_resolve      | ON    |**
++------------------------+-------+
+1 rows in set (0.00 sec)
+
+# mysql -uroot -proot -h127.0.0.1 -P 3308 -e &quot;select user(); status ;&quot;
++----------------+
+| user()         |
++----------------+
+| root@127.0.0.1 |
++----------------+
+--------------
+mysql  Ver 14.14 Distrib 5.5.15, for Linux (x86_64) using  EditLine wrapper
+
+Connection id:        2
+Current database:   
+**Current user:        root@127.0.0.1**
+SSL:            Not in use
+Current pager:        stdout
+Using outfile:        &#39;&#39;
+Using delimiter:    ;
+Server version:        5.6.35-log Source distribution
+Protocol version:    10
+**Connection:        127.0.0.1 via TCP/IP**
+Server characterset:    utf8
+Db     characterset:    utf8
+Client characterset:    utf8
+Conn.  characterset:    utf8
+TCP port:        3308
+Uptime:            27 sec
+
+Threads: 2  Questions: 9  Slow queries: 0  Opens: 70  Flush tables: 1  Open tables: 63  Queries per second avg: 0.333
+--------------
+</code></pre>
+
+<p>恢复环境 root@localhost 密码</p>
+
+<pre><code>mysql@localhost.(none)&gt;update mysql.user set password=password(&#39;root&#39;) where user=&#39;root&#39; and host=&#39;localhost&#39;;
+Query OK, 1 row affected (0.00 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql@localhost.(none)&gt;flush privileges;
+Query OK, 0 rows affected (0.00 sec)
+</code></pre>
+
+<h3 id="toc_6">2、Password</h3>
+
+<p>参考：</p>
+
+<p><a href="http://mysql.taobao.org/monthly/2016/05/02/">MySQL · 特性分析 · MySQL 5.7 新特性系列一</a></p>
+
+<p><a href="https://dev.mysql.com/doc/refman/5.6/en/account-upgrades.html">Migrating Away from Pre-4.1 Password Hashing and the mysql_old_password Plugin</a></p>
+
+<p>密码在 MySQL 版本不同</p>
+
+<pre><code>在 MySQL 4.1 之前，password() 生成 16 位的密码
+在 MySQL 4.1 开始，password() 生成 41 位的密码，old_password() 兼容之前版本的 password()，但在 5.7.5被移除、
+old_passwords = 1，使password() 相当old_password()，在 MySQL 5.7.5 以后，old_password 只有0和2，没有1.
+</code></pre>
+
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Password Hashing Method</th>
+<th>Associated Authentication Plugin</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>0</td>
+<td>MySQL 4.1 native hashing</td>
+<td>mysql_native_password</td>
+</tr>
+<tr>
+<td>1</td>
+<td>Pre-4.1 (“old”) hashing</td>
+<td>mysql_old_password</td>
+</tr>
+<tr>
+<td>2</td>
+<td>SHA-256 hashing</td>
+<td>sha256_password</td>
+</tr>
+</tbody>
+</table>
+
+<p>关于 password，涉及 mysql.user 表中2个字段。一个是 password(5.5、5.6)(authentication_string 5.7)、一个是 plugin</p>
+
+<ul>
+<li>plugin 在 5.5 ，可以为空，无默认值</li>
+<li>plugin 在 5.6 ，可以为空，默认值为mysql_native_password</li>
+<li><p>plugin 在 5.7 ，不可为空，默认值为mysql_native_password</p></li>
+<li><p>passowrd 在 5.5、5.6 均是 NOT NULL char(41)</p></li>
+<li><p>password 在 5.7 已经不存在，存储密码字段是 authentication_string text类型（这个字段在5.5、5.6也存在）</p></li>
+</ul>
+
+<p>所以验证的判断方法</p>
+
+<ul>
+<li>当 plugin = mysql_old_password 时，登陆验证以 16 位短密码验证</li>
+<li>当 plugin = mysql_native_password 时，登陆验证以 41 位长密码验证</li>
+<li>当 plugin 为空时，会根据 password 存储的密码来决定以 mysql_old_password - 还是 mysql_native_password 来验证</li>
+</ul>
+
+<p>在 MySQL 5.6.5 以后，如果 password 为16位短密码，且 plugin = mysql_old_password 依然不能登陆。</p>
+
+<p>因为 secure-auth 在 &gt;= 5.6.5 以后默认为 ON，不接受客户端 16位短密码 ，在 &gt;= 5.7.5 以后只有ON，没有OFF。</p>
+
+<pre><code>mysql@localhost.(none)&gt;select user,host,password,plugin from mysql.user;
++-------+--------------+-------------------------------------------+-----------------------+
+| user  | host         | password                                  | plugin                |
++-------+--------------+-------------------------------------------+-----------------------+
+| root  | localhost    | *81F5E21E35407D884A6CD4A731AEBFB6AF209E1B | mysql_native_password |
+| root  | dbaone       | *81F5E21E35407D884A6CD4A731AEBFB6AF209E1B | mysql_native_password |
+| root  | 127.0.0.1    | *81F5E21E35407D884A6CD4A731AEBFB6AF209E1B | mysql_native_password |
+| root  | ::1          | *81F5E21E35407D884A6CD4A731AEBFB6AF209E1B | mysql_native_password |
+| test1 | %            | 773359240eb9a1d9                          | mysql_old_password    |
+| root  | %            | *81F5E21E35407D884A6CD4A731AEBFB6AF209E1B | mysql_native_password |
+| root  | 192.168.56.% | *81F5E21E35407D884A6CD4A731AEBFB6AF209E1B | mysql_native_password |
+| test2 | %            | *23AE809DDACAF96AF0FD78ED04B6A265E05AA257 | mysql_native_password |
++-------+--------------+-------------------------------------------+-----------------------+
+8 rows in set (0.00 sec)
+
+# mysql -utest1 -p123 -S /tmp/mysql-3308.sock
+ERROR 1275 (HY000): Server is running in --secure-auth mode, but &#39;test1&#39;@&#39;localhost&#39; has a password in the old format; please change the password to the new format
+
+# mysql -utest1 -p123 -S /tmp/mysql-3308.sock --skip-secure-auth
+ERROR 1275 (HY000): Server is running in --secure-auth mode, but &#39;test1&#39;@&#39;localhost&#39; has a password in the old format; please change the password to the new format
+
+解决：重启 MySQL
+
+vim my.cnf
+
+[mysqld]
+secure-auth = OFF
+
+[mysql]
+secure_auth = 0
+</code></pre>
+
+<p>论证1：  password 与 plugin 匹配才能正常登陆 （secure-auth = OFF）</p>
+
+<pre><code>mysql@localhost.(none)&gt;select version();
++------------+
+| version()  |
++------------+
+| 5.6.35-log |
++------------+
+1 row in set (0.00 sec)
+
+mysql@localhost.(none)&gt;set old_passwords=1;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql@localhost.(none)&gt;show  variables like &#39;%old_passwords%&#39;;
++---------------+-------+
+| Variable_name | Value |
++---------------+-------+
+| old_passwords | 1     |
++---------------+-------+
+1 row in set (0.00 sec)
+
+mysql@localhost.(none)&gt;create user test1@&#39;%&#39; identified by &quot;123&quot;;
+ERROR 1396 (HY000): Operation CREATE USER failed for &#39;test1&#39;@&#39;%&#39;
+
+mysql@localhost.(none)&gt;grant all on test.* to test1@&#39;%&#39; identified by &quot;123&quot;;
+ERROR 1827 (HY000): The password hash doesn&#39;t have the expected format. Check if the correct password algorithm is being used with the PASSWORD() function.
+
+mysql@localhost.(none)&gt;set old_passwords=0;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql@localhost.(none)&gt;create user test1@&#39;%&#39; identified by &quot;123&quot;;
+ERROR 1396 (HY000): Operation CREATE USER failed for &#39;test1&#39;@&#39;%&#39;
+
+mysql@localhost.(none)&gt;grant all on test.* to test1@&#39;%&#39; identified by &quot;123&quot;;
+Query OK, 0 rows affected (0.00 sec)
+
+在 old_password = 1，5.6已经不允许生成 old_password 密码了。
+
+mysql@localhost.(none)&gt;set old_passwords=0;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql@localhost.(none)&gt;show  variables like &#39;%old_passwords%&#39;;
++---------------+-------+
+| Variable_name | Value |
++---------------+-------+
+| old_passwords | 0     |
++---------------+-------+
+1 row in set (0.00 sec)
+
+mysql@localhost.(none)&gt;select user,host,password,plugin from mysql.user where user=&#39;test1&#39;;
+Empty set (0.00 sec)
+
+mysql@localhost.(none)&gt;grant all on test.* to test1@&#39;%&#39; identified by &quot;123&quot;;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql@localhost.(none)&gt;select user,host,password,plugin from mysql.user where user=&#39;test1&#39;;
++-------+------+-------------------------------------------+-----------------------+
+| user  | host | password                                  | plugin                |
++-------+------+-------------------------------------------+-----------------------+
+| test1 | %    | *23AE809DDACAF96AF0FD78ED04B6A265E05AA257 | mysql_native_password |
++-------+------+-------------------------------------------+-----------------------+
+1 row in set (0.00 sec)
+
+这个可以在客户端尝试登陆，是可以登陆的。
+
+root@dbaone mysql_3308]# mysql -utest1 -p123 -S /tmp/mysql-3308.sock
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 44
+Server version: 5.6.35-log Source distribution
+
+Copyright (c) 2000, 2010, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type &#39;help;&#39; or &#39;\h&#39; for help. Type &#39;\c&#39; to clear the current input statement.
+
+mysql@localhost.(none)&gt;select user(),sysdate();
++-----------------+---------------------+
+| user()          | sysdate()           |
++-----------------+---------------------+
+| test1@localhost | 2017-01-17 15:58:40 |
++-----------------+---------------------+
+1 row in set (0.00 sec)
+
+当修改为 old password
+
+mysql@localhost.(none)&gt;set old_passwords=1;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql@localhost.(none)&gt;update mysql.user set password=password(&#39;123&#39;),plugin=&#39;mysql_old_password&#39; where user=&#39;test1&#39;;
+Query OK, 1 row affected (0.00 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql@localhost.(none)&gt;flush privileges;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql@localhost.(none)&gt;select user,host,password,plugin from mysql.user where user=&#39;test1&#39;;
++-------+------+------------------+--------------------+
+| user  | host | password         | plugin             |
++-------+------+------------------+--------------------+
+| test1 | %    | 773359240eb9a1d9 | mysql_old_password |
++-------+------+------------------+--------------------+
+1 row in set (0.00 sec)
+
+[root@dbaone mysql_3308]# mysql -utest1 -p123 -S /tmp/mysql-3308.sock
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 4
+Server version: 5.6.35-log Source distribution
+
+Copyright (c) 2000, 2010, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type &#39;help;&#39; or &#39;\h&#39; for help. Type &#39;\c&#39; to clear the current input statement.
+
+mysql@localhost.(none)&gt;show variables like &#39;%secure_auth%&#39;;
++---------------+-------+
+| Variable_name | Value |
++---------------+-------+
+| secure_auth   | OFF   |
++---------------+-------+
+1 row in set (0.00 sec)
+</code></pre>
+
+<p>论证2： plugin 为空，登陆依赖 password 存储格式选择方法验证登陆 （secure-auth = OFF）</p>
+
+<pre><code>mysql@localhost.(none)&gt;set old_passwords=0;
+Query OK, 0 rows affected (0.04 sec)
+
+mysql@localhost.(none)&gt;update mysql.user set password=password(&#39;123&#39;),plugin=&#39;&#39; where user=&#39;test1&#39;;
+Query OK, 1 row affected (0.04 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql@localhost.(none)&gt;flush privileges;
+Query OK, 0 rows affected (0.06 sec)
+
+mysql@localhost.(none)&gt;select user,host,password,plugin from mysql.user where user=&#39;test1&#39;;
++-------+------+-------------------------------------------+--------+
+| user  | host | password                                  | plugin |
++-------+------+-------------------------------------------+--------+
+| test1 | %    | *23AE809DDACAF96AF0FD78ED04B6A265E05AA257 |        |
++-------+------+-------------------------------------------+--------+
+1 row in set (0.04 sec)
+
+# mysql -utest1 -p -hlocalhost -P 3311 -S /tmp/mysql3311.sock
+Enter password:
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 104306286
+Server version: 5.6.24-log Source distribution
+
+Type &#39;help;&#39; or &#39;\h&#39; for help. Type &#39;\c&#39; to clear the buffer.
+
+mysql&gt; select user(),sysdate();
++-----------------+---------------------+
+| user()          | sysdate()           |
++-----------------+---------------------+
+| test1@localhost | 2017-01-17 15:50:54 |
++-----------------+---------------------+
+1 row in set (0.00 sec)
+
+是可以登陆的
+
+如果 password、与 plugin 不匹配，则不能登陆
+
+mysql@localhost.(none)&gt;set old_passwords=0;
+Query OK, 0 rows affected (0.04 sec)
+
+mysql@localhost.(none)&gt;update mysql.user set password=password(&#39;123&#39;),plugin=&#39;mysql_old_password&#39; where user=&#39;test1&#39;;
+Query OK, 1 row affected (0.04 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql@localhost.(none)&gt;select user,host,password,plugin from mysql.user where user=&#39;test1&#39;;
++-------+------+-------------------------------------------+--------------------+
+| user  | host | password                                  | plugin             |
++-------+------+-------------------------------------------+--------------------+
+| test1 | %    | *23AE809DDACAF96AF0FD78ED04B6A265E05AA257 | mysql_old_password |
++-------+------+-------------------------------------------+--------------------+
+1 row in set (0.04 sec)
+
+mysql@localhost.(none)&gt;flush privileges;
+Query OK, 0 rows affected (0.06 sec)
+
+[root@gaea227 ~]# mysql -utest1 -p -hlocalhost -P 3311 -S /tmp/mysql3311.sock
+Enter password:
+ERROR 1045 (28000): Access denied for user &#39;test1&#39;@&#39;localhost&#39; (using password: YES)
+</code></pre>
+
+<p>清除测试用户</p>
+
+<pre><code>mysql@localhost.(none)&gt;delete from mysql.user where user=&#39;test1&#39;;
+Query OK, 1 row affected (0.03 sec)
+
+mysql@localhost.(none)&gt;flush privileges;
+Query OK, 0 rows affected (0.06 sec)
+
+mysql@localhost.(none)&gt;select user,host,password,plugin from mysql.user where user=&#39;test1&#39;;
+Empty set (0.03 sec)
+</code></pre>
+
+<p>也可以使用不同 PHP 来测试，PHP 5.2与PHP5.6，下面是PHP脚本</p>
+
+<pre><code>&lt;?php
+/**
+ * 运行示例：
+ *
+ * root@vagrant-ubuntu-trusty-64:/vagrant# php php5_mysql.php
+ * Array
+ * (
+ *   [0] =&gt; 2017-01-17 15:15:39
+ * )
+ */
+
+$host=&quot;192.168.1.100:3311&quot;;
+$username=&quot;test2&quot;;
+$passwd=&quot;123&quot;;
+
+# 数据库连接
+#$link = mysqli_connect($host, $username, $passwd) or die(&#39;Unale to connect&#39;);
+$link = mysql_connect($host, $username, $passwd) or die(&#39;Unale to connect&#39;);
+
+if (!$link) {
+    die(&#39;Could not connect: &#39; . mysql_error());
+}
+echo &#39;Connected successfully&#39;;
+
+$sql = &quot;select sysdate();&quot;;
+$result = mysql_query($sql,$link);
+$row = mysql_fetch_row($result);
+print_r($row);
+
+# 执行查询，获取结果
+#$sql = &quot;select sysdate();&quot;;
+#$result = mysqli_query($link, $sql);
+#$row = mysqli_fetch_row($result);
+#print_r($row);
+
+# 关闭数据库连接
+#mysqli_close($link);
+mysql_close($link);
+</code></pre>
+
+<h2 id="toc_7">3、权限变更</h2>
+
+<p><a href="https://dev.mysql.com/doc/refman/5.5/en/privilege-changes.html">6.2.6 When Privilege Changes Take Effect</a></p>
+
+<p>当使用 DDL 语法， GRANT, REVOKE, SET PASSWORD, or RENAME USER 时，立刻把 授权表 load 到内存存</p>
+
+<p>     在下面测试中，如果 mysql.user 已经存在的权限，还是需要 flush privileges; 刷新权限的</p>
+
+<p>当使用 DML 语法，INSERT, UPDATE, or DELETE 时，需要执行 flush privileges ，手工load。</p>
+
+<p>     表、列的权限，影响下次访问<br/>
+     DB的权限，影响下次执行 use DB</p>
+
+<h2 id="toc_8">4、短密码升级方法</h2>
+
+<p>MySQL 版本 ?<br/>
+update ?<br/>
+grant ?</p>
+
+<p>方法一、grant 覆盖 （单节点）</p>
+
+<p>MySQL 5.5.15</p>
+
+<pre><code>mysql@localhost.(none)&gt;select user,host,password,plugin from mysql.user where user=&#39;test&#39;;
++------+------+------------------+--------+
+| user | host | password         | plugin |
++------+------+------------------+--------+
+| test | %    | 773359240eb9a1d9 |        |
++------+------+------------------+--------+
+1 row in set (0.00 sec)
+
+mysql@localhost.(none)&gt;show variables like &#39;%old_passwords%&#39;;
++---------------+-------+
+| Variable_name | Value |
++---------------+-------+
+| old_passwords | OFF   |
++---------------+-------+
+1 row in set (0.00 sec)
+
+mysql@localhost.(none)&gt;grant all on test.* to test@&#39;%&#39; identified by &quot;123&quot;;
+Query OK, 0 rows affected (0.00 sec)
+
+# 已经存在的权限，一定要flush，才可以登陆
+
+mysql@localhost.(none)&gt;flush privileges;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql@localhost.(none)&gt;select user,host,password,plugin from mysql.user where user=&#39;test&#39;;
++------+------+-------------------------------------------+--------+
+| user | host | password                                  | plugin |
++------+------+-------------------------------------------+--------+
+| test | %    | *23AE809DDACAF96AF0FD78ED04B6A265E05AA257 |        |
++------+------+-------------------------------------------+--------+
+1 row in set (0.00 sec)
+</code></pre>
+
+<p>MySQL 5.6.35</p>
+
+<pre><code>mysql@localhost.(none)&gt;select user,host,password,plugin from mysql.user where user=&#39;test&#39;;
++------+------+------------------+--------------------+
+| user | host | password         | plugin             |
++------+------+------------------+--------------------+
+| test | %    | 773359240eb9a1d9 | mysql_old_password |
++------+------+------------------+--------------------+
+1 row in set (0.00 sec)
+
+mysql@localhost.(none)&gt;show variables like &#39;%old_passwords%&#39;;
++---------------+-------+
+| Variable_name | Value |
++---------------+-------+
+| old_passwords | 0     |
++---------------+-------+
+1 row in set (0.00 sec)
+
+mysql@localhost.(none)&gt;grant all on test.* to test@&#39;%&#39; identified by &quot;123&quot;;
+ERROR 1827 (HY000): The password hash doesn&#39;t have the expected format. Check if the correct password algorithm is being used with the PASSWORD() function.
+
+看样子走不通，plugin = mysql_old_password 不能通过 grant 方法覆盖。还是要直接 update。
+</code></pre>
+
+<p>方法二：update mysql.user（单节点）</p>
+
+<p>MySQL 5.5.15</p>
+
+<pre><code>mysql@localhost.(none)&gt;select user,host,password,plugin from mysql.user where user=&#39;test&#39;;
++------+------+------------------+--------+
+| user | host | password         | plugin |
++------+------+------------------+--------+
+| test | %    | 773359240eb9a1d9 |        |
++------+------+------------------+--------+
+1 row in set (0.00 sec)
+
+mysql@localhost.(none)&gt;show variables like &#39;%old_passwords%&#39;;
++---------------+-------+
+| Variable_name | Value |
++---------------+-------+
+| old_passwords | OFF   |
++---------------+-------+
+1 row in set (0.00 sec)
+
+mysql@localhost.(none)&gt;update mysql.user set password=password(&#39;123&#39;) where user=&#39;test&#39;;
+Query OK, 1 row affected (0.01 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql@localhost.(none)&gt;flush privileges;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql@localhost.(none)&gt;select user,host,password,plugin from mysql.user where user=&#39;test&#39;;
++------+------+-------------------------------------------+--------+
+| user | host | password                                  | plugin |
++------+------+-------------------------------------------+--------+
+| test | %    | *23AE809DDACAF96AF0FD78ED04B6A265E05AA257 |        |
++------+------+-------------------------------------------+--------+
+1 row in set (0.00 sec)
+
+# 测试可以登陆
+# mysql -utest -p123 -e &quot;select user();&quot;
++----------------+
+| user()         |
++----------------+
+| test@localhost |
++----------------+
+
+# 若 update 更新 password 还更新 plugin ？
+
+mysql@localhost.(none)&gt;select user,host,password,plugin from mysql.user where user=&#39;test&#39;;
++------+------+------------------+--------+
+| user | host | password         | plugin |
++------+------+------------------+--------+
+| test | %    | 773359240eb9a1d9 |        |
++------+------+------------------+--------+
+1 row in set (0.00 sec)
+
+mysql@localhost.(none)&gt;show variables like &#39;%old_passwords%&#39;;
++---------------+-------+
+| Variable_name | Value |
++---------------+-------+
+| old_passwords | OFF   |
++---------------+-------+
+1 row in set (0.00 sec)
+
+mysql@localhost.(none)&gt;update mysql.user set password=password(&#39;123&#39;),plugin=&#39;mysql_native_password&#39; where user=&#39;test&#39;;
+Query OK, 1 row affected (0.00 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql@localhost.(none)&gt;flush privileges;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql@localhost.(none)&gt;select user,host,password,plugin from mysql.user where user=&#39;test&#39;;
++------+------+-------------------------------------------+-----------------------+
+| user | host | password                                  | plugin                |
++------+------+-------------------------------------------+-----------------------+
+| test | %    | *23AE809DDACAF96AF0FD78ED04B6A265E05AA257 | mysql_native_password |
++------+------+-------------------------------------------+-----------------------+
+1 row in set (0.00 sec)
+
+# mysql -utest -p123 -e &quot;select user();&quot;
++-----------------+
+| user()          |
++-----------------+
+| test1@localhost |
++-----------------+
+</code></pre>
+
+<p>MySQL 5.6.35</p>
+
+<pre><code>mysql@localhost.(none)&gt;select user,host,password,plugin from mysql.user where user=&#39;test&#39;;
++------+------+------------------+--------------------+
+| user | host | password         | plugin             |
++------+------+------------------+--------------------+
+| test | %    | 773359240eb9a1d9 | mysql_old_password |
++------+------+------------------+--------------------+
+1 row in set (0.00 sec)
+
+mysql@localhost.(none)&gt;show variables like &#39;%old_passwords%&#39;;
++---------------+-------+
+| Variable_name | Value |
++---------------+-------+
+| old_passwords | 0     |
++---------------+-------+
+1 row in set (0.00 sec)
+
+mysql@localhost.(none)&gt;update mysql.user set password=password(&#39;123&#39;),plugin=&#39;mysql_native_password&#39; where user=&#39;test&#39;;
+Query OK, 1 row affected (0.00 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql@localhost.(none)&gt;flush privileges;
+Query OK, 0 rows affected (0.00 sec)
+
+# 测试可以登陆
+# mysql -utest -p123 -S /tmp/mysql-3308.sock -e &quot;select user();&quot;
++----------------+
+| user()         |
++----------------+
+| test@localhost |
++----------------+
+</code></pre>
+
+<p>grant 只适用于 5.5，5.6还是得通过直接 update 更新。</p>
+
+<p><strong>短密码升级流程：A -&gt; B -&gt; C -&gt; D</strong></p>
+
+<pre><code>检查 Master、Salve 的 old_passwords 、secure_auth 参数值
+检查 Master、Slave MySQL 版本（特别注意 Master、Slave 版本不一致）
+</code></pre>
+
+<p>如果 old_passwords = 1</p>
+
+<pre><code>****
+**A.**
+****
+**Master:**
+
+set global old_passwords = 0;
+
+show global variables like &#39;%old_passwords%&#39;;
+
+修改 my.cnf 配置文件
+
+B.
+
+**Slave:**
+
+stop slave;
+
+set global old_passwords = 0;
+
+show global variables like &#39;%old_passwords%&#39;;
+
+start slave;
+
+修改配置文件
+</code></pre>
+
+<p>如果 MySQL 版本是 5.5</p>
+
+<pre><code>C.
+
+update mysql.user set password = password(&#39;XXX&#39;) where user = &#39;XXX&#39;;
+
+select length(password) from mysql.user where user = &#39;XXX&#39;;
+
+flush privileges;
+</code></pre>
+
+<p>如果 MySQL 版本是 5.6</p>
+
+<pre><code>C.
+
+update mysql.user set password=password(&#39;XXX&#39;),plugin=&#39;mysql_native_password&#39; where user=&#39;XXX&#39;;
+
+select length(password) from mysql.user where user = &#39;XXX&#39;;
+
+flush privileges;
+</code></pre>
+
+<p>最后登陆验证：</p>
+
+<pre><code>
+D.
+
+登陆验证
+
+</code></pre>
+
+<p>如果 Master 是5.5、Slave 是 5.6的异构，可以按 5.6 升级方法，或者单独升级 Master 和 Slave。</p>
+
+<p>最后，升级密码还是应该用脚本去执行的。</p>
+
+<h2 id="toc_9">三、MySQL 5.7</h2>
+
+<ul>
+<li>mysql_old_password 验证插件被删除</li>
+<li>old_password() 函数被删除</li>
+<li>old_passwords 系统变量，不再允许值为1</li>
+<li>secure_auth 系统变量，不再允许值为0</li>
+<li>--skip-secure-auth 被弃用</li>
+<li>default_password_lifetime  5.7.4引入, &lt;= 5.7.10 值为360,1年过期,5.7.11以后为0，没有密码过期限制</li>
+</ul>
+
+<blockquote>
+<p>Pre-4.1 passwords 已经被弃用，old_passwords 不能设置为1了、secure_auth 不能设置为 OFF了。<br/>
+一定要在升级 MySQL 5.7 前将短密码升级，否则 mysql_upgrade 会把password 列删除，迁移到 authentication_string 只迁移长密码的用户</p>
+</blockquote>
+
+<h2 id="toc_10">四、 SSL</h2>
+
+
+    
+
+      </div>
+
+      <div class="row">
+        <div class="large-6 columns">
+        <p class="text-left" style="padding:15px 0px;">
+      
+        </p>
+        </div>
+        <div class="large-6 columns">
+      <p class="text-right" style="padding:15px 0px;">
+      
+          <a  href="15001793154180.html" 
+          title="Next Post: 安装 Performance Monitor">安装 Performance Monitor &raquo;</a>
+      
+      </p>
+        </div>
+      </div>
+      <div class="comments-wrap">
+        <div class="share-comments">
+          <div class="social-share" data-wechat-qrcode-title="请打开微信扫一扫" data-wechat-qrcode-helper=“微信扫一扫分享朋友圈” ></div>
+<!--  css & js -->
+<link rel="stylesheet" href="dist/css/share.min.css">
+<script src="dist/js/social-share.min.js"></script>
+
+          
+            <div id="disqus_thread"></div>
+          
+
+          
+        </div>
+      </div>
+    </div><!-- article-wrap -->
+  </div><!-- large 8 -->
+
+
+
+
+ <div class="large-4 medium-4 columns">
+  <div class="hide-for-small">
+    <div id="sidebar" class="sidebar">
+          <div id="site-info" class="site-info">
+            
+                <div class="site-a-logo"><img src="images/blog_icon.jpg" /></div>
+            
+                <h1>DBA Plus</h1>
+                <div class="site-des">Fake it until you become it.</div>
+                <div class="social">
+
+
+
+
+
+
+<a target="_blank" class="instagram" href="https://www.instagram.com/dbaplus" title="Instagram">Instagram</a>
+<a target="_blank" class="weibo" href="http://www.weibo.com/saup007" title="weibo">Weibo</a>
+
+<a target="_blank" class="github" target="_blank" href="https://github.com/saup007" title="GitHub">GitHub</a>
+
+  <a target="_blank" class="rss" href="atom.xml" title="RSS">RSS</a>
+                
+              	 </div>
+          	</div>
+
+             
+
+              <div id="site-categories" class="side-item ">
+                <div class="side-header">
+                  <h2>Categories</h2>
+                </div>
+                <div class="side-content">
+
+      	<p class="cat-list">
+        
+            <a href="Redis.html"><strong>Redis</strong></a>
+        
+            <a href="MySQL.html"><strong>MySQL</strong></a>
+        
+            <a href="Greenplum.html"><strong>Greenplum</strong></a>
+         
+        </p>
+
+
+                </div>
+              </div>
+
+              <div id="site-categories" class="side-item">
+                <div class="side-header">
+                  <h2>Recent Posts</h2>
+                </div>
+                <div class="side-content">
+                <ul class="posts-list">
+	      
+		      
+			      <li class="post">
+			        <a href="15007225406040.html">MySQL登陆验证 & old password</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="15001793154180.html">安装 Performance Monitor</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="15001790106489.html">Greenplum 安装篇</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="15000823671749.html">Group Replication</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="14999625908463.html">Redis Install 3.2.9</a>
+			      </li>
+		     
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		   
+		  		</ul>
+                </div>
+              </div>
+        </div><!-- sidebar -->
+      </div><!-- hide for small -->
+</div><!-- large 4 -->
+
+</div><!-- row -->
+
+ <div class="page-bottom clearfix">
+  <div class="row">
+   <p class="copyright">Copyright &copy; 2015
+Powered by <a target="_blank" href="http://www.mweb.im">MWeb</a>,&nbsp; 
+Theme used <a target="_blank" href="http://github.com">GitHub CSS</a>.</p>
+  </div>
+</div>
+
+        </section>
+      </div>
+    </div>
+
+
+<script type="text/javascript">
+    var disqus_shortname = 'saup007'; 
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+
+<script type="text/javascript">
+var disqus_shortname = 'saup007'; 
+
+(function () {
+var s = document.createElement('script'); s.async = true;
+s.type = 'text/javascript';
+s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+(document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+}());
+</script>
+  
+    
+
+    <script src="asset/js/foundation.min.js"></script>
+    <script>
+      $(document).foundation();
+      function fixSidebarHeight(){
+        var w1 = $('.markdown-body').height();
+          var w2 = $('#sidebar').height();
+          if (w1 > w2) { $('#sidebar').height(w1); };
+      }
+      $(function(){
+        fixSidebarHeight();
+      })
+      $(window).load(function(){
+          fixSidebarHeight();
+      });
+     
+    </script>
+
+    
+
+
+
+  </body>
+</html>
