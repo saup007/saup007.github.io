@@ -2,10 +2,10 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
 
   <title><![CDATA[DBA Plus]]></title>
-  <link href="http://saup007.github.io/atom.xml" rel="self"/>
-  <link href="http://saup007.github.io/"/>
-  <updated>2017-07-23T11:35:59+08:00</updated>
-  <id>http://saup007.github.io/</id>
+  <link href="dbaplus.tk/atom.xml" rel="self"/>
+  <link href="dbaplus.tk/"/>
+  <updated>2017-07-23T11:36:27+08:00</updated>
+  <id>dbaplus.tk/</id>
   <author>
     <name><![CDATA[]]></name>
     
@@ -14,9 +14,9 @@
   
   <entry>
     <title type="html"><![CDATA[MySQL登陆验证 & old password]]></title>
-    <link href="http://saup007.github.io/15007225406040.html"/>
+    <link href="dbaplus.tk/15007225406040.html"/>
     <updated>2017-07-22T19:22:20+08:00</updated>
-    <id>http://saup007.github.io/15007225406040.html</id>
+    <id>dbaplus.tk/15007225406040.html</id>
     <content type="html"><![CDATA[
 <ul>
 <li>
@@ -977,9 +977,9 @@ D.
   
   <entry>
     <title type="html"><![CDATA[安装 Performance Monitor]]></title>
-    <link href="http://saup007.github.io/15001793154180.html"/>
+    <link href="dbaplus.tk/15001793154180.html"/>
     <updated>2017-07-16T12:28:35+08:00</updated>
-    <id>http://saup007.github.io/15001793154180.html</id>
+    <id>dbaplus.tk/15001793154180.html</id>
     <content type="html"><![CDATA[
 <ul>
 <li>
@@ -1395,9 +1395,9 @@ def GET(self):
   
   <entry>
     <title type="html"><![CDATA[Greenplum 安装篇]]></title>
-    <link href="http://saup007.github.io/15001790106489.html"/>
+    <link href="dbaplus.tk/15001790106489.html"/>
     <updated>2017-07-16T12:23:30+08:00</updated>
-    <id>http://saup007.github.io/15001790106489.html</id>
+    <id>dbaplus.tk/15001790106489.html</id>
     <content type="html"><![CDATA[
 <blockquote>
 <p>目录：</p>
@@ -2417,9 +2417,9 @@ export PGDATABASE=testdb
   
   <entry>
     <title type="html"><![CDATA[Group Replication]]></title>
-    <link href="http://saup007.github.io/15000823671749.html"/>
+    <link href="dbaplus.tk/15000823671749.html"/>
     <updated>2017-07-15T09:32:47+08:00</updated>
-    <id>http://saup007.github.io/15000823671749.html</id>
+    <id>dbaplus.tk/15000823671749.html</id>
     <content type="html"><![CDATA[
 <ul>
 <li>
@@ -2962,9 +2962,9 @@ localhost.test&gt;show variables like &#39;%read_only%&#39;;
   
   <entry>
     <title type="html"><![CDATA[Redis Install 3.2.9]]></title>
-    <link href="http://saup007.github.io/14999625908463.html"/>
+    <link href="dbaplus.tk/14999625908463.html"/>
     <updated>2017-07-14T00:16:30+08:00</updated>
-    <id>http://saup007.github.io/14999625908463.html</id>
+    <id>dbaplus.tk/14999625908463.html</id>
     <content type="html"><![CDATA[
 <ul>
 <li>
@@ -3169,9 +3169,9 @@ make test
   
   <entry>
     <title type="html"><![CDATA[Why Redis]]></title>
-    <link href="http://saup007.github.io/14999625750663.html"/>
+    <link href="dbaplus.tk/14999625750663.html"/>
     <updated>2017-07-14T00:16:15+08:00</updated>
-    <id>http://saup007.github.io/14999625750663.html</id>
+    <id>dbaplus.tk/14999625750663.html</id>
     <content type="html"><![CDATA[
 <ul>
 <li>
@@ -3444,9 +3444,9 @@ for article in {articles}
   
   <entry>
     <title type="html"><![CDATA[Redis 命令]]></title>
-    <link href="http://saup007.github.io/14999625646195.html"/>
+    <link href="dbaplus.tk/14999625646195.html"/>
     <updated>2017-07-14T00:16:04+08:00</updated>
-    <id>http://saup007.github.io/14999625646195.html</id>
+    <id>dbaplus.tk/14999625646195.html</id>
     <content type="html"><![CDATA[
 <ul>
 <li>
@@ -4239,9 +4239,9 @@ blopo、brpop 是 lpop、rpop 阻塞版本
   
   <entry>
     <title type="html"><![CDATA[Redis 内部编码]]></title>
-    <link href="http://saup007.github.io/14999625423902.html"/>
+    <link href="dbaplus.tk/14999625423902.html"/>
     <updated>2017-07-14T00:15:42+08:00</updated>
-    <id>http://saup007.github.io/14999625423902.html</id>
+    <id>dbaplus.tk/14999625423902.html</id>
     <content type="html"><![CDATA[
 <ul>
 <li>
@@ -4308,9 +4308,9 @@ ziplist 使用更加紧凑的结构实现多个元素连续存在，比 hashtabl
   
   <entry>
     <title type="html"><![CDATA[Percona XtraDB Cluster vs Galera Cluster vs MySQL Group Replication]]></title>
-    <link href="http://saup007.github.io/14999530972668.html"/>
+    <link href="dbaplus.tk/14999530972668.html"/>
     <updated>2017-07-13T21:38:17+08:00</updated>
-    <id>http://saup007.github.io/14999530972668.html</id>
+    <id>dbaplus.tk/14999530972668.html</id>
     <content type="html"><![CDATA[
 <ul>
 <li>
