@@ -135,99 +135,152 @@
 <a href="#toc_0">关于 Group Greplication</a>
 <ul>
 <li>
-<a href="#toc_1">单独的通信机制</a>
+<a href="#toc_1">异步复制</a>
+</li>
+<li>
+<a href="#toc_2">半同步复制</a>
+</li>
+<li>
+<a href="#toc_3">Group Replication</a>
 <ul>
 <li>
-<a href="#toc_2">Binlog Event 多线程执行</a>
+<a href="#toc_4">Group Replication 要求</a>
+</li>
+<li>
+<a href="#toc_5">Group Replication 限制</a>
+</li>
+<li>
+<a href="#toc_6">常见问题</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_7">单独的通信机制</a>
 <ul>
 <li>
-<a href="#toc_3">基于主键的并行执行</a>
+<a href="#toc_8">Binlog Event 多线程执行</a>
+<ul>
+<li>
+<a href="#toc_9">基于主键的并行执行</a>
 </li>
 </ul>
 </li>
 </ul>
 </li>
 <li>
-<a href="#toc_4">Paxos 协议优点</a>
+<a href="#toc_10">Paxos 协议优点</a>
 </li>
 </ul>
 </li>
 <li>
-<a href="#toc_5">服务模式</a>
+<a href="#toc_11">服务模式</a>
 <ul>
 <li>
-<a href="#toc_6">单主模式</a>
+<a href="#toc_12">单主模式</a>
 <ul>
 <li>
-<a href="#toc_7">自动选举 &amp;&amp; Failover</a>
+<a href="#toc_13">自动选举 &amp;&amp; Failover</a>
 </li>
 <li>
-<a href="#toc_8">读写自动切换</a>
+<a href="#toc_14">读写自动切换</a>
 </li>
 <li>
-<a href="#toc_9">优点 &amp; 缺点</a>
-<ul>
-<li>
-<a href="#toc_10">优点</a>
-</li>
-<li>
-<a href="#toc_11">缺点</a>
-</li>
-</ul>
+<a href="#toc_15">缺点</a>
 </li>
 </ul>
 </li>
 <li>
-<a href="#toc_12">多主模式</a>
+<a href="#toc_16">多主模式</a>
 <ul>
 <li>
-<a href="#toc_13">自增字段</a>
+<a href="#toc_17">自增字段</a>
 </li>
 <li>
-<a href="#toc_14">优点 &amp;&amp; 缺点</a>
-<ul>
-<li>
-<a href="#toc_15">优点</a>
+<a href="#toc_18">优点</a>
 </li>
 <li>
-<a href="#toc_16">缺点</a>
-</li>
-</ul>
+<a href="#toc_19">缺点</a>
 </li>
 <li>
-<a href="#toc_17">多主模式思考</a>
+<a href="#toc_20">多主模式思考</a>
 </li>
 </ul>
 </li>
 </ul>
 </li>
 <li>
-<a href="#toc_18">配置 Group Replication</a>
+<a href="#toc_21">配置 Group Replication</a>
 <ul>
 <li>
-<a href="#toc_19">前期准备</a>
+<a href="#toc_22">必要配置</a>
 <ul>
 <li>
-<a href="#toc_20">必要配置</a>
+<ul>
+<li>
+<a href="#toc_23">复制用户</a>
 </li>
 <li>
-<a href="#toc_21">加载 Group Replication 插件</a>
+<a href="#toc_24">my.cnf 配置</a>
 </li>
 </ul>
 </li>
 </ul>
 </li>
 <li>
-<a href="#toc_22">问题处理</a>
+<a href="#toc_25">加载 Group Replication 插件</a>
 <ul>
 <li>
-<a href="#toc_23">1. 网络中断/分区处理</a>
+<a href="#toc_26">安装插件</a>
 </li>
 <li>
-<a href="#toc_24">2. 事务不一致不能加入到组</a>
+<a href="#toc_27">初始化组</a>
 </li>
 <li>
-<a href="#toc_25">3.</a>
+<a href="#toc_28">新成员加入</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_29">Group Replication 网络分区</a>
+<ul>
+<li>
+<a href="#toc_30">检测分区</a>
+</li>
+<li>
+<a href="#toc_31">解除分隔</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_32">多主模式 (wait)</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_33">问题处理</a>
+<ul>
+<li>
+<a href="#toc_34">1. 网络中断/分区处理</a>
+</li>
+<li>
+<a href="#toc_35">2. 组成员事务不一致</a>
+</li>
+<li>
+<a href="#toc_36">3. 大事务导致组成员被移除或切换</a>
+</li>
+</ul>
+</li>
+<li>
+<a href="#toc_37">自动化兼容</a>
+<ul>
+<li>
+<a href="#toc_38">监控</a>
+</li>
+<li>
+<a href="#toc_39">备份</a>
+</li>
+<li>
+<a href="#toc_40">扩容</a>
 </li>
 </ul>
 </li>
@@ -246,13 +299,129 @@
 
 <p>Group Replication 是组复制，不是同步复制，但最终是同步的，更确切地说，事务以相同顺序传递给所有组成员，但它们执行并不同步，接受事务被提交之后，每个成员以自己的速度提交。</p>
 
-<h3 id="toc_1">单独的通信机制</h3>
+<h3 id="toc_1">异步复制</h3>
+
+<p><img src="https://dev.mysql.com/doc/refman/5.7/en/images/async-replication-diagram.png" style="zoom:50%" /></p>
+
+<h3 id="toc_2">半同步复制</h3>
+
+<p><img src="https://dev.mysql.com/doc/refman/5.7/en/images/semisync-replication-diagram.png" style="zoom:50%" /></p>
+
+<h3 id="toc_3">Group Replication</h3>
+
+<p><img src="https://dev.mysql.com/doc/refman/5.7/en/images/gr-replication-diagram.png" style="zoom:50%" /></p>
+
+<blockquote>
+<p>此图没有包含 Paxos 消息等信息</p>
+</blockquote>
+
+<h4 id="toc_4">Group Replication 要求</h4>
+
+<ul>
+<li>InnoDB</li>
+<li>Primary Key</li>
+<li>IPv4，不支持 IPv6</li>
+<li>Network Performance</li>
+<li>log_bin = binlog</li>
+<li>log_slave_update = ON</li>
+<li>binlog_format = ROW</li>
+<li>GTID</li>
+<li>master_info_repository = TABLE、relay_log_info_repository = TABLE</li>
+<li>transaction_write_set_extraction = XXHASH64</li>
+<li>Multi-threaded Appliers (slave_parallel_type、slave_parallel_workers、slave_preserve_commit_order)</li>
+<li>当前环境要存在 root@localhost 用户，INSTALL PLUGIN 时要使用 root@localhost 创建和检查 <u>gr</u>user@localhost</li>
+</ul>
+
+<h4 id="toc_5">Group Replication 限制</h4>
+
+<ul>
+<li>binlog_checksum = NONE </li>
+<li>Gap Locks : 认证过程(The certification process)不考虑 Gap locks，因为Gap locks信息在InnoDB外不可用，详细参考 <a href="https://dev.mysql.com/doc/refman/5.7/en/innodb-locking.html#innodb-gap-locks">Gap Locks</a>
+
+<ul>
+<li>除非应用程序依赖 REPEATABLE READ，否则建议 READ COMMITTED，因为 InnoDB 在 READ COMMITTED 没有 Gap locks，InnoDB本身冲突检测和Group Replication 分布式冲突检测协同工作</li>
+</ul></li>
+<li>Table Locks and Named Locks : 认证过程(The certification process)不考虑表锁 [ <a href="https://dev.mysql.com/doc/refman/5.7/en/lock-tables.html">Section 13.3.5, “LOCK TABLES and UNLOCK TABLES Syntax</a> 和命名锁 <a href="https://dev.mysql.com/doc/refman/5.7/en/miscellaneous-functions.html#function_get-lock">GET_LOCK()</a></li>
+<li><del>Savepoints Not Supported</del> (5.7.19 已经支持)</li>
+<li>SERIALIZABLE Isolation Level 多主模式不支持</li>
+<li>Concurrent DDL versus DML Operations(并发DDL与DML操作) : 多主模式下，同一对象在不同成员并发执行DDL和DML语句，可能造成脑裂数据不一致</li>
+<li>级联约束外键 多主模式不支持，外键约束可能导致多主模式组成的级联操作造成检测不到的冲突，导致组内成员数据不一致。单主模式不受影响。
+
+<ul>
+<li><a href="https://dev.mysql.com/doc/refman/5.7/en/group-replication-options.html#sysvar_group_replication_enforce_update_everywhere_checks"><code>group_replication_enforce_update_everywhere_checks=ON</code></a> </li>
+</ul></li>
+<li>Very Large Transactions : 产生足够大的GTID内容的个别事务可能导致组通信中的故障，该GTID内容足够大，无法通过网络在组合成员之间复制5秒钟以内。为避免此问题，尽可能多地尝试限制交易的大小。例如，将使用LOAD DATA INFILE的文件拆分成更小的块。</li>
+</ul>
+
+<h4 id="toc_6">常见问题</h4>
+
+<ol>
+<li><p>一个 MySQL Group Replication 最大成员数是多少？</p>
+
+<p>9个</p></li>
+<li><p>MySQL Group Replication 组内成员怎么通信？</p>
+
+<p>通过 P2P TCP 连接，参数 group_replication_local_address 设置，IP要求所有成员可访问，仅用于组内成员内部通信和消息传递</p></li>
+<li><p>group_replication_bootstrap_group 参数有什么用？</p>
+
+<p>MySQL Gropu Replication 创建组并做为初始化种子，第二个加入的成员需要向引导成员请求动态更改配置，以便加入到组中。</p>
+
+<p>二种情况下使用：</p>
+
+<ul>
+<li>创建初始化 Group Replication时</li>
+<li>关闭并重新启动整个组时</li>
+</ul></li>
+<li><p>如果配置恢复过程？</p>
+
+<p>可以通过  CHANGE MASTER TO 语句预配置组恢复通道</p></li>
+<li><p>可以通过组复制横向扩展写负载？</p>
+
+<p>可以通过组内不同成员之间传播<u><strong>无冲突</strong></u>的事务来横向扩展写。</p></li>
+<li><p>相同工作负载，对比简单复制，需要更多的CPU和宽带？</p>
+
+<p>组内各个成员要不断交互，成员数更多对成员数少要求更多的宽带(9&gt;3)，为了保证组内同步和消息传递，会占用更多CPU和内存</p></li>
+<li><p>可以跨广域网部署吗？</p>
+
+<p>可以，但是每个成员之间网络必须可靠，为了高性能需要低延时、高宽带，如网络丢包导致重传和更高端到端延时，吞吐量和延时都会受影响</p>
+
+<p>在延时大、带宽窄的网络环境，提高 Paxos对网络适应，做了压缩和多个本地事务封装一个数据包的优化  <a href="https://dev.mysql.com/doc/refman/5.7/en/group-replication-message-compression.html">Section 17.9.7.2, “Message Compression”</a></p>
+
+<blockquote>
+<p>当组内成员通信往返时间 (RTT) 为2秒或更长时，可能会遇到问题，因为内置故障检测机制可能会错误的触发</p>
+</blockquote></li>
+<li><p>当出现临时连接问题时，成员能自动重新加入组吗？</p>
+
+<p>取决连接问题：</p>
+
+<ul>
+<li>连接问题暂时的，恢复足够快，故障检测还没检测到就进行了重新连接，则不会移除</li>
+<li>如果长时间连接问题，故障检测器最终检测到问题，该成员被移除，当恢复后，需要手工加入(或脚本自动加入)</li>
+</ul></li>
+<li><p>什么时候从组内移除成员？</p>
+
+<p>当某个成员无响应时(崩溃或网络问题)，系统会检测到故障，其他成员把它从组配置中移除，创建一个不包含该成员的新配置</p></li>
+<li><p>当一个成员明显的延时怎么处理？</p>
+
+<p>当一个成员明显延时，没有定义何时从组中自动移除成员的策略，<u><strong>要找到延时原因并修复它或从组中删除该成员</strong></u>，否则触发&quot;流量控制&quot;，那么整个组的也将变慢。(流量控制可配置)</p></li>
+<li><p>在怀疑组中存在问题时，组中是否有某个特定成员负责触发重新配置组？</p>
+
+<p>没有。</p>
+
+<p>任何成员都可以怀疑组中存在问题，所有成员需要(自动)对&quot;某个成员故障&quot;达成一致的意见，有一个成员负责触发重新配置，从组中将故障成员移除，具体哪个成员不可配置。</p></li>
+<li><p>Can I use Group Replication for sharding?</p></li>
+<li><p>How do I use Group Replication with SELinux?</p></li>
+<li><p>How do I use Group Replication with iptables?</p></li>
+<li><p>How do I recover the relay log for a replication channel used by a group member?</p></li>
+</ol>
+
+<h3 id="toc_7">单独的通信机制</h3>
 
 <p>GR 使用 Slave 的通道，只是使用通过执行线程(Applier Thread)来执行 Binlog Event，并没有使用通道传输 Binlog Event。</p>
 
 <p>没有使用异步复制的 Binlog Event，也没有使用 MySQL 服务端口通信，而是创建一个独立 TCP 端口通信，各个 MySQL 服务器睥 Group Replication 插件通过这个端口连接在一起，两两通信</p>
 
-<h4 id="toc_2">Binlog Event 多线程执行</h4>
+<h4 id="toc_8">Binlog Event 多线程执行</h4>
 
 <p>GR 插件自动创建一个通道 group_replication_applier (channel) 来执行接收到的 Binlog Event，当加入组时，GR 插件自动启动 group_replication_applier 通道的执行线程(Applier Thread)</p>
 
@@ -261,7 +430,7 @@ START SLAVE SQL_THREAD FOR CHANNEL &#39;group_replication_applier&#39;;
 STOP SLAVE SQL_THREAD FOR CHANNEL &#39;group_replication_applier&#39;;
 </code></pre>
 
-<h5 id="toc_3">基于主键的并行执行</h5>
+<h5 id="toc_9">基于主键的并行执行</h5>
 
 <pre><code class="language-sql">SET GLOBAL slave_parallel_type = &#39;LOGICAL_CLOCK&#39;;
 SET GLOBAL slave_parallel_workers = N;
@@ -282,18 +451,18 @@ SET GLOBAL slave_preserve_commit_order = ON;
 <p>为什么配置 slave_preserve_commit_order</p>
 
 <blockquote>
-<p>并发执行时，不管两个事务 Binlog Event 是不是同一 session 产生，只要满足上面的特点就会并发，因此同一 session 里的事务可能被安排并发执行，会导致后执行的事务先被提交的懒，为了保证同一个 session 的事务按照顺序提交，必须配置此参数，保证 Applier 上执行事务的提交顺序和 源 MySQL 一致</p>
+<p>并发执行时，不管两个事务 Binlog Event 是不是同一 session 产生，只要满足上面的特点就会并发，因此同一 session 里的事务可能被安排并发执行，会导致后执行的事务先被提交的情况，为了保证同一个 session 的事务按照顺序提交，必须配置此参数，保证 Applier 上执行事务的提交顺序和 源 MySQL 一致</p>
 </blockquote>
 
-<h3 id="toc_4">Paxos 协议优点</h3>
+<h3 id="toc_10">Paxos 协议优点</h3>
 
 <ul>
-<li>不会脑裂 [有疑问，原主从环境有脑裂 P363]</li>
+<li>不会脑裂 [有疑问，原主从环境有脑裂 P363] ???</li>
 <li>冗余好，保证 Binlog 至少被复制超过一半成员，只要同时宕机成员不超过一半不会导致数据丢失</li>
 <li>保证只要 Binlog Event 没有被传输到半数以上成员，本地成员不会将事务的 Binlog Event 写入 Binlog 文件和提交事务，从而保证宕机的服务器不会有组内在线不存在的数据，宕机的服务器重启后，不再需要特殊处理就可以加入组</li>
 </ul>
 
-<h2 id="toc_5">服务模式</h2>
+<h2 id="toc_11">服务模式</h2>
 
 <ul>
 <li>单主模式 (默认模式)</li>
@@ -308,14 +477,14 @@ SET GLOBAL group_replication_single_primary_mode = OFF;
 <p>如果使用多主模式，需要加入组之前将此变量置为 OFF，服务模式不能在线切换，必须组内所有成员退出组，然后重新初始化要使用的模式，再把其他成员加进来</p>
 </blockquote>
 
-<h3 id="toc_6">单主模式</h3>
+<h3 id="toc_12">单主模式</h3>
 
 <ul>
 <li>Primary Member</li>
 <li>Secondary Member</li>
 </ul>
 
-<h4 id="toc_7">自动选举 &amp;&amp; Failover</h4>
+<h4 id="toc_13">自动选举 &amp;&amp; Failover</h4>
 
 <ul>
 <li><p>初始化的成员自动选举为 Primary Member</p></li>
@@ -330,7 +499,7 @@ or
 SELECT * FROM performance_shchema.global_status WHERE variable_name = &#39;group_replication_primary_member&#39;;
 </code></pre>
 
-<h4 id="toc_8">读写自动切换</h4>
+<h4 id="toc_14">读写自动切换</h4>
 
 <p>成员加入默认为 &quot;只读&quot; 模式，只有选取为 Primary Member 才会是 &quot;写&quot; 模式</p>
 
@@ -338,19 +507,15 @@ SELECT * FROM performance_shchema.global_status WHERE variable_name = &#39;group
 SET GLOBAL super_read_only = 0;
 </code></pre>
 
-<h4 id="toc_9">优点 &amp; 缺点</h4>
-
-<h5 id="toc_10">优点</h5>
-
-<h5 id="toc_11">缺点</h5>
+<h4 id="toc_15">缺点</h4>
 
 <ul>
 <li>Failover 后，客户端根据 UUID 判断是不是 Primary Member</li>
 </ul>
 
-<h3 id="toc_12">多主模式</h3>
+<h3 id="toc_16">多主模式</h3>
 
-<h4 id="toc_13">自增字段</h4>
+<h4 id="toc_17">自增字段</h4>
 
 <pre><code class="language-sql">-- 原 MySQL 自增变量
 SET GLOBAL auto_increment_offset = N;
@@ -368,17 +533,15 @@ a. 如果 server-id 为 1、2、3 配置，就不需要额外配置，但不为 
 <p>b.  auto_increment_increment 尽量设置大于或等于成员数，最好大于，因为方便以后增加节点，扩展时再改变自增比较麻烦</p>
 </blockquote>
 
-<h4 id="toc_14">优点 &amp;&amp; 缺点</h4>
-
-<h5 id="toc_15">优点</h5>
+<h4 id="toc_18">优点</h4>
 
 <ul>
 <li>当一个成员故障，只有一部分连接失效，应用影响小</li>
 <li>当关闭一个 MySQL 节点时，可以先将连接平滑转移到其他机器上再关闭这个节点，不会瞬断</li>
-<li>性能好　[有待评估]</li>
+<li>性能好　[有待评估] ???</li>
 </ul>
 
-<h5 id="toc_16">缺点</h5>
+<h4 id="toc_19">缺点</h4>
 
 <ul>
 <li>自增步长要大于成员数，防止以后扩展麻烦</li>
@@ -397,10 +560,61 @@ group_replication_enforce_update_everywhere_checks = TRUE
 <blockquote>
 <p>多主复制，通过冲突检测来辨别冲突事务，再回滚，5.7 的 DDL 不是原子操作无法回滚，因此 GR 没到 DDL 做冲突检测，如果 DDL 和有冲突的语句发生在不同成员，可能导致数据不一致.</p>
 
-<p><u>所以必须执行 DDL 前必须将有冲突的事务迁移到一台机器上执行</u></p>
+<p><strong><u>所以必须执行 DDL 前必须将有冲突的事务迁移到一台机器上执行</u></strong></p>
 </blockquote>
 
-<h4 id="toc_17">多主模式思考</h4>
+<ul>
+<li>DBA 维护时要注意防止脑裂 ???</li>
+</ul>
+
+<blockquote>
+<p>当维护节点 s3时，从DNS下线s3，但在执行 stop group_replication时，因为DNS缓存，要注意应用长链接或短链接是否继续连接此实例。(普通用户不受影响，注意用户权限)</p>
+</blockquote>
+
+<pre><code># super 用户查看 read_only 并 stop group_replication，super_read_only 由 ON -&gt; OFF，read_only 一直是 ON
+localhost.(none)&gt;show variables like &#39;%read_only%&#39;;
++------------------+-------+
+| Variable_name    | Value |
++------------------+-------+
+| innodb_read_only | OFF   |
+| read_only        | ON    |
+| super_read_only  | ON    |
+| tx_read_only     | OFF   |
++------------------+-------+
+4 rows in set (0.00 sec)
+
+localhost.(none)&gt;stop group_replication;
+Query OK, 0 rows affected (8.15 sec)
+
+localhost.(none)&gt;show variables like &#39;%read_only%&#39;;
++------------------+-------+
+| Variable_name    | Value |
++------------------+-------+
+| innodb_read_only | OFF   |
+| read_only        | ON    |
+| super_read_only  | OFF   |
+| tx_read_only     | OFF   |
++------------------+-------+
+4 rows in set (0.00 sec)
+
+# 普通用户登陆测试
+mysql -utest_user -ptest_user -hlocalhost -S /tmp/mysql6666.sock test
+
+mysql&gt; insert into t_n values(1,&#39;test1&#39;);
+ERROR 1290 (HY000): The MySQL server is running with the --read-only option so it cannot execute this statement
+
+# Super 用户测试
+mysqlha_login.sh 6666
+
+localhost.(none)&gt;use test;
+Database changed
+localhost.test&gt;insert into t_n values(1,&#39;test1&#39;);
+Query OK, 1 row affected (0.00 sec)
+
+# 怎么加入 Group Replication，可参考(组成员事务不一致)
+</code></pre>
+
+<h4 id="toc_20">多主模式思考</h4>
 
 <ul>
 <li>写请求可以分发多个成员上</li>
@@ -435,21 +649,35 @@ TRUNCATE t1;
 INSERT INTO t1 VALUES(1);
 </code></pre>
 
-<h2 id="toc_18">配置 Group Replication</h2>
+<h2 id="toc_21">配置 Group Replication</h2>
 
-<h3 id="toc_19">前期准备</h3>
+<h3 id="toc_22">必要配置</h3>
 
-<h4 id="toc_20">必要配置</h4>
+<h5 id="toc_23">复制用户</h5>
 
-<p>my.cnf 配置</p>
+<pre><code>SET SQL_LOG_BIN=0;
+CREATE USER rpl_user@&#39;%&#39; IDENTIFIED BY &#39;rpl_pass&#39;;
+GRANT REPLICATION SLAVE ON *.* TO rpl_user@&#39;%&#39;;
+FLUSH PRIVILEGES;
+SET SQL_LOG_BIN=1;
+</code></pre>
 
-<pre><code>​```my.cnf
+<blockquote>
+<p>每个节点都要单独配置，如果 MySQL 初始化已经创建，则可以省略此步</p>
+
+<p>连接到哪个成员上去复制，是由 Group Replication插件随机选择，因为为 group_replication_reocvery 配置的用户每个成员上都要存在</p>
+</blockquote>
+
+<h5 id="toc_24">my.cnf 配置</h5>
+
+<pre><code># my.cnf
 server_id                   = 1
 log_bin                     = binlog
 relay_log                   = relay-log
 gtid_mode                   = ON
 enforce_gtid_consistency    = ON
 binlog_format               = ROW
+transaction-isolation       = READ-COMMITTED
 binlog_checksum             = NONE
 master_info_repository      = TABLE
 relay_log_info_repository   = TABLE
@@ -465,8 +693,14 @@ loose-group_replication_group_name = 93f19c6c-6447-11e7-9323-cb37b2d517f3
 loose-group_replication_start_on_boot = OFF
 loose-group_replication_local_address = &#39;db1:3306&#39;
 loose-group_replication_group_seeds   = &#39;db2:3306,db3:3306&#39;
+group_replication_ip_whitelist  = &#39;10.0.0.0/8&#39;
 loose-group_replication_bootstrap_group = OFF
-loose-group_replication_single_primary_mode = OFF # Trun off Single primary
+# loose-group_replication_single_primary_mode = OFF       # Trun off Single primary
+# group_replication_enforce_update_everywhere_checks = ON # Multi-Primary Mode
+loose-group_replication_transaction_size_limit = 52428800 # 5.7.19 Configures the maximum transaction size in bytes which the group accepts
+# loose-group_replication_unreachable_majority_timeout
+report_host = &#39;域名&#39;
+report_port = 3306
 </code></pre>
 
 <p>配置说明：</p>
@@ -489,15 +723,30 @@ loose-group_replication_single_primary_mode = OFF # Trun off Single primary
 <li><p>group_replication_group_name = <uuid> 设置 Group Replication Name，可以通过 select uuid(); 获得</p></li>
 <li><p>group_replication_start_on_boot = OFF MySQL 启动时，不自动启动 Group Replication</p></li>
 <li><p>group_replication_local_address = <a href="ip:port">ip:port</a> 配置 Group Replication 本地成员监听端口，成员之间通过这个端口通信，如果所有成员不在一台机器上，不要配置 127.0.0.1，要配置成员内网IP和端口</p></li>
-<li><p>group_replication_group_seeds = <a href="ip:port,ip:port...">ip:port,ip:port...</a> 配置种子成员，新成员加入组时，需要与组内成员通信，请求配组重新配置允许它加入组，不写组成所有成员也可以</p></li>
+<li><p>group_replication_group_seeds = <a href="ip:port,ip:port...">ip:port,ip:port...</a> 配置种子成员，新成员加入组时，需要与组内成员通信，请求配组重新配置允许它加入组，不写所有成员也可以</p></li>
 </ul>
 
 <blockquote>
-<p>当多个 Server 同时加入组时，确保使用已经存在组的成员，不要使用正在申请加入组的成员，不支持创建组的时候同时加入多个成员</p>
+<ul>
+<li>当多个 Server 同时加入组时，确保使用已经存在组的成员，不要使用正在申请加入组的成员，不支持创建组的时候同时加入多个成员</li>
+<li>从当前view随机选取数据源成员通信，当多个成员进入组时，同一 Server几乎不会重复选择，如果访问失败则自动连接新的数据源成员，一直达到连接重试限制(group_replication_recovery_retry_count = 10 可动态修改)，恢复线程将被中止并报错</li>
+<li>恢复程序不会在每次尝试连接数据源(donor)后休眠，仅当对所有可能的数据源进行尝试无果后才休眠(group_replication_recovery_reconnect_interval = 60 秒 可动态修改)</li>
+</ul>
+
+<p>增强数据源节点切换 Enhanced Automatic Donor Switchover</p>
+
+<ul>
+<li>已清除数据：如果所选择的数据源成员，在恢复过程中所需某数据已经删除，则会出现错误，恢复程序检测到此错误并重新选择新的数据源成员</li>
+<li>重复数据：当新成员加入已经包含一些与所选择数据源成员相冲突的数据，恢复过程中报错，这可能新成员存在一些错误的事务。有人认识可能恢复应该失败退出，而不是切换另一个数据源成员，但在异构集群中一些成员共享冲突事务，有些没有，当错误发生时，恢复可以选择另一个数据源成员(donor)</li>
+<li>其他错误：如果任何线程恢复失败(接收或应用线程失败)，则会出现错误，恢复程序在组内选择一个新的数据源成员(donor)</li>
+</ul>
+
+<p>在一些持续故障或短暂的故障时，恢复程序自动重试到相同或新的数据源成员(the same or a new donor)</p>
 </blockquote>
 
 <ul>
-<li>group_replication_bootstrap_group = OFF 如果为 ON 告诉 Group Replication 插件，它是组内第一个成员，要做初始化，初始化后改为 OFF</li>
+<li><p>group_replication_ip_whitelist = <ip,net,...> <u><strong>一定要设置白名单</strong></u>，若不配置默认为AUTOMATIC，自动识别本机网口的私网地址和私网网段，127.0.0.1 连接请求始终被允许，配置白名单一定要关闭 Group Replication</p></li>
+<li><p>group_replication_bootstrap_group = OFF 如果为 ON 告诉 Group Replication 插件，它是组内第一个成员，要做初始化，初始化后改为 OFF</p></li>
 </ul>
 
 <blockquote>
@@ -508,7 +757,9 @@ loose-group_replication_single_primary_mode = OFF # Trun off Single primary
 <li>group_replication 变量加上 &quot;loose&quot; ，则可写入 my.cnf 配置文件中</li>
 </ul>
 
-<h4 id="toc_21">加载 Group Replication 插件</h4>
+<h3 id="toc_25">加载 Group Replication 插件</h3>
+
+<h4 id="toc_26">安装插件</h4>
 
 <pre><code># 加载插件
 INSTALL PLUGIN group_replication SONAME &#39;group_replication.so&#39;;
@@ -520,12 +771,201 @@ START GROUP_REPLICATION;
 # 停用插件
 STOP GROUP_REPLICATION;
     &gt; 将 MySQL 从一个 Group Replication 组内移除
+</code></pre>
+
+<h4 id="toc_27">初始化组</h4>
+
+<pre><code>INSTALL PLUGIN group_replication SONAME &quot;group_replication.so&quot;;
+SET GLOBAL group_replication_group_name = &quot;93f19c6c-6447-11e7-9323-cb37b2d517f3&quot;;  # 可以 select uuid(); 生成
+SET GLOBAL group_replication_local_address = &quot;dbaone:7777&quot;;
+SET GLOBAL group_replication_bootstrap_group = ON
+START GROUP_REPLICATION;
+SET GLOBAL group_replication_bootstrap_group = OFF
+</code></pre>
+
+<h4 id="toc_28">新成员加入</h4>
+
+<pre><code>INSTALL PLUGIN group_replication SONAME &quot;group_replication.so&quot;;
+SET GLOBAL group_replication_group_name = &quot;93f19c6c-6447-11e7-9323-cb37b2d517f3&quot;;  # 可以 select uuid(); 生成
+SET GLOBAL group_replication_local_address = &quot;127.0.0.1:7777&quot;;
+SET GLOBAL group_replication_group_seeds = &quot;db2:7777&quot;;
+change master to master_user = &#39;replica&#39;,master_password=&#39;eHnNCaQE3ND&#39; for channel &#39;group_replication_recovery&#39;;
+START GROUP_REPLICATION;
+</code></pre>
+
+<blockquote>
+<p>注：如果在 my.ncf 已经配置，这里初始化和新成员加入有些步骤就不需要做了</p>
+</blockquote>
+
+<p>初始化：</p>
+
+<pre><code>START GROUP_REPLICATION;
+SET GLOBAL group_replication_bootstrap_group = OFF
+</code></pre>
+
+<p>新成员加入</p>
+
+<pre><code>change master to master_user = &#39;replica&#39;,master_password=&#39;eHnNCaQE3ND&#39; for channel &#39;group_replication_recovery&#39;;
+START GROUP_REPLICATION;
+</code></pre>
+
+<blockquote>
+<p>注：</p>
+
+<ul>
+<li>当新成员加入，首先从其他节点，把它加入之前的数据复制过来，这些数据不能通过 Group Replication 通信协议进行复制，而是使用 group_replication_recovery 异步复制通道(Channel)
+
+<ul>
+<li>要保证 Binlog 一直存在，否则需要数据初始化，将数据恢复到最近的时间点再加入组 ???(wait 测试)</li>
+</ul></li>
+<li>连接到哪个成员上去复制，是由 Group Replication插件随机选择，因为为 group_replication_reocvery 配置的用户每个成员上都要存在</li>
+<li>在启动 group_replication_recovery 之前，Group Replication 会自动为其配置 MASTER_HOST、MASTER_PORT</li>
+<li>当一个成员加入时，会收到组内其他成员的配置信息，包括主机名和端口，主机名和端口是从 全局只读变量 hostname、port 获取，如果hostname 无法解析成IP或网络中使用网络地址映射，group_replication_recover 通道无法正常工作
+
+<ul>
+<li>/etc/hosts 配置所有成员的主机名和IP地址对应关系</li>
+<li>配置 MySQL report_host、report_port，Group Replication 会优先使用此参数</li>
+</ul></li>
+</ul>
+</blockquote>
+
+<h3 id="toc_29">Group Replication 网络分区</h3>
+
+<p>当有多个节点意外故障，法定人数可能会丢失，导致大多数成员从组内被移除。</p>
+
+<p>例如5个成员的GR，若同时3个成员突然没有消息，大多数成员仲裁的规则被破坏，因为不能实现仲裁，事实上剩下的2个成员不能辨别其他3个server是否崩溃或网络分隔成独立的2个server，因此该组不能重新配置。</p>
+
+<p>如果有成员主动退出，那么它会告知组进行重新配置。实际上，一个将要离开的成员告知其他成员，它将要离开，其他成员可以重新配置组，保持组内成员关系一致，并重新计算仲裁数，如果5个成员，如果3个成员一个接一个离开组，总数从5-&gt;2，同样的时间，确保法定人数。</p>
+
+<h4 id="toc_30">检测分区</h4>
+
+<p>正常情况，组内每个成员均可通过 performance_schema.replication_group_members 查询所有成员状态，每个成员的状态，也是视图中所有成员共同决议的。</p>
+
+<p>如果存在网络分隔，表内访问不到的成员状态是 “UNREACHABLE”，由 Group Replicaion 内置的本地故障检测器完成。</p>
+
+<p>As such, lets assume that there is a group with these 5 servers in it:</p>
+
+<ul>
+<li>Server s1 with member identifier 199b2df7-4aaf-11e6-bb16-28b2bd168d07</li>
+<li>Server s2 with member identifier 199bb88e-4aaf-11e6-babe-28b2bd168d07</li>
+<li>Server s3 with member identifier 1999b9fb-4aaf-11e6-bb54-28b2bd168d07</li>
+<li>Server s4 with member identifier 19ab72fc-4aaf-11e6-bb51-28b2bd168d07</li>
+<li>Server s5 with member identifier 19b33846-4aaf-11e6-ba81-28b2bd168d07</li>
+</ul>
+
+<pre><code>mysql&gt; SELECT * FROM performance_schema.replication_group_members;
++---------------------------+--------------------------------------+-------------+-------------+--------------+
+| CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST | MEMBER_PORT | MEMBER_STATE |
++---------------------------+--------------------------------------+-------------+-------------+--------------+
+| group_replication_applier | 1999b9fb-4aaf-11e6-bb54-28b2bd168d07 | 127.0.0.1   |       13002 | ONLINE       |
+| group_replication_applier | 199b2df7-4aaf-11e6-bb16-28b2bd168d07 | 127.0.0.1   |       13001 | ONLINE       |
+| group_replication_applier | 199bb88e-4aaf-11e6-babe-28b2bd168d07 | 127.0.0.1   |       13000 | ONLINE       |
+| group_replication_applier | 19ab72fc-4aaf-11e6-bb51-28b2bd168d07 | 127.0.0.1   |       13003 | ONLINE       |
+| group_replication_applier | 19b33846-4aaf-11e6-ba81-28b2bd168d07 | 127.0.0.1   |       13004 | ONLINE       |
++---------------------------+--------------------------------------+-------------+-------------+--------------+
+5 rows in set (0,00 sec)
+
+# 当同时3个成员失去联系 (s3、s4、s5)，此时在s1上查看
+
+mysql&gt; SELECT * FROM performance_schema.replication_group_members;
++---------------------------+--------------------------------------+-------------+-------------+--------------+
+| CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST | MEMBER_PORT | MEMBER_STATE |
++---------------------------+--------------------------------------+-------------+-------------+--------------+
+| group_replication_applier | 1999b9fb-4aaf-11e6-bb54-28b2bd168d07 | 127.0.0.1   |       13002 | UNREACHABLE  |
+| group_replication_applier | 199b2df7-4aaf-11e6-bb16-28b2bd168d07 | 127.0.0.1   |       13001 | ONLINE       |
+| group_replication_applier | 199bb88e-4aaf-11e6-babe-28b2bd168d07 | 127.0.0.1   |       13000 | ONLINE       |
+| group_replication_applier | 19ab72fc-4aaf-11e6-bb51-28b2bd168d07 | 127.0.0.1   |       13003 | UNREACHABLE  |
+| group_replication_applier | 19b33846-4aaf-11e6-ba81-28b2bd168d07 | 127.0.0.1   |       13004 | UNREACHABLE  |
++---------------------------+--------------------------------------+-------------+-------------+--------------+
+5 rows in set (0,00 sec)
+</code></pre>
+
+<h4 id="toc_31">解除分隔</h4>
+
+<p>解决</p>
+
+<ul>
+<li>停止 s1、s2 的组复制或完成停了实例，找到其他三个成员停止的原因，然后重新启动组复制(或服务)</li>
+<li>group_replication_force_members 强制这个参数列表成员组成 Group，其实成员移出组 (<u><strong>谨慎操作，防止脑裂</strong></u>)</li>
+</ul>
+
+<p>强制组成员配置</p>
+
+<p><img src="https://dev.mysql.com/doc/refman/5.7/en/images/gr-majority-lost-to-stable-group.png" style="zoom:50%" /></p>
+
+<blockquote>
+<p>假设只有 s1、s2 在线，s3、s4、s5 意外离开并不在线，可以强制让 s1、s2组成一个组 (membership)</p>
+
+<p>group_replication_force_members 被视为最后补救措施，一定小心使用，仅当多数成员导致不能仲裁时使用，如果被滥用，可能导致<u><strong>脑裂和阻塞整个系统</strong></u></p>
+</blockquote>
+
+<p><strong><u>确定 s3、s4、s5 一定不在线，不可访问，如果这三个成员分区隔离(因为占大多数)，强制 s1、s2组成新组，造成人为脑裂</u></strong></p>
+
+<pre><code>
+# s1 查看
+
+mysql&gt; SELECT * FROM performance_schema.replication_group_members;
++---------------------------+--------------------------------------+-------------+-------------+--------------+
+| CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST | MEMBER_PORT | MEMBER_STATE |
++---------------------------+--------------------------------------+-------------+-------------+--------------+
+| group_replication_applier | 1999b9fb-4aaf-11e6-bb54-28b2bd168d07 | 127.0.0.1   |       13002 | UNREACHABLE  |
+| group_replication_applier | 199b2df7-4aaf-11e6-bb16-28b2bd168d07 | 127.0.0.1   |       13001 | ONLINE       |
+| group_replication_applier | 199bb88e-4aaf-11e6-babe-28b2bd168d07 | 127.0.0.1   |       13000 | ONLINE       |
+| group_replication_applier | 19ab72fc-4aaf-11e6-bb51-28b2bd168d07 | 127.0.0.1   |       13003 | UNREACHABLE  |
+| group_replication_applier | 19b33846-4aaf-11e6-ba81-28b2bd168d07 | 127.0.0.1   |       13004 | UNREACHABLE  |
++---------------------------+--------------------------------------+-------------+-------------+--------------+
+5 rows in set (0,00 sec)
+
+# 检查s1、s2 Group Replication 通信地址 group_replication_local_address
+
+mysql&gt; SELECT @@group_replication_local_address;
++-----------------------------------+
+| @@group_replication_local_address |
++-----------------------------------+
+| 127.0.0.1:10000                   |
++-----------------------------------+
+1 row in set (0,00 sec)
+
+mysql&gt; SELECT @@group_replication_local_address;
++-----------------------------------+
+| @@group_replication_local_address |
++-----------------------------------+
+| 127.0.0.1:10001                   |
++-----------------------------------+
+1 row in set (0,00 sec)
+
+# 强制重新配置组成员 s1 (127.0.0.1 只是列表，真实环境要看变量 group_replication_local_address)
+SET GLOBAL group_replication_force_members=&quot;127.0.0.1:10000,127.0.0.1:10001&quot;;
+
+# 检查 s1
+
+mysql&gt; select * from performance_schema.replication_group_members;
++---------------------------+--------------------------------------+-------------+-------------+--------------+
+| CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST | MEMBER_PORT | MEMBER_STATE |
++---------------------------+--------------------------------------+-------------+-------------+--------------+
+| group_replication_applier | b5ffe505-4ab6-11e6-b04b-28b2bd168d07 | 127.0.0.1   |       13000 | ONLINE       |
+| group_replication_applier | b60907e7-4ab6-11e6-afb7-28b2bd168d07 | 127.0.0.1   |       13001 | ONLINE       |
++---------------------------+--------------------------------------+-------------+-------------+--------------+
+2 rows in set (0,00 sec)
+
+# 检查 s2
+
+mysql&gt; select * from performance_schema.replication_group_members;
++---------------------------+--------------------------------------+-------------+-------------+--------------+
+| CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST | MEMBER_PORT | MEMBER_STATE |
++---------------------------+--------------------------------------+-------------+-------------+--------------+
+| group_replication_applier | b5ffe505-4ab6-11e6-b04b-28b2bd168d07 | 127.0.0.1   |       13000 | ONLINE       |
+| group_replication_applier | b60907e7-4ab6-11e6-afb7-28b2bd168d07 | 127.0.0.1   |       13001 | ONLINE       |
++---------------------------+--------------------------------------+-------------+-------------+--------------+
+2 rows in set (0,00 sec)
 
 </code></pre>
 
-<h2 id="toc_22">问题处理</h2>
+<h3 id="toc_32">多主模式 (wait)</h3>
 
-<h3 id="toc_23">1. 网络中断/分区处理</h3>
+<h2 id="toc_33">问题处理</h2>
+
+<h3 id="toc_34">1. 网络中断/分区处理</h3>
 
 <p>可以参考 <a href="https://www.percona.com/blog/2017/02/24/battle-for-synchronous-replication-in-mysql-galera-vs-group-replication/">Quest for Better Replication in MySQL: Galera vs. Group Replication</a></p>
 
@@ -580,7 +1020,7 @@ localhost.(none)&gt;SELECT * FROM performance_schema.replication_group_members;
 
 </code></pre>
 
-<h3 id="toc_24">2. 事务不一致不能加入到组</h3>
+<h3 id="toc_35">2. 组成员事务不一致</h3>
 
 <p>被隔离成员，有不是 Group Replication 组内的事务，默认是不能加入到 Group，<u><strong>若人为可知是一致性，可强制加入，谨慎使用</strong></u></p>
 
@@ -661,10 +1101,181 @@ localhost.test&gt;show variables like &#39;%read_only%&#39;;
 | tx_read_only     | OFF   |
 +------------------+-------+
 4 rows in set (0.00 sec)
-
 </code></pre>
 
-<h3 id="toc_25">3.</h3>
+<h3 id="toc_36">3. 大事务导致组成员被移除或切换</h3>
+
+<p>测试如下，在 5.7.17、5.7.18 都有此问题，fix 5.7.19 加了一个限制大事务的参数 <a href="https://dev.mysql.com/doc/refman/5.7/en/group-replication-options.html#sysvar_group_replication_transaction_size_limit"><code>group_replication_transaction_size_limit</code></a>  <a href="https://bugs.mysql.com/bug.php?id=84785">#84785</a></p>
+
+<pre><code># 单主模式 5.7.18
+CREATE TABLE `kafkaoffset_api_log` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `developer` varchar(20) NOT NULL DEFAULT &#39;&#39; ,
+  ctime timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT &#39;request api time&#39;,
+  PRIMARY KEY (`id`),
+  KEY idx_time(ctime,developer)
+);
+
+localhost.test&gt;insert into kafkaoffset_api_log(developer,ctime) select developer,now() from kafkaoffset_api_log;
+Query OK, 1 row affected (0.01 sec)
+Records: 1  Duplicates: 0  Warnings: 0
+
+localhost.test&gt;insert into kafkaoffset_api_log(developer,ctime) select developer,now() from kafkaoffset_api_log;
+Query OK, 2 rows affected (0.01 sec)
+Records: 2  Duplicates: 0  Warnings: 0
+
+localhost.test&gt;insert into kafkaoffset_api_log(developer,ctime) select developer,now() from kafkaoffset_api_log;
+Query OK, 4 rows affected (0.00 sec)
+Records: 4  Duplicates: 0  Warnings: 0
+
+localhost.test&gt;insert into kafkaoffset_api_log(developer,ctime) select developer,now() from kafkaoffset_api_log;
+Query OK, 8 rows affected (0.01 sec)
+Records: 8  Duplicates: 0  Warnings: 0
+
+localhost.test&gt;insert into kafkaoffset_api_log(developer,ctime) select developer,now() from kafkaoffset_api_log;
+Query OK, 16 rows affected (0.00 sec)
+Records: 16  Duplicates: 0  Warnings: 0
+
+localhost.test&gt;insert into kafkaoffset_api_log(developer,ctime) select developer,now() from kafkaoffset_api_log;
+Query OK, 32 rows affected (0.01 sec)
+Records: 32  Duplicates: 0  Warnings: 0
+
+localhost.test&gt;insert into kafkaoffset_api_log(developer,ctime) select developer,now() from kafkaoffset_api_log;
+Query OK, 64 rows affected (0.00 sec)
+Records: 64  Duplicates: 0  Warnings: 0
+
+localhost.test&gt;insert into kafkaoffset_api_log(developer,ctime) select developer,now() from kafkaoffset_api_log;
+Query OK, 128 rows affected (0.00 sec)
+Records: 128  Duplicates: 0  Warnings: 0
+
+localhost.test&gt;insert into kafkaoffset_api_log(developer,ctime) select developer,now() from kafkaoffset_api_log;
+Query OK, 256 rows affected (0.02 sec)
+Records: 256  Duplicates: 0  Warnings: 0
+
+localhost.test&gt;insert into kafkaoffset_api_log(developer,ctime) select developer,now() from kafkaoffset_api_log;
+Query OK, 512 rows affected (0.02 sec)
+Records: 512  Duplicates: 0  Warnings: 0
+
+localhost.test&gt;insert into kafkaoffset_api_log(developer,ctime) select developer,now() from kafkaoffset_api_log;
+Query OK, 1024 rows affected (0.05 sec)
+Records: 1024  Duplicates: 0  Warnings: 0
+
+localhost.test&gt;insert into kafkaoffset_api_log(developer,ctime) select developer,now() from kafkaoffset_api_log;
+Query OK, 2048 rows affected (0.08 sec)
+Records: 2048  Duplicates: 0  Warnings: 0
+
+localhost.test&gt;insert into kafkaoffset_api_log(developer,ctime) select developer,now() from kafkaoffset_api_log;
+Query OK, 4096 rows affected (0.17 sec)
+Records: 4096  Duplicates: 0  Warnings: 0
+
+localhost.test&gt;insert into kafkaoffset_api_log(developer,ctime) select developer,now() from kafkaoffset_api_log;
+Query OK, 8192 rows affected (0.33 sec)
+Records: 8192  Duplicates: 0  Warnings: 0
+
+localhost.test&gt;insert into kafkaoffset_api_log(developer,ctime) select developer,now() from kafkaoffset_api_log;
+Query OK, 16384 rows affected (0.62 sec)
+Records: 16384  Duplicates: 0  Warnings: 0
+
+localhost.test&gt;insert into kafkaoffset_api_log(developer,ctime) select developer,now() from kafkaoffset_api_log;
+Query OK, 32768 rows affected (1.09 sec)
+Records: 32768  Duplicates: 0  Warnings: 0
+
+localhost.test&gt;insert into kafkaoffset_api_log(developer,ctime) select developer,now() from kafkaoffset_api_log;
+Query OK, 65536 rows affected (2.29 sec)
+Records: 65536  Duplicates: 0  Warnings: 0
+
+localhost.test&gt;insert into kafkaoffset_api_log(developer,ctime) select developer,now() from kafkaoffset_api_log;
+Query OK, 131072 rows affected (5.00 sec)
+Records: 131072  Duplicates: 0  Warnings: 0
+
+localhost.test&gt;insert into kafkaoffset_api_log(developer,ctime) select developer,now() from kafkaoffset_api_log;
+Query OK, 262144 rows affected (8.44 sec)
+Records: 262144  Duplicates: 0  Warnings: 0
+
+localhost.test&gt;insert into kafkaoffset_api_log(developer,ctime) select devloper,now() from kafkaoffset_api_log;
+ERROR 1054 (42S22): Unknown column &#39;devloper&#39; in &#39;field list&#39;
+localhost.test&gt;insert into kafkaoffset_api_log(developer,ctime) select developer,now() from kafkaoffset_api_log;
+Query OK, 524288 rows affected (15.79 sec)
+Records: 524288  Duplicates: 0  Warnings: 0
+
+localhost.test&gt;insert into kafkaoffset_api_log(developer,ctime) select developer,now() from kafkaoffset_api_log;
+Query OK, 1048576 rows affected (36.33 sec)
+Records: 1048576  Duplicates: 0  Warnings: 0
+
+localhost.test&gt;insert into kafkaoffset_api_log(developer,ctime) select developer,now() from kafkaoffset_api_log;
+ERROR 3101 (HY000): Plugin instructed the server to rollback the current transaction.
+
+# 当前成员
+localhost.test&gt;SELECT * FROM performance_schema.replication_group_members;
++---------------------------+--------------------------------------+-------------+-------------+--------------+
+| CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST | MEMBER_PORT | MEMBER_STATE |
++---------------------------+--------------------------------------+-------------+-------------+--------------+
+| group_replication_applier | 817b0415-661a-11e7-842a-782bcb479deb | 10.55.28.64 |        6666 | ERROR        |
++---------------------------+--------------------------------------+-------------+-------------+--------------+
+1 row in set (0.00 sec)
+
+# 其他成员
+localhost.test&gt;SELECT * FROM performance_schema.replication_group_members;
++---------------------------+--------------------------------------+--------------+-------------+--------------+
+| CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST  | MEMBER_PORT | MEMBER_STATE |
++---------------------------+--------------------------------------+--------------+-------------+--------------+
+| group_replication_applier | c745233b-6614-11e7-a738-40f2e91dc960 | 10.13.2.29   |        6666 | ONLINE       |
+| group_replication_applier | e99a9946-6619-11e7-9b07-70e28406ebea | 10.77.16.197 |        6666 | ONLINE       |
++---------------------------+--------------------------------------+--------------+-------------+--------------+
+2 rows in set (0.00 sec)
+</code></pre>
+
+<p>因为执行大事务，在内存分配、网络宽带开销上面，导致故障检测触发使成员处于不可访问状态。</p>
+
+<p>解决：5.7.19 引进一个参数  <a href="https://dev.mysql.com/doc/refman/5.7/en/group-replication-options.html#sysvar_group_replication_transaction_size_limit"><code>group_replication_transaction_size_limit</code></a> ，默认是0，是没有限制，需要根据 MGR 工作负载设置比较合理的值。</p>
+
+<pre><code># 恢复组成员
+localhost.test&gt;stop group_replication ;
+Query OK, 0 rows affected (5.67 sec)
+
+localhost.test&gt;start group_replication;
+Query OK, 0 rows affected (2.40 sec)
+
+localhost.test&gt;SELECT * FROM performance_schema.replication_group_members;
++---------------------------+--------------------------------------+--------------+-------------+--------------+
+| CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST  | MEMBER_PORT | MEMBER_STATE |
++---------------------------+--------------------------------------+--------------+-------------+--------------+
+| group_replication_applier | 817b0415-661a-11e7-842a-782bcb479deb | 10.55.28.64  |        6666 | ONLINE       |
+| group_replication_applier | c745233b-6614-11e7-a738-40f2e91dc960 | 10.13.2.29   |        6666 | ONLINE       |
+| group_replication_applier | e99a9946-6619-11e7-9b07-70e28406ebea | 10.77.16.197 |        6666 | ONLINE       |
++---------------------------+--------------------------------------+--------------+-------------+--------------+
+3 rows in set (0.00 sec)
+</code></pre>
+
+<h2 id="toc_37">自动化兼容</h2>
+
+<h3 id="toc_38">监控</h3>
+
+<ol>
+<li>所有节点 group_replication_single_primary_mode 值不同</li>
+<li>单主模式下，切库上下线域名ip</li>
+</ol>
+
+<pre><code>mysql&gt; show variables like &#39;group_replication_single_primary_mode&#39;;
++---------------------------------------+-------+
+| Variable_name                         | Value |
++---------------------------------------+-------+
+| group_replication_single_primary_mode | ON    |
++---------------------------------------+-------+
+1 row in set (0.00 sec)
+</code></pre>
+
+<h3 id="toc_39">备份</h3>
+
+<p>mb 备份</p>
+
+<p>innobackupex 备份</p>
+
+<h3 id="toc_40">扩容</h3>
+
+<p>slave 扩容</p>
+
+<p>innobackupex 扩容</p>
 
 
     
