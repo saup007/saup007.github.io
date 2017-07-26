@@ -655,6 +655,63 @@
 </ul>
 
 
+<h2 id="toc_0">为什么选择使用 Redis</h2>
+
+<ul>
+<li><p>速度快</p>
+
+<ul>
+<li>内存</li>
+<li>C 语言</li>
+<li>单线程，预防多线程竞争</li>
+</ul></li>
+<li><p>基于键值对的数据结构</p>
+
+<ul>
+<li>五种基础数据结构，衍生多种数据结构 (Bitmaps、HyperLogLog、GEO)</li>
+</ul></li>
+<li><p>丰富的功能</p>
+
+<ul>
+<li>Key 过期，实现缓存</li>
+<li>发布订阅，实现消息系统</li>
+<li>支持 Lua 脚本，可以创造新的 Redis 命令</li>
+<li>支持简单的事务</li>
+<li>提供流水线 (Pipeline)，一批命令一次性传到 Redis，减少网络开销</li>
+</ul></li>
+<li><p>简单稳定</p>
+
+<ul>
+<li>代码少</li>
+<li>单线程，模型简单</li>
+<li>不依赖操作系统中的类库，自己实现事件处理相关功能</li>
+</ul></li>
+<li><p>客户端语言多</p>
+
+<ul>
+<li>Java</li>
+<li>PHP</li>
+<li>Python</li>
+<li>C</li>
+<li>C++</li>
+<li>Nodejs</li>
+<li><a href="https://redis.io/clients">等等...</a></li>
+</ul></li>
+<li><p>持久化</p>
+
+<ul>
+<li>RDB</li>
+<li>AOF</li>
+</ul></li>
+<li><p>主从复制</p></li>
+<li><p>高可用和分布式</p>
+
+<ul>
+<li>Redis Sentinel (Reids 2.8)</li>
+<li>Redis Cluster 提供真正分布式、高可用、读写和容量扩展</li>
+</ul></li>
+</ul>
+
 
                         
                       </div>

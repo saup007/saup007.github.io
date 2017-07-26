@@ -4,7 +4,7 @@
   <title><![CDATA[DBA Plus]]></title>
   <link href="dbaplus.tk/atom.xml" rel="self"/>
   <link href="dbaplus.tk/"/>
-  <updated>2017-07-24T23:34:48+08:00</updated>
+  <updated>2017-07-26T21:48:03+08:00</updated>
   <id>dbaplus.tk/</id>
   <author>
     <name><![CDATA[]]></name>
@@ -3808,8 +3808,6 @@ make test
 </ul>
 
 
-<span id="more"></span><!-- more -->
-
 <h2 id="toc_0">为什么选择使用 Redis</h2>
 
 <ul>
@@ -3866,6 +3864,8 @@ make test
 <li>Redis Cluster 提供真正分布式、高可用、读写和容量扩展</li>
 </ul></li>
 </ul>
+
+<span id="more"></span><!-- more -->
 
 <h2 id="toc_1">为什么单线程还能这么快</h2>
 
