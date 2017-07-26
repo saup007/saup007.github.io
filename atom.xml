@@ -4,7 +4,7 @@
   <title><![CDATA[DBA Plus]]></title>
   <link href="dbaplus.tk/atom.xml" rel="self"/>
   <link href="dbaplus.tk/"/>
-  <updated>2017-07-26T21:48:03+08:00</updated>
+  <updated>2017-07-26T21:58:50+08:00</updated>
   <id>dbaplus.tk/</id>
   <author>
     <name><![CDATA[]]></name>
@@ -1040,6 +1040,8 @@ e. 设置pg_hba.conf文件，增加如下信息：
       local    gpperfmon         gpmon         md5
       host     all               gpmon         127.0.0.1/28    md5
 </code></pre>
+
+<!-- more -->
 
 <h3 id="toc_1">安装依赖</h3>
 
@@ -3808,6 +3810,8 @@ make test
 </ul>
 
 
+<span id="more"></span><!-- more -->
+
 <h2 id="toc_0">为什么选择使用 Redis</h2>
 
 <ul>
@@ -3864,8 +3868,6 @@ make test
 <li>Redis Cluster 提供真正分布式、高可用、读写和容量扩展</li>
 </ul></li>
 </ul>
-
-<span id="more"></span><!-- more -->
 
 <h2 id="toc_1">为什么单线程还能这么快</h2>
 
