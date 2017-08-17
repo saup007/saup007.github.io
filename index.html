@@ -81,6 +81,8 @@
     <li><label>Categories</label></li>
 
         
+            <li><a href="Docker.html">Docker</a></li>
+        
             <li><a href="Redis.html">Redis</a></li>
         
             <li><a href="MySQL.html">MySQL</a></li>
@@ -107,6 +109,57 @@
 	<div class="large-8 medium-8 columns">
 		<div class="markdown-body home-categories">
 		
+			<div class="article">
+                <a class="clearlink" href="15013380113380.html">
+                
+                  <h1>基本命令</h1>
+                  <div class="a-content">
+                      
+                      <div class="a-content-text">
+                        
+                        	<p>列出已经下载下来的镜像(顶级镜像)<br/>
+docker images</p>
+
+<p>显示所有镜像，包括中间层镜像<br/>
+docker images -a</p>
+
+<p>列出关于 ubntu 的镜像<br/>
+docker images ubuntu</p>
+
+<p>列出指定仓库名、标签的镜像<br/>
+docker images ubuntu:16.04</p>
+
+<p>虚悬镜像(dangling image) <br/>
+docker images -f dangling=true</p>
+
+<p>删除虚悬镜像<br/>
+docker rmi $(docker images -q -f dangling=true)</p>
+
+                        
+                      </div>
+                  </div>
+                </a>
+                <div class="read-more clearfix">
+                  <div class="more-left left">
+                  
+                    <span class="date">2017/7/29</span>
+                    <span>posted in&nbsp;</span> 
+          				  
+          					    <span class="posted-in"><a href='Docker.html'>Docker</a></span>
+          				   
+                  </div>
+                  <div class="more-right right">
+                  <span class="comments">
+                      
+                        <a href="http://dbaplus.tk/15013380113380.html#disqus_thread">comments</a>
+                      
+
+                       
+                  </span>
+                  </div>
+                </div>
+              </div><!-- article -->
+        
 			<div class="article">
                 <a class="clearlink" href="15007225406040.html">
                 
@@ -1030,6 +1083,8 @@
 
       	<p class="cat-list">
         
+            <a href="Docker.html"><strong>Docker</strong></a>
+        
             <a href="Redis.html"><strong>Redis</strong></a>
         
             <a href="MySQL.html"><strong>MySQL</strong></a>
@@ -1049,6 +1104,12 @@
                 <div class="side-content">
                 <ul class="posts-list">
 	      
+		      
+			      <li class="post">
+			        <a href="15013380113380.html">基本命令</a>
+			      </li>
+		     
+		  
 		      
 			      <li class="post">
 			        <a href="15007225406040.html">MySQL登陆验证 & old password</a>
@@ -1074,10 +1135,6 @@
 		     
 		  
 		      
-			      <li class="post">
-			        <a href="14999625908463.html">Redis Install 3.2.9</a>
-			      </li>
-		     
 		  
 		      
 		  
