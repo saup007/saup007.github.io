@@ -154,6 +154,12 @@
 <li>
 <a href="#toc_5">List 使用场景</a>
 </li>
+<li>
+<a href="#toc_6">SET 使用场景</a>
+</li>
+<li>
+<a href="#toc_7">ZSET 使用场景</a>
+</li>
 </ul>
 </li>
 </ul>
@@ -397,9 +403,78 @@ for article in {articles}
 <li><p>队列 lpush + rpop = Queue</p></li>
 <li><p>有限集合  lpush + ltrim = Capped Collection</p></li>
 <li><p>消息队列  lpuush + brpop = Message Queue</p></li>
-<li><p>排行榜 (list、zset)</p></li>
-<li><p>社交网络</p></li>
 </ul>
+
+<h3 id="toc_6">SET 使用场景</h3>
+
+<ul>
+<li>标签 tag</li>
+</ul>
+
+<pre><code>
+# 给用户添加标签
+sadd user:1:tags tag1 tag2 tag5
+sadd user:2:tags tag2 tag3 tag5
+...
+sadd user:2:tags tag1 tag2 tag4
+...
+
+# 给标签添加用户
+
+sadd tag1:users user:1 user:3
+sadd tag2:users user:1 user:2 user:3
+...
+sadd tagk:users user:1 user:2
+...
+
+# 删除用户下的标签
+srem user:1:tags tag1 tag5
+...
+
+# 删除标签 下的用户
+srem tag1:users user:1
+srem tag5:users user:1
+
+# 计算用户共同感兴趣的标签
+sinter user:1:tags user:2:tags
+
+</code></pre>
+
+<blockquote>
+<p>用户和标签的关系维护应该在一个事务内执行，防止部分命令失败造成数据不一致，如何来实现，要依赖 Lua</p>
+</blockquote>
+
+<ul>
+<li>生成随机数，抽奖 spop/srandmember = Random item</li>
+<li>sadd + sinter = Social Graph 社交需求</li>
+</ul>
+
+<h3 id="toc_7">ZSET 使用场景</h3>
+
+<ul>
+<li>排行榜</li>
+</ul>
+
+<pre><code># 添加用户赞数，用户 mike 上传一个视频，并获取 3 个赞
+zadd user:ranking:2016_03_15 3 mike
+
+如果再获取赞
+zincrby user:ranking:2016_03_15 1 mike
+
+# 取消用户赞
+zrem user:ranking:2016_03_15 mike
+
+# 展示获取赞数最多的十个用户
+zrevrangebyrank user:ranking:2016_03_15 0 9
+
+# 展示用户信息以及用户分数
+将用户名作为 Key 后缀，将用户信息保存在哈希类型中，用户的分数和排名可使用 zscore、zrank
+
+hgetall user:info:tom
+zscore user:ranking:2016_03_15 mike
+zrank user:ranking:2016_03_15 mike
+
+</code></pre>
 
 
     
@@ -462,7 +537,7 @@ for article in {articles}
 
 <a target="_blank" class="instagram" href="https://www.instagram.com/dbaplus" title="Instagram">Instagram</a>
 <a target="_blank" class="weibo" href="http://www.weibo.com/saup007" title="weibo">Weibo</a>
-<a target="_blank" class="twitter" target="_blank" href="https://twitter.com/saup007" title="Twitter">Twitter</a>
+
 <a target="_blank" class="github" target="_blank" href="https://github.com/saup007" title="GitHub">GitHub</a>
 
   <a target="_blank" class="rss" href="atom.xml" title="RSS">RSS</a>
@@ -527,7 +602,7 @@ for article in {articles}
 		  
 		      
 			      <li class="post">
-			        <a href="15000823671749.html">Group Replication</a>
+			        <a href="15000823671749.html">MySQL Group Replication</a>
 			      </li>
 		     
 		  
