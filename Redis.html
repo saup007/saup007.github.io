@@ -20,7 +20,7 @@
   <script>hljs.initHighlightingOnLoad();</script>
 <script type="text/javascript">
   function before_search(){
-    var searchVal = 'site:dbaplus.tk ' + document.getElementById('search_input').value;
+    var searchVal = 'site:saup007.github.io ' + document.getElementById('search_input').value;
     document.getElementById('search_q').value = searchVal;
     return true;
   }
@@ -160,7 +160,7 @@
                   <div class="more-right right">
                   <span class="comments">
                       
-                        <a href="http://dbaplus.tk/14999625908463.html#disqus_thread">comments</a>
+                        <a href="https://saup007.github.io/14999625908463.html#disqus_thread">comments</a>
                       
 
                        
@@ -224,7 +224,7 @@
                   <div class="more-right right">
                   <span class="comments">
                       
-                        <a href="http://dbaplus.tk/14999625750663.html#disqus_thread">comments</a>
+                        <a href="https://saup007.github.io/14999625750663.html#disqus_thread">comments</a>
                       
 
                        
@@ -434,7 +434,7 @@
                   <div class="more-right right">
                   <span class="comments">
                       
-                        <a href="http://dbaplus.tk/14999625646195.html#disqus_thread">comments</a>
+                        <a href="https://saup007.github.io/14999625646195.html#disqus_thread">comments</a>
                       
 
                        
@@ -453,23 +453,113 @@
                         
                         	<ul>
 <li>
-<a href="#toc_0">String 内部编码</a>
+<a href="#toc_0">&lt;!-- more --&gt;</a>
+</li>
+</ul>
 </li>
 <li>
-<a href="#toc_1">Hash 内部编码</a>
+<a href="#toc_1">String 内部编码</a>
+<ul>
+<li>
+<a href="#toc_2">Hash 内部编码</a>
 </li>
 <li>
-<a href="#toc_2">List 内部编码</a>
+<a href="#toc_3">List 内部编码</a>
 </li>
 <li>
-<a href="#toc_3">SET 内部编码</a>
+<a href="#toc_4">SET 内部编码</a>
 </li>
 <li>
-<a href="#toc_4">ZSET 内部编码</a>
+<a href="#toc_5">ZSET 内部编码</a>
 </li>
 </ul>
 
 
+<h3 id="toc_0">&lt;!-- more --&gt;</h3>
+
+<h2 id="toc_1">String 内部编码</h2>
+
+<ul>
+<li>int：8 个字节的长整型</li>
+<li>embstr：&lt;= 39 个字符的字符串</li>
+<li>raw：&gt; 39 个字符的字符串</li>
+</ul>
+
+<h2 id="toc_2">Hash 内部编码</h2>
+
+<ul>
+<li>ziplist 压缩列表</li>
+</ul>
+
+<blockquote>
+<p>当 Hash 元素个数小于 hash-max-ziplist-entries(default 512 个)，同时所有值都小于 hash-max-ziplist-value(default 64 字节)，选用 ziplist 做为 Hash 内部实现</p>
+</blockquote>
+
+<p>ziplist 使用更加紧凑的结构实现多个元素连续存在，比 hashtable 节省内存</p>
+
+<ul>
+<li>hashtable 哈希表</li>
+</ul>
+
+<blockquote>
+<p>当 Hash 无法满足 ziplist 时，使用 hashtable 作为 Hash 内部实现，因为此时 ziplist 读写效率下降，而 hashtable 的读写时间复杂度为 O(1)</p>
+</blockquote>
+
+<h2 id="toc_3">List 内部编码</h2>
+
+<ul>
+<li>ziplist 压缩列表</li>
+</ul>
+
+<blockquote>
+<p>当 List 元素个数小于 list-max-ziplist-entries(default 512 个)，同时列表中每个元素值都小于 list-max-ziplist-value(default 64 字节)，选用 ziplist 做为 List 内部实现减少内存使用</p>
+</blockquote>
+
+<ul>
+<li>linkedlist 链表</li>
+</ul>
+
+<blockquote>
+<p>当 List 无法满足 ziplist 条件时，使用 linkedlist 做为内部实现</p>
+</blockquote>
+
+<p>Redis 3.2 提供 quicklist 内部内部编码，简单说是一个 ziplist 为节点的 linkedlist，结合 ziplist 和 linkedlist 优势，为列表型提供更优秀的编码，设计原理参考 <a href="https://matt.sh/redis-quicklist">redis-quicklist</a></p>
+
+<h2 id="toc_4">SET 内部编码</h2>
+
+<ul>
+<li>intset 整数集合</li>
+</ul>
+
+<blockquote>
+<p>当集合中元素都是整数且元素个数小于 set-max-intset-entries(default 512个)，采用 intset 作为内部实现，减少内存使用</p>
+</blockquote>
+
+<ul>
+<li>hashtable 哈希表</li>
+</ul>
+
+<blockquote>
+<p>当集合类型无法满足 intset ,使用 hashtable 作为集合的内部 实现</p>
+</blockquote>
+
+<h2 id="toc_5">ZSET 内部编码</h2>
+
+<ul>
+<li>ziplist 压缩列表</li>
+</ul>
+
+<blockquote>
+<p>当有序集合的元素个数小于 zset-max-ziplist-entries(default 128个)，同时每个元素的值都小于 zset-max-ziplist-value(default 64 字节)，会使用 ziplist 作为有序集合内部实现，有效减少内存使用</p>
+</blockquote>
+
+<ul>
+<li>skiplist 跳跃表</li>
+</ul>
+
+<blockquote>
+<p>当 ziplist 不满足条件时，使用 skiplist 作为有序集合内部实现，此时 ziplist 读写效率下降</p>
+</blockquote>
 
                         
                       </div>
@@ -477,7 +567,7 @@
                 </a>
                 <div class="read-more clearfix">
                   <div class="more-left left">
-                   <a href="14999625423902.html">Read more</a>&nbsp;&nbsp; 
+                  
                     <span class="date">2017/7/14</span>
                     <span>posted in&nbsp;</span> 
           				  
@@ -487,7 +577,7 @@
                   <div class="more-right right">
                   <span class="comments">
                       
-                        <a href="http://dbaplus.tk/14999625423902.html#disqus_thread">comments</a>
+                        <a href="https://saup007.github.io/14999625423902.html#disqus_thread">comments</a>
                       
 
                        
