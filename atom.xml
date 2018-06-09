@@ -4,7 +4,7 @@
   <title><![CDATA[DBA Plus]]></title>
   <link href="https://saup007.github.io/atom.xml" rel="self"/>
   <link href="https://saup007.github.io/"/>
-  <updated>2018-06-09T11:02:10+08:00</updated>
+  <updated>2018-06-09T11:02:21+08:00</updated>
   <id>https://saup007.github.io/</id>
   <author>
     <name><![CDATA[]]></name>
@@ -3736,7 +3736,7 @@ daemonize
 
 <p>Redis 数据结构和内部编码</p>
 
-<p><img src="http://osdzwfz5z.bkt.clouddn.com/Redis%20data%20encoding.jpg" alt="Redis data encoding"/></p>
+<p><img src="media/14983146118446/Redis%20data%20encoding.jpg" alt="Redis data encoding"/></p>
 
 <p>一种数据结构对应多个内部编码优点</p>
 
@@ -5915,7 +5915,7 @@ min、max 支持区间(小括号)和闭区间(中括号)，-inf、+inf 代表无
 
 <h3 id="toc_4">MySQL InnoDB Cluster</h3>
 
-<p><img src="http://osdzwfz5z.bkt.clouddn.com/14994853997910.jpg" alt="" style="width:610px;"/></p>
+<p><img src="media/14994844676002/14994853997910.jpg" alt="" style="width:610px;"/></p>
 
 <h2 id="toc_5">Similarities</h2>
 
@@ -6238,7 +6238,7 @@ min、max 支持区间(小括号)和闭区间(中括号)，-inf、+inf 代表无
 </ul></li>
 </ul>
 
-<p><img src="http://osdzwfz5z.bkt.clouddn.com/14994914047051.jpg" alt=""/></p>
+<p><img src="media/14994844676002/14994914047051.jpg" alt=""/></p>
 
 <h2 id="toc_23">Limitations</h2>
 
@@ -6339,7 +6339,7 @@ processing</p>
 
 <h2 id="toc_32">Performance Tests</h2>
 
-<p><img src="http://osdzwfz5z.bkt.clouddn.com/14994921791637.jpg" alt=""/></p>
+<p><img src="media/14994844676002/14994921791637.jpg" alt=""/></p>
 
 ]]></content>
   </entry>
