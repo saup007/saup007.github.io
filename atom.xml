@@ -4,7 +4,7 @@
   <title><![CDATA[DBA Plus]]></title>
   <link href="https://saup007.github.io/atom.xml" rel="self"/>
   <link href="https://saup007.github.io/"/>
-  <updated>2018-06-10T09:44:20+08:00</updated>
+  <updated>2018-06-10T09:44:27+08:00</updated>
   <id>https://saup007.github.io/</id>
   <author>
     <name><![CDATA[]]></name>
@@ -3734,7 +3734,7 @@ daemonize
 
 <p>Redis 数据结构和内部编码</p>
 
-<p><img src="media/14983146118446/Redis_data_encoding.jpg" alt="Redis data encoding"/></p>
+<p><img src="media/14983146118446/Redis_data_encoding.jpg" alt="w600"/></p>
 
 <p>一种数据结构对应多个内部编码优点</p>
 
@@ -5176,7 +5176,7 @@ semebers、lrange、hgetall 都属于比较重的命令，如果元素过多存�
 (integer) 4
 </code></pre>
 
-<p><img src="media/14983286362248/set_%E9%9B%86%E5%90%88%E9%97%B4%E6%93%8D%E4%BD%9C.jpg" alt="w500"/></p>
+<p><img src="media/14983286362248/set_%E9%9B%86%E5%90%88%E9%97%B4%E6%93%8D%E4%BD%9C.jpg" alt="w600"/></p>
 
 <h4 id="toc_27">交集</h4>
 
