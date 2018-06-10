@@ -4,7 +4,7 @@
   <title><![CDATA[DBA Plus]]></title>
   <link href="https://saup007.github.io/atom.xml" rel="self"/>
   <link href="https://saup007.github.io/"/>
-  <updated>2018-06-09T12:09:58+08:00</updated>
+  <updated>2018-06-10T09:44:20+08:00</updated>
   <id>https://saup007.github.io/</id>
   <author>
     <name><![CDATA[]]></name>
@@ -3734,7 +3734,7 @@ daemonize
 
 <p>Redis 数据结构和内部编码</p>
 
-<p><img src="media/14983146118446/Redis%20data%20encoding.jpg" alt="Redis data encoding"/></p>
+<p><img src="media/14983146118446/Redis_data_encoding.jpg" alt="Redis data encoding"/></p>
 
 <p>一种数据结构对应多个内部编码优点</p>
 
@@ -5176,7 +5176,7 @@ semebers、lrange、hgetall 都属于比较重的命令，如果元素过多存�
 (integer) 4
 </code></pre>
 
-<p><img src="media/14983286362248/51501425532_.pic%E5%89%AF%E6%9C%AC%202.jpg" alt="51501425532_.pic副本 2" style="width:500px;"/></p>
+<p><img src="media/14983286362248/set_%E9%9B%86%E5%90%88%E9%97%B4%E6%93%8D%E4%BD%9C.jpg" alt="w500"/></p>
 
 <h4 id="toc_27">交集</h4>
 
@@ -5496,7 +5496,7 @@ min、max 支持区间(小括号)和闭区间(中括号)，-inf、+inf 代表无
 
 <p>俩个有序集合</p>
 
-<p><img src="media/14983286362248/15014257051358.jpg" alt="" style="width:600px;"/></p>
+<p><img src="media/14983286362248/zset_%E9%9B%86%E5%90%88%E9%97%B4%E6%93%8D%E4%BD%9C.jpg" alt="" style="width:600px;"/></p>
 
 <pre><code>127.0.0.1:6379&gt; zadd user:ranking:1 1 kris 91 mike 200 frank 220 tim 250 martin 251 tom
 (integer) 6
@@ -5640,31 +5640,26 @@ min、max 支持区间(小括号)和闭区间(中括号)，-inf、+inf 代表无
     <content type="html"><![CDATA[
 <ul>
 <li>
-<a href="#toc_0">&lt;!-- more --&gt;</a>
-</li>
-</ul>
+<a href="#toc_0">String 内部编码</a>
 </li>
 <li>
-<a href="#toc_1">String 内部编码</a>
-<ul>
-<li>
-<a href="#toc_2">Hash 内部编码</a>
+<a href="#toc_1">Hash 内部编码</a>
 </li>
 <li>
-<a href="#toc_3">List 内部编码</a>
+<a href="#toc_2">List 内部编码</a>
 </li>
 <li>
-<a href="#toc_4">SET 内部编码</a>
+<a href="#toc_3">SET 内部编码</a>
 </li>
 <li>
-<a href="#toc_5">ZSET 内部编码</a>
+<a href="#toc_4">ZSET 内部编码</a>
 </li>
 </ul>
 
 
-<h3 id="toc_0">&lt;!-- more --&gt;</h3>
+<span id="more"></span><!-- more -->
 
-<h2 id="toc_1">String 内部编码</h2>
+<h2 id="toc_0">String 内部编码</h2>
 
 <ul>
 <li>int：8 个字节的长整型</li>
@@ -5672,7 +5667,7 @@ min、max 支持区间(小括号)和闭区间(中括号)，-inf、+inf 代表无
 <li>raw：&gt; 39 个字符的字符串</li>
 </ul>
 
-<h2 id="toc_2">Hash 内部编码</h2>
+<h2 id="toc_1">Hash 内部编码</h2>
 
 <ul>
 <li>ziplist 压缩列表</li>
@@ -5692,7 +5687,7 @@ min、max 支持区间(小括号)和闭区间(中括号)，-inf、+inf 代表无
 <p>当 Hash 无法满足 ziplist 时，使用 hashtable 作为 Hash 内部实现，因为此时 ziplist 读写效率下降，而 hashtable 的读写时间复杂度为 O(1)</p>
 </blockquote>
 
-<h2 id="toc_3">List 内部编码</h2>
+<h2 id="toc_2">List 内部编码</h2>
 
 <ul>
 <li>ziplist 压缩列表</li>
@@ -5712,7 +5707,7 @@ min、max 支持区间(小括号)和闭区间(中括号)，-inf、+inf 代表无
 
 <p>Redis 3.2 提供 quicklist 内部内部编码，简单说是一个 ziplist 为节点的 linkedlist，结合 ziplist 和 linkedlist 优势，为列表型提供更优秀的编码，设计原理参考 <a href="https://matt.sh/redis-quicklist">redis-quicklist</a></p>
 
-<h2 id="toc_4">SET 内部编码</h2>
+<h2 id="toc_3">SET 内部编码</h2>
 
 <ul>
 <li>intset 整数集合</li>
@@ -5730,7 +5725,7 @@ min、max 支持区间(小括号)和闭区间(中括号)，-inf、+inf 代表无
 <p>当集合类型无法满足 intset ,使用 hashtable 作为集合的内部 实现</p>
 </blockquote>
 
-<h2 id="toc_5">ZSET 内部编码</h2>
+<h2 id="toc_4">ZSET 内部编码</h2>
 
 <ul>
 <li>ziplist 压缩列表</li>
